@@ -1,0 +1,993 @@
+{
+  "_comment": "Seed catalog compiled 2026-10-06 from the task spec + earlier access probe. Everything here is UNVERIFIED until the research note research/<key>.md says otherwise.",
+  "datasets": [
+    {
+      "key": "benthicnet",
+      "name": "BenthicNet (1M / 11M / labelled)",
+      "priority": "P1 per-image",
+      "tier": "U",
+      "licence": "Per image set (spec: mostly CC BY); umbrella licence is custom per earlier probe. Per-set licences in 00_Documentation/all_licenses_refs.csv",
+      "geo_precision": ["image"],
+      "geo_source": "Metadata columns latitude / longitude (WGS 84), ~99.6% filled in BenthicNet-1M; site also given",
+      "media": ["images"],
+      "region": "Global compilation (many seafloor surveys)",
+      "entry_point": "https://doi.org/10.20383/103.01241",
+      "size": "BenthicNet-1M ~1.3M images; BenthicNet-11M ~11.4M images (size on disk unknown, likely several TB)",
+      "needs_human": true,
+      "human_steps": "FRDR bulk download via Globus (account + Globus Connect Personal), or fetch images from origin URLs in the URL list (doi 10.20383/103.0966)",
+      "verify": "Tier per image set; whether the 11M images are hosted on FRDR or only listed as origin URLs; overlap with SQUIDLE+/FathomNet/PANGAEA (record origin URLs for dedup)",
+      "questions": [
+        "What exactly are BenthicNet-1M, BenthicNet-11M and BenthicNet-Labelled and how is each distributed (files, URL lists, tarballs)?",
+        "Read 00_Documentation/all_licenses_refs.csv (or equivalent): licence per image set; which sets are CC0/CC BY vs NC/ND/unknown? Share of images in tier A/B.",
+        "Exact metadata column names (latitude, longitude, depth, site, datetime, url, dataset/image set id) and CRS.",
+        "Can images be fetched per-file over HTTPS (no Globus)? Rate limits? Origin hosts?",
+        "Total size of 1M and 11M subsets."
+      ]
+    },
+    {
+      "key": "squidle_imos",
+      "name": "SQUIDLE+ (IMOS AUV and other campaigns)",
+      "priority": "P1 per-image",
+      "tier": "B",
+      "licence": "IMOS campaigns CC BY 4.0; other campaigns vary - read per campaign",
+      "geo_precision": ["image"],
+      "geo_source": "Media pose: lat, lon, dep (verify exact API field names)",
+      "media": ["images"],
+      "region": "Australia (IMOS AUV) + global campaigns",
+      "entry_point": "https://squidle.org/api/help",
+      "size": "~10.5M images",
+      "needs_human": false,
+      "human_steps": "Possibly a free SQUIDLE+ API token for some endpoints (verify)",
+      "verify": "API field names for pose; per-campaign licence field; whether media URLs are public S3",
+      "questions": [
+        "Which API endpoints list campaigns/deployments/media and their poses? Pagination and filters (q= JSON filters)?",
+        "Exact field names for lat/lon/depth/altitude/timestamp on media or pose objects.",
+        "Where is licence stored (campaign, platform, deployment)? Which campaigns are CC BY / CC0 (IMOS) vs others?",
+        "Are media path_best URLs public (e.g. AODN/IMOS S3)? Any auth or rate limits?",
+        "Counts per campaign/platform."
+      ]
+    },
+    {
+      "key": "pangaea_images",
+      "name": "PANGAEA image datasets (seed DOIs + discovery)",
+      "priority": "P1 per-image",
+      "tier": "B",
+      "licence": "Per DOI (mostly CC BY 4.0); exclude CC BY-NC records; honour moratoria",
+      "geo_precision": ["image"],
+      "geo_source": "Latitude / Longitude columns in the data table, or iFDO image-latitude / image-longitude / image-altitude-meters",
+      "media": ["images"],
+      "region": "Global (deep sea, polar, North Atlantic)",
+      "entry_point": "https://www.pangaea.de/",
+      "size": "Seeds: 10.1594/PANGAEA.989682, .898338, .994607, .935856, .882349, .911904, .936205",
+      "needs_human": false,
+      "human_steps": "Some files are on tape and need staging before download; moratorium (embargo) datasets must wait",
+      "verify": "Licence + columns per seed DOI; tape staging behaviour",
+      "questions": [
+        "For each seed DOI: title, licence, image count, image URL column, coordinate columns (names, CRS), depth column, moratorium?",
+        "Does pangaeapy return the data table with URL columns; how are image files served (hdl/URL column, zip)?",
+        "A discovery query for MORE PANGAEA image datasets (keywords: image, photo, OFOS, AUV, seafloor images, iFDO) filtered to CC BY / CC0, excluding NC. List the best ~20 extra DOIs with counts.",
+        "How does tape staging work and how can a script detect + request it?"
+      ]
+    },
+    {
+      "key": "fathomnet",
+      "name": "FathomNet",
+      "priority": "P1 per-image",
+      "tier": "B",
+      "licence": "Per image; keep only CC0 and CC BY; confirm commercial-use terms with MBARI",
+      "geo_precision": ["image", "none"],
+      "geo_source": "Image attributes latitude, longitude, depthMeters; geoimages endpoint",
+      "media": ["images"],
+      "region": "Monterey Bay + global deep sea",
+      "entry_point": "https://database.fathomnet.org/",
+      "size": "~100k+ images (verify)",
+      "needs_human": true,
+      "human_steps": "Optional: confirm commercial-use terms with MBARI by email",
+      "verify": "Share of images with coordinates; where licence is stored per image",
+      "questions": [
+        "fathomnet-py / REST endpoints to enumerate images with lat/lon/depth (geoimages, images/query).",
+        "Where is the licence per image (field name) and which values occur? Any NC images?",
+        "Share of images with coordinates; rate limits; image URL hosting.",
+        "Terms of use for commercial / model-training use."
+      ]
+    },
+    {
+      "key": "usgs_cmgp",
+      "name": "USGS CMGP Video and Photograph Portal",
+      "priority": "P1 per-image",
+      "tier": "A",
+      "licence": "US public domain (USGS)",
+      "geo_precision": ["image", "segment"],
+      "geo_source": "Trackline navigation files per video/photo set; interpolate video frames by timestamp (segment, geo_inferred)",
+      "media": ["images", "videos"],
+      "region": "US coasts (Atlantic, Gulf, Pacific, Hawaii, Alaska)",
+      "entry_point": "https://doi.org/10.5066/F7JH3J7N",
+      "size": "Unknown; many ScienceBase data releases",
+      "needs_human": true,
+      "human_steps": "Portal sits behind Cloudflare (earlier probe); may need manual export of a file list or browser download",
+      "verify": "Navigation file format + time base; which releases contain video vs stills",
+      "questions": [
+        "How are the video/photo sets distributed (ScienceBase items, cmgds.marine.usgs.gov)? Can ScienceBase API list them?",
+        "Navigation file format (CSV columns, time zone, sampling rate) and how to align video timestamps.",
+        "Do stills carry EXIF GPS or a per-photo CSV with lat/lon?",
+        "Is scripted access blocked by Cloudflare? Workarounds that stay polite."
+      ]
+    },
+    {
+      "key": "csiro_mnf",
+      "name": "CSIRO MNF RV Investigator voyage imagery",
+      "priority": "P1 per-image",
+      "tier": "B",
+      "licence": "CC BY 4.0 (verify per collection); store CSIRO's prescribed attribution sentence",
+      "geo_precision": ["image", "station"],
+      "geo_source": "Voyage/station navigation (verify per image vs per station)",
+      "media": ["images", "videos"],
+      "region": "Australia, Southern Ocean, Antarctica",
+      "entry_point": "https://researchdata.edu.au/rv-investigator-voyage-imagery-data/3970151",
+      "size": "Unknown",
+      "needs_human": true,
+      "human_steps": "CSIRO Data Access Portal may require an order / login for large collections",
+      "verify": "Per-image vs per-station positions; DAP API access",
+      "questions": [
+        "Which DAP collections hold underwater imagery (e.g. IN2023_V05 and other voyages)? List them.",
+        "Is there a DAP REST API for listing files? Auth needed?",
+        "Where are positions: per image metadata, voyage nav files, station logs?",
+        "Exact attribution sentence CSIRO prescribes."
+      ]
+    },
+    {
+      "key": "wendtorf_bottsand",
+      "name": "Wendtorf / Bottsand GoPro photos (Kiel Bight)",
+      "priority": "P1 per-image",
+      "tier": "B",
+      "licence": "CC BY 4.0 (verify on Zenodo record)",
+      "geo_precision": ["image"],
+      "geo_source": "Positions published with the GoPro photos (verify format)",
+      "media": ["images"],
+      "region": "Kiel Bight, Baltic Sea",
+      "entry_point": "https://doi.org/10.5281/zenodo.16085852",
+      "size": "Unknown",
+      "needs_human": true,
+      "human_steps": "Earlier probe flagged it as needing a person (restricted files?) - verify",
+      "verify": "Position format; access restrictions; Baltic weighting",
+      "questions": [
+        "Zenodo record files, sizes, licence, access (open/restricted).",
+        "How are positions published (EXIF GPS, CSV, GPX)?"
+      ]
+    },
+    {
+      "key": "seatizen",
+      "name": "Seatizen Atlas",
+      "priority": "P1 per-image",
+      "tier": "U",
+      "licence": "Unknown until each session deposit's licence is read",
+      "geo_precision": ["image"],
+      "geo_source": "GPS per image in session metadata",
+      "media": ["images"],
+      "region": "Western Indian Ocean (Reunion, Mauritius, Seychelles, ...)",
+      "entry_point": "https://www.nature.com/articles/s41597-024-04267-z",
+      "size": "Unknown",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence per session deposit (Zenodo); filter out aerial (UAV) images",
+      "questions": [
+        "Where are the session deposits (Zenodo community?) and their licences? Count CC BY/CC0 vs other.",
+        "Metadata file per session: GPS column names, depth, which images are aerial vs underwater.",
+        "Sizes per session."
+      ]
+    },
+    {
+      "key": "german_bight",
+      "name": "German Bight seafloor video (HE415/HE416, HE436, Helgoland 2011)",
+      "priority": "P2 station",
+      "tier": "B",
+      "licence": "CC BY (verify per PANGAEA record)",
+      "geo_precision": ["station"],
+      "geo_source": "Station Latitude/Longitude in the PANGAEA data table next to the movie URLs",
+      "media": ["videos"],
+      "region": "German Bight / Helgoland, North Sea",
+      "entry_point": "https://doi.pangaea.de/10.1594/PANGAEA.907386",
+      "size": "Also PANGAEA.909999 and PANGAEA.831731",
+      "needs_human": false,
+      "human_steps": "Video may be on tape: staging request",
+      "verify": "Columns, licence, file sizes; tape staging",
+      "questions": [
+        "For PANGAEA.907386, .909999, .831731: licence, columns (station, lat, lon, depth, date, movie URL), number and size of videos.",
+        "Do videos have start/end times or tracks that allow better than station precision?",
+        "Tape staging status."
+      ]
+    },
+    {
+      "key": "noaa_ncrmp",
+      "name": "NOAA NCRMP benthic photo-quadrats (Pacific, PIFSC)",
+      "priority": "P2 station",
+      "tier": "A",
+      "licence": "US public domain; cite PIFSC Ecosystem Sciences Division",
+      "geo_precision": ["station"],
+      "geo_source": "Site metadata LATITUDE / LONGITUDE (diver-recorded), joined on SITE parsed from image name SITE_YEAR_REP_PHOTOID",
+      "media": ["images"],
+      "region": "Hawaii, Mariana Islands, American Samoa, Pacific Remote Islands",
+      "entry_point": "https://www.fisheries.noaa.gov/inport/item/71813",
+      "size": "Multiple NCEI accessions (e.g. 0317534), multiple years",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "List all NCEI accessions (historical years too); site metadata file name/columns",
+      "questions": [
+        "List all NCEI accessions holding NCRMP Pacific benthic images (all years) and their sizes.",
+        "Site metadata file + columns (SITE, LATITUDE, LONGITUDE, DEPTH, DATE). Image naming pattern.",
+        "Are Atlantic/Caribbean NCRMP image sets also public (Florida, PR, USVI, Flower Garden Banks)?"
+      ]
+    },
+    {
+      "key": "noaa_oe",
+      "name": "NOAA Ocean Exploration video portal + Okeanos ROV dive archive",
+      "priority": "P2 station",
+      "tier": "A",
+      "licence": "US public domain unless an item is marked copyright",
+      "geo_precision": ["segment", "station"],
+      "geo_source": "Dive location from portal metadata; ROV navigation files in per-dive archives (interpolate per segment)",
+      "media": ["videos", "images"],
+      "region": "Global deep sea, mostly US EEZ and Pacific",
+      "entry_point": "https://www.ncei.noaa.gov/access/ocean-exploration/video/",
+      "size": "Very large (full dives many TB); sample clips/segments",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Nav file format; clip naming with timestamps; copyright-marked items",
+      "questions": [
+        "Structure of https://www.ncei.noaa.gov/waf/okeanos-rov-cruises/ (cruise/dive folders, video segments, nav CSVs, dive summaries, framegrabs).",
+        "ROV nav file format and timestamps; video segment start times (filename?).",
+        "Video portal metadata API (dive lat/lon, depth, date).",
+        "How copyright-marked items are flagged.",
+        "Historical cruises available (years)."
+      ]
+    },
+    {
+      "key": "canada_ogl",
+      "name": "Canada open data: DFO Fundy drift video, GSC seafloor photos (+ CKAN discovery)",
+      "priority": "P2 station",
+      "tier": "B",
+      "licence": "Open Government Licence - Canada",
+      "geo_precision": ["station", "segment"],
+      "geo_source": "Transect and station positions in the dataset resources",
+      "media": ["videos", "images"],
+      "region": "Bay of Fundy, Scotian Shelf, Canadian waters",
+      "entry_point": "https://open.canada.ca/data/en/dataset/f9098f77-b2e1-423d-8950-eeabd7bba85b",
+      "size": "Also GSC: https://open.canada.ca/data/en/dataset/44cbbdc0-d33d-abe7-b08a-f5872bc0a48a",
+      "needs_human": true,
+      "human_steps": "Earlier probe flagged a person step (large archives?) - verify",
+      "verify": "Resource formats; position files; more datasets via CKAN",
+      "questions": [
+        "Resources of both datasets: formats, sizes, position tables, licence.",
+        "CKAN API search (open.canada.ca/data/api/3/action/package_search) for more underwater video/photo datasets with positions; list best candidates."
+      ]
+    },
+    {
+      "key": "aadc",
+      "name": "Australian Antarctic Data Centre underwater imagery",
+      "priority": "P2 station",
+      "tier": "B",
+      "licence": "CC BY 4.0 by default; read each record; 'not specified' on a mirror => U",
+      "geo_precision": ["station"],
+      "geo_source": "Station positions in each record's metadata",
+      "media": ["images", "videos"],
+      "region": "Antarctica / Southern Ocean",
+      "entry_point": "https://data.aad.gov.au/aadc/about/condition_of_use.cfm",
+      "size": "Unknown",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Which records contain underwater imagery; positions per record",
+      "questions": [
+        "Find AADC metadata records with underwater/benthic photos or video (e.g. CEAMARC, Casey/Davis benthic surveys, towed video). List them with licence + size.",
+        "How are positions given (per station table, per image)?",
+        "Download mechanism (direct HTTP, data.aad.gov.au/eds/...)."
+      ]
+    },
+    {
+      "key": "sfishtrack",
+      "name": "SFishTrack (Mallorca)",
+      "priority": "P2 station",
+      "tier": "B",
+      "licence": "Verify on the data deposit",
+      "geo_precision": ["station"],
+      "geo_source": "Site-level coordinates (verify)",
+      "media": ["videos"],
+      "region": "Mallorca, Balearic Islands",
+      "entry_point": "https://www.nature.com/articles/s41597-026-07786-z",
+      "size": "54 videos",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Coordinates per site in paper or deposit",
+      "questions": [
+        "Data deposit location, licence, files, sizes.",
+        "Site coordinates (paper table/map or metadata) and mapping video -> site."
+      ]
+    },
+    {
+      "key": "hodor",
+      "name": "HODOR (Kiel Fjord underwater observatory)",
+      "priority": "P3 fixed site",
+      "tier": "B",
+      "licence": "CC BY (verify on PANGAEA.980001)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Camera coordinates from provider metadata (do not hardcode)",
+      "media": ["videos", "images"],
+      "region": "Kiel Fjord, Baltic Sea",
+      "entry_point": "https://doi.pangaea.de/10.1594/PANGAEA.980001",
+      "size": "Unknown; include full historical archive",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Coordinates in PANGAEA metadata; archive time range",
+      "questions": [
+        "PANGAEA.980001 + GitHub TAWilts/HODOR: files, licence, time range, camera coordinates/depth.",
+        "Is there a longer historical archive of the observatory (other PANGAEA records / years)?"
+      ]
+    },
+    {
+      "key": "obsea",
+      "name": "OBSEA seabed camera (Vilanova i la Geltru)",
+      "priority": "P3 fixed site",
+      "tier": "B",
+      "licence": "CC BY (read each yearly Zenodo record)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Station coordinates in ERDDAP / Zenodo metadata",
+      "media": ["images"],
+      "region": "Catalan coast, NW Mediterranean, 20 m",
+      "entry_point": "https://data.obsea.es/erddap/tabledap/OBSEA_seabed_station_pictures_L0a",
+      "size": "Yearly Zenodo records (https://zenodo.org/communities/obsea/records); include all years",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence per yearly record; ERDDAP columns",
+      "questions": [
+        "List all yearly OBSEA image records on Zenodo with licence + size (full history).",
+        "ERDDAP dataset columns (time, latitude, longitude, depth, url).",
+        "Are there other OBSEA cameras (e.g. buoy camera) with open images?"
+      ]
+    },
+    {
+      "key": "emso_azores",
+      "name": "EMSO-Azores Lucky Strike (SMOOVE / TEMPO)",
+      "priority": "P3 fixed site",
+      "tier": "B",
+      "licence": "CC BY 4.0 (SEANOE; verify)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Camera coordinates in SEANOE metadata",
+      "media": ["videos", "images"],
+      "region": "Lucky Strike vent field, Mid-Atlantic Ridge, 1,695 m",
+      "entry_point": "https://www.seanoe.org/data/00906/101838/",
+      "size": "Large tar archives (60 GB+); use range reads / sampling; include all years",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Yearly archives available; tar layout for range reads",
+      "questions": [
+        "All SEANOE records for TEMPO/SMOOVE imagery (all deployment years) with sizes and licences.",
+        "Tar/zip layout, file naming with timestamps; possible per-file access.",
+        "Camera coordinates + depth in metadata."
+      ]
+    },
+    {
+      "key": "onc",
+      "name": "Ocean Networks Canada (Oceans 3.0) cameras",
+      "priority": "P3 fixed site",
+      "tier": "B",
+      "licence": "CC BY 4.0 for ONC-owned data; partner data varies",
+      "geo_precision": ["fixed_site", "segment"],
+      "geo_source": "Device location code -> lat, lon, depth from the API (ROV dive video may have nav)",
+      "media": ["videos", "images"],
+      "region": "NE Pacific (Barkley Canyon, Endeavour, Saanich Inlet, Strait of Georgia), Cambridge Bay (Arctic)",
+      "entry_point": "https://oceannetworkscanada.github.io/Oceans3.0-API/API_Guide.html",
+      "size": "Very large; historical archive since ~2006; sample per day",
+      "needs_human": true,
+      "human_steps": "Free ONC account + API token (env ONC_TOKEN)",
+      "verify": "Device categories for cameras; archivefile API; licence per device",
+      "questions": [
+        "API calls to list camera devices (deviceCategoryCode VIDEOCAM, CAMERA, etc.), their locations (lat/lon/depth) and archive files (archivefiles endpoint).",
+        "Licence/citation per device; which are partner-owned.",
+        "Historical coverage per location; file formats (mp4, jpg) and sizes; how to sample N files per day."
+      ]
+    },
+    {
+      "key": "ooi_camhd",
+      "name": "OOI CamHD (Axial Seamount)",
+      "priority": "P3 fixed site",
+      "tier": "U",
+      "licence": "Unknown - hold until confirmed (check OOI data policy)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Instrument location from OOI metadata",
+      "media": ["videos"],
+      "region": "Axial Seamount, ASHES vent field, ~1,500 m",
+      "entry_point": "https://rawdata.oceanobservatories.org/files/RS03ASHS/PN03B/06-CAMHDA301/",
+      "size": "Very large (14-minute 1080p videos every 3 h since 2016); include history, sample",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "OOI licence; instrument coordinates",
+      "questions": [
+        "OOI data licence/terms (is it CC BY 4.0?).",
+        "Raw archive layout (year/month/day folders, file sizes), instrument coordinates/depth from OOI metadata API."
+      ]
+    },
+    {
+      "key": "brackish",
+      "name": "Brackish Dataset (Limfjorden)",
+      "priority": "P3 fixed site",
+      "tier": "C",
+      "licence": "CC BY-SA 4.0 (share-alike shard only)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Camera location from the dataset paper (Pedersen et al. 2019) / provider page",
+      "media": ["videos", "images"],
+      "region": "Limfjorden, Aalborg, Denmark",
+      "entry_point": "https://www.kaggle.com/datasets/aalborguniversity/brackish-dataset",
+      "size": "~89 videos / ~15k frames (verify)",
+      "needs_human": true,
+      "human_steps": "Kaggle API token (~/.kaggle/kaggle.json)",
+      "verify": "Camera coordinates from paper; alternative non-Kaggle mirror (AAU)",
+      "questions": [
+        "Licence and files on Kaggle; is there a non-Kaggle mirror?",
+        "Camera position (paper gives bridge location / depth?) -> coordinates with uncertainty."
+      ]
+    },
+    {
+      "key": "ozfish",
+      "name": "OzFish (AIMS BRUVS)",
+      "priority": "P4 geo from publication",
+      "tier": "U",
+      "licence": "Inconsistent: 'not specified' on data.gov.au vs CC BY 3.0 AU in the repository",
+      "geo_precision": ["none"],
+      "geo_source": "None per sample; read the publication/metadata for deployment sites",
+      "media": ["videos", "images"],
+      "region": "Australia (tropical/temperate reefs)",
+      "entry_point": "https://github.com/open-AIMS/ozfish",
+      "size": "~1,800 videos? (verify)",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence conflict; deployment coordinates",
+      "questions": [
+        "Resolve licence (repo LICENSE, AIMS metadata record, data.gov.au).",
+        "Read the publication / AIMS metadata: are BRUVS deployment sites or regions given? Can video IDs be mapped to sites (filename codes, metadata CSV)?",
+        "Assign approx coordinates per video/site with uncertainty (few km OK)."
+      ]
+    },
+    {
+      "key": "norfisk",
+      "name": "NorFisk",
+      "priority": "P4 geo from publication",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["none"],
+      "geo_source": "None per sample; read the publication for site(s)",
+      "media": ["images"],
+      "region": "Norway (verify)",
+      "entry_point": "",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Entry point, licence, site location",
+      "questions": [
+        "Find the NorFisk dataset publication and deposit (entry point URL), licence, contents.",
+        "Read the paper: where were images recorded (farm/site names, coordinates)? Map images to sites; approximate coordinates with uncertainty."
+      ]
+    },
+    {
+      "key": "deepsea_mot",
+      "name": "DeepSea MOT",
+      "priority": "P4 geo from publication",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["none"],
+      "geo_source": "None per sample; read the publication for dive locations",
+      "media": ["videos"],
+      "region": "Verify",
+      "entry_point": "",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Entry point, licence, source dives",
+      "questions": [
+        "Find the DeepSea MOT publication and deposit, licence, contents.",
+        "Which source videos/dives does it use (e.g. MBARI, NOAA OE)? If source dives are identified, derive dive locations (and per-frame nav if source provides it)."
+      ]
+    },
+    {
+      "key": "subpipe",
+      "name": "SubPipe (AUV pipeline inspection)",
+      "priority": "P4 geo from publication",
+      "tier": "B",
+      "licence": "Zenodo data CC BY 4.0 (code GPL) per earlier probe - confirm",
+      "geo_precision": ["none"],
+      "geo_source": "None published per spec; check AUV navigation logs and paper for mission location",
+      "media": ["images"],
+      "region": "Verify (Portugal?)",
+      "entry_point": "https://github.com/remaro-network/SubPipe-dataset",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Whether nav logs contain lat/lon; mission location from paper",
+      "questions": [
+        "Zenodo deposit, licence, files and sizes.",
+        "Does the dataset include AUV navigation (lat/lon, depth) usable per image? If not, mission location from the paper with uncertainty."
+      ]
+    },
+    {
+      "key": "smithsonian_oa",
+      "name": "Smithsonian Open Access (in-situ underwater images)",
+      "priority": "P4 geo from publication",
+      "tier": "A",
+      "licence": "CC0 for Open Access items",
+      "geo_precision": ["none", "region"],
+      "geo_source": "Object record place/locality fields (verify)",
+      "media": ["images"],
+      "region": "Global",
+      "entry_point": "https://www.si.edu/openaccess",
+      "size": "Verify",
+      "needs_human": true,
+      "human_steps": "api.data.gov API key for api.si.edu (or use the bulk metadata dump on GitHub/AWS)",
+      "verify": "How to find in-situ underwater photos (vs specimen photos); locality fields",
+      "questions": [
+        "How to query CC0 items that are in-situ underwater photographs (e.g. NMNH, deep-sea dives, coral reef surveys) rather than specimen photos.",
+        "Which record fields give place/locality/coordinates? How precise?",
+        "Bulk metadata dump availability (AWS open data / GitHub)."
+      ]
+    },
+    {
+      "key": "wikimedia_commons",
+      "name": "Wikimedia Commons underwater media (geotagged)",
+      "priority": "Optional",
+      "tier": "B",
+      "licence": "Per file: PD/CC0 (A), CC BY (B), CC BY-SA (C); exclude NC/ND/fair use",
+      "geo_precision": ["image", "region"],
+      "geo_source": "MediaWiki GeoData prop=coordinates (camera location)",
+      "media": ["images", "videos"],
+      "region": "Global",
+      "entry_point": "https://commons.wikimedia.org/w/api.php",
+      "size": "Verify (categories: Underwater photographs, Scuba diving, Coral reefs ...)",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Category tree; share geotagged; licence field (extmetadata LicenseShortName)",
+      "questions": [
+        "Which categories hold in-situ underwater photos/videos? Approx counts and share with coordinates.",
+        "API calls: categorymembers + prop=coordinates|imageinfo with extmetadata (licence, artist). Rate-limit etiquette.",
+        "Optional region fallback from description/category (e.g. 'Underwater photographs of the Red Sea')."
+      ]
+    },
+    {
+      "key": "bco_dmo",
+      "name": "BCO-DMO datasets with imagery",
+      "priority": "Optional",
+      "tier": "B",
+      "licence": "Mostly CC BY 4.0 (verify per dataset)",
+      "geo_precision": ["station", "image"],
+      "geo_source": "Varies by dataset; only datasets whose media come with coordinates",
+      "media": ["images", "videos"],
+      "region": "Global",
+      "entry_point": "https://www.bco-dmo.org/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Which datasets include media + coordinates",
+      "questions": [
+        "Search BCO-DMO for datasets with underwater photos/video (benthic, coral, ROV/AUV imagery) that have coordinates. List the best with licence and sizes."
+      ]
+    },
+    {
+      "key": "noaa_dsc",
+      "name": "NOAA Deep-Sea Coral & Sponge Database (image records)",
+      "priority": "Candidate",
+      "tier": "A",
+      "licence": "NOAA public domain; linked images from partners may differ - verify per record",
+      "geo_precision": ["image"],
+      "geo_source": "Record latitude/longitude/depth + ImageURL (verify)",
+      "media": ["images"],
+      "region": "US EEZ + global deep sea",
+      "entry_point": "https://www.ncei.noaa.gov/products/deep-sea-coral-sponge-database",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "ERDDAP endpoint; ImageURL field; image licence per provider",
+      "questions": [
+        "ERDDAP dataset (deepseacoraldata.noaa.gov) fields: ImageURL, latitude, longitude, DepthInMeters, ObservationDate, DataProvider.",
+        "Count of records with images; image hosting; licence of images from non-NOAA providers."
+      ]
+    },
+    {
+      "key": "noaa_habcam",
+      "name": "NOAA HabCam (NEFSC)",
+      "priority": "Candidate",
+      "tier": "A",
+      "licence": "NOAA public domain (verify)",
+      "geo_precision": ["image"],
+      "geo_source": "Per-image GPS (verify)",
+      "media": ["images"],
+      "region": "US Northeast shelf (Georges Bank, Mid-Atlantic Bight)",
+      "entry_point": "",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Whether any HabCam imagery is publicly downloadable",
+      "questions": [
+        "Is HabCam imagery publicly downloadable (NCEI, NOAA Fisheries, AWS Open Data, VIAME sample sets)? With per-image positions? Licence?"
+      ]
+    },
+    {
+      "key": "mareano",
+      "name": "MAREANO (Norway) seabed video and stills",
+      "priority": "Candidate",
+      "tier": "B",
+      "licence": "NLOD (verify)",
+      "geo_precision": ["station", "segment"],
+      "geo_source": "Video line/station positions (verify)",
+      "media": ["videos", "images"],
+      "region": "Norwegian shelf, Barents Sea",
+      "entry_point": "https://www.mareano.no/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Open download of imagery + positions",
+      "questions": [
+        "Can MAREANO stills/video be downloaded (IMR data portals, NMDC, PANGAEA)? Licence (NLOD?)",
+        "Positions per video line/station; formats; sizes."
+      ]
+    },
+    {
+      "key": "uk_seabed",
+      "name": "UK seabed imagery (JNCC / Cefas / BGS via MEDIN)",
+      "priority": "Candidate",
+      "tier": "B",
+      "licence": "Open Government Licence UK v3 (tier B, approved)",
+      "geo_precision": ["station", "image"],
+      "geo_source": "Station / image positions in survey metadata (verify)",
+      "media": ["images", "videos"],
+      "region": "UK continental shelf, offshore MPAs",
+      "entry_point": "https://portal.medin.org.uk/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Which collections are downloadable with positions",
+      "questions": [
+        "Find downloadable seabed still/video collections with positions under OGL: JNCC offshore surveys, Cefas Data Hub (data.cefas.co.uk), BGS, NatureScot, Marine Scotland. List best with sizes."
+      ]
+    },
+    {
+      "key": "seanoe_more",
+      "name": "SEANOE / Ifremer underwater imagery (beyond SMOOVE)",
+      "priority": "Candidate",
+      "tier": "B",
+      "licence": "Per record (mostly CC BY 4.0; exclude NC)",
+      "geo_precision": ["fixed_site", "station", "image"],
+      "geo_source": "Record metadata (verify)",
+      "media": ["images", "videos"],
+      "region": "Atlantic, Mediterranean, deep sea",
+      "entry_point": "https://www.seanoe.org/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Which SEANOE records hold imagery",
+      "questions": [
+        "Search SEANOE for image/video datasets (EMSO-Ligure, Momarsat, deep-sea annotation sets, Ifremer ROV/AUV frames, coastal observatories). List with licence, positions, sizes."
+      ]
+    },
+    {
+      "key": "baltic_scan",
+      "name": "Baltic & Nordic open underwater imagery (scan)",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Varies (CC BY, DL-DE-BY-2.0, NLOD, ...)",
+      "geo_precision": ["station", "image"],
+      "geo_source": "Varies",
+      "media": ["images", "videos"],
+      "region": "Baltic Sea, Kattegat/Skagerrak, Nordic waters",
+      "entry_point": "",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Discovery task: may spawn new dataset rows",
+      "questions": [
+        "Find openly downloadable underwater image/video with positions from: Finland (SYKE / VELMU drop video), Sweden (SLU, HaV, SMHI, Koster), Denmark (DCE/Aarhus, DTU Aqua), Poland (Pomerania, earlier probe), Germany (GEOMAR, IOW, BSH, Thuenen - DL-DE-BY-2.0), Estonia/Latvia/Lithuania. List each with licence, entry point, positions, sizes."
+      ]
+    },
+    {
+      "key": "ooi_cameras",
+      "name": "OOI other cameras (CAMDS digital still cameras etc.)",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Same question as CamHD (OOI data policy)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Instrument location from OOI metadata",
+      "media": ["images"],
+      "region": "Oregon shelf/slope (Endurance), Axial Seamount (Regional)",
+      "entry_point": "https://rawdata.oceanobservatories.org/files/",
+      "size": "Verify; include history",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Which camera instruments exist in raw archive",
+      "questions": [
+        "List OOI camera instruments (CAMDS, CAMHD, ZPLSC is not a camera) in the raw data archive with locations, years, file types, sizes.",
+        "OOI licence."
+      ]
+    },
+    {
+      "key": "catlin_seaview",
+      "name": "XL Catlin Seaview Survey / Global Reef Record",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["image", "station"],
+      "geo_source": "GPS per panorama/transect (verify)",
+      "media": ["images"],
+      "region": "Global coral reefs",
+      "entry_point": "",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence and downloadable imagery",
+      "questions": [
+        "Is Seaview Survey imagery downloadable (UQ eSpace, Global Reef Record)? Licence? Positions per image/transect?"
+      ]
+    },
+    {
+      "key": "niwa",
+      "name": "NIWA (New Zealand) seabed imagery",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["station"],
+      "geo_source": "Station positions (verify)",
+      "media": ["images", "videos"],
+      "region": "New Zealand EEZ, Ross Sea",
+      "entry_point": "",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Downloadable imagery + licence",
+      "questions": [
+        "Find openly downloadable NIWA seabed imagery (DTIS, towed camera, Ross Sea) or NZ open data with positions; licence."
+      ]
+    },
+    {
+      "key": "aims_ltmp",
+      "name": "AIMS Long-Term Monitoring / ReefCloud photo transects",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["station"],
+      "geo_source": "Reef/site coordinates (verify)",
+      "media": ["images"],
+      "region": "Great Barrier Reef, Western Australia",
+      "entry_point": "https://www.aims.gov.au/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Whether photos are openly downloadable",
+      "questions": [
+        "Are AIMS LTMP / ReefCloud benthic photos downloadable with site positions? Licence? (Also check AIMS data repository and IMOS/AODN.)"
+      ]
+    },
+    {
+      "key": "reef_life_survey",
+      "name": "Reef Life Survey photo-quadrats",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify (RLS data often CC BY 4.0)",
+      "geo_precision": ["station"],
+      "geo_source": "Survey site latitude/longitude (verify)",
+      "media": ["images"],
+      "region": "Global (mostly Australia)",
+      "entry_point": "https://reeflifesurvey.com/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Whether photo-quadrats are public (AODN, SQUIDLE+ overlap)",
+      "questions": [
+        "Are RLS photo-quadrat images public (AODN/IMOS, SQUIDLE+)? Licence, site coordinates, size; overlap with squidle_imos."
+      ]
+    },
+    {
+      "key": "moorea_lter",
+      "name": "Moorea Coral Reef LTER photo-quadrats",
+      "priority": "Candidate",
+      "tier": "B",
+      "licence": "LTER data policy, typically CC BY 4.0 (verify on EDI)",
+      "geo_precision": ["station"],
+      "geo_source": "LTER site coordinates (verify)",
+      "media": ["images"],
+      "region": "Moorea, French Polynesia",
+      "entry_point": "https://mcr.lternet.edu/",
+      "size": "Verify; historical since ~2005",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Whether raw photo-quadrat images are on EDI / downloadable",
+      "questions": [
+        "Find MCR LTER benthic photo-quadrat image packages (EDI / PASTA, Moorea Labeled Corals). Licence, sizes, years, site coordinates, mapping image -> site."
+      ]
+    },
+    {
+      "key": "gbif_marine_media",
+      "name": "GBIF / iNaturalist marine occurrence photos",
+      "priority": "Optional",
+      "tier": "B",
+      "licence": "Per media: keep CC0 / CC BY only",
+      "geo_precision": ["image"],
+      "geo_source": "Occurrence decimalLatitude/decimalLongitude + coordinateUncertaintyInMeters",
+      "media": ["images"],
+      "region": "Global",
+      "entry_point": "https://api.gbif.org/v1/occurrence/search",
+      "size": "Huge; needs an underwater filter (many photos are not underwater)",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Filter strategy for in-situ underwater photos; obscured coordinates",
+      "questions": [
+        "How to select likely in-situ underwater photos (marine taxa + datasets like Reef Life Survey/iNat with depth/diving fields)? Estimate precision of such a filter.",
+        "Media licence fields; coordinate obscuring (iNat geoprivacy); API limits / GBIF download API."
+      ]
+    },
+    {
+      "key": "schmidt_ocean",
+      "name": "Schmidt Ocean Institute ROV SuBastian imagery",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify (may be NC)",
+      "geo_precision": ["segment", "station"],
+      "geo_source": "ROV nav / dive positions (verify)",
+      "media": ["videos", "images"],
+      "region": "Global deep sea (Pacific, Atlantic, Indian)",
+      "entry_point": "https://schmidtocean.org/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence of video/frame grabs and nav availability",
+      "questions": [
+        "Licence of SOI video and imagery (data repository, MGDS/R2R, Zenodo). Is any downloadable under CC0/CC BY with nav?"
+      ]
+    },
+    {
+      "key": "jamstec_jedi",
+      "name": "JAMSTEC J-EDI deep-sea imagery",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify (likely non-commercial)",
+      "geo_precision": ["station"],
+      "geo_source": "Dive positions (verify)",
+      "media": ["videos", "images"],
+      "region": "NW Pacific, global",
+      "entry_point": "https://www.godac.jamstec.go.jp/jedi/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence (NC => exclude)",
+      "questions": [
+        "J-EDI terms of use: commercial use allowed? Bulk download allowed? If NC/ND, mark Excluded."
+      ]
+    },
+    {
+      "key": "coralnet",
+      "name": "CoralNet public sources",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify (images owned by source owners)",
+      "geo_precision": ["station"],
+      "geo_source": "Source latitude/longitude (verify)",
+      "media": ["images"],
+      "region": "Global coral reefs",
+      "entry_point": "https://coralnet.ucsd.edu/",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence per source; bulk download terms",
+      "questions": [
+        "CoralNet terms for public sources: is there an explicit licence per source? Is bulk download allowed? Source lat/lon fields."
+      ]
+    },
+    {
+      "key": "koster",
+      "name": "Koster Seafloor Observatory (Sweden)",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["station"],
+      "geo_source": "ROV/drop video positions (verify)",
+      "media": ["videos"],
+      "region": "Kosterhavet, Skagerrak, Sweden",
+      "entry_point": "https://github.com/ocean-data-factory-sweden",
+      "size": "Verify",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Open deposit + licence",
+      "questions": [
+        "Is the Koster Seafloor Observatory video archive openly deposited (SND, Zenodo, GBIF)? Licence, positions, sizes."
+      ]
+    },
+    {
+      "key": "love_observatory",
+      "name": "LoVe Ocean Observatory (Norway)",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify (NLOD?)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Node coordinates (verify)",
+      "media": ["images", "videos"],
+      "region": "Lofoten-Vesteralen, Norway",
+      "entry_point": "",
+      "size": "Verify; include history",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Open access to camera archive",
+      "questions": [
+        "Is the LoVe camera archive openly downloadable? Licence, node coordinates, years, sizes."
+      ]
+    },
+    {
+      "key": "smartbay",
+      "name": "SmartBay Galway Bay cabled observatory (Ireland)",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify (Marine Institute often CC BY 4.0)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Observatory coordinates (verify)",
+      "media": ["videos", "images"],
+      "region": "Galway Bay, Ireland",
+      "entry_point": "https://www.smartbay.ie/",
+      "size": "Verify; include history",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Open access to camera archive",
+      "questions": [
+        "Is the SmartBay/Marine Institute underwater camera archive downloadable? Licence, coordinates, years, sizes."
+      ]
+    },
+    {
+      "key": "aloha_aco",
+      "name": "ALOHA Cabled Observatory camera (Hawaii)",
+      "priority": "Candidate",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Observatory coordinates (verify)",
+      "media": ["images", "videos"],
+      "region": "Station ALOHA, ~4,700 m, north of Oahu",
+      "entry_point": "",
+      "size": "Verify; include history",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Open access + licence",
+      "questions": [
+        "Is the ACO camera archive openly downloadable? Licence, coordinates, years, sizes."
+      ]
+    },
+    {
+      "key": "deepfish",
+      "name": "DeepFish (JCU, tropical Australia)",
+      "priority": "P4 geo from publication",
+      "tier": "U",
+      "licence": "Verify",
+      "geo_precision": ["none"],
+      "geo_source": "Habitat/site names in the publication (verify)",
+      "media": ["images", "videos"],
+      "region": "Tropical Australia (20 habitats)",
+      "entry_point": "https://alzayats.github.io/DeepFish/",
+      "size": "~40k images (verify)",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence; site mapping from paper",
+      "questions": [
+        "Licence of DeepFish data. Read the paper: habitat/site locations; map folder codes -> sites -> approx coordinates."
+      ]
+    },
+    {
+      "key": "fish4knowledge",
+      "name": "Fish4Knowledge (Taiwan fixed cameras)",
+      "priority": "P4 geo from publication",
+      "tier": "U",
+      "licence": "Verify (possibly research-only)",
+      "geo_precision": ["fixed_site"],
+      "geo_source": "Camera sites from publication (Kenting, Hobihu, Lanyu)",
+      "media": ["videos", "images"],
+      "region": "Southern Taiwan / Orchid Island",
+      "entry_point": "https://groups.inf.ed.ac.uk/f4k/",
+      "size": "Verify; historical archive 2010-2013",
+      "needs_human": false,
+      "human_steps": "",
+      "verify": "Licence (NC => exclude)",
+      "questions": [
+        "Licence/terms for F4K video and ground-truth sets. Camera locations from the papers; video -> camera mapping."
+      ]
+    }
+  ]
+}

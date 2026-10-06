@@ -1,0 +1,31 @@
+[project]
+name = "aquasource"
+version = "0.1.0"
+description = "Collect open, geolocated underwater images and videos for model pretraining"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+report = ["matplotlib>=3.8"]
+exif = ["pillow>=10.0"]
+coast = ["global-land-mask>=1.0"]
+pangaea = ["pangaeapy>=1.0"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+aquasource = "aquasource.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aquasource"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

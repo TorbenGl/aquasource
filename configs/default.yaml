@@ -1,0 +1,40 @@
+# aquasource default configuration. Override with --config my.yaml (merged on top).
+
+# Where datasets are stored: <data_root>/<key>/{images,videos,metadata}
+# Overridden by the AQUASOURCE_DATA_ROOT environment variable or --data-root.
+data_root: ./data
+
+# Drop samples whose geo_precision is "none".
+require_geo: true
+# Minimum precision kept: image > segment > station = fixed_site > region > none.
+# "region" = location deduced from a publication with > ~5 km uncertainty.
+min_geo_precision: station
+
+# Licence tiers selected by default (A = PD/CC0, B = CC BY / OGL / DL-DE-BY / NLOD / Etalab).
+tiers: [A, B]
+# Tier C (CC BY-SA) goes to <data_root>/_sharealike/<key>/ and is off by default.
+include_sharealike: false
+
+# Coastline check for coordinates (needs the optional global-land-mask package):
+# off | flag (record on_land in extra) | reject (treat as a failed sanity check)
+coastline_check: flag
+
+# Default sample budget per source for `pilot`; `download` uses --budget or the
+# per-source budget below (null = no limit).
+pilot_budget: 500
+pilot_order: [benthicnet, pangaea_images, german_bight, noaa_ncrmp, squidle_imos]
+
+http:
+  min_interval_s: 1.0        # per host
+  max_retries: 5
+  timeout_s: 60
+  host_intervals: {}         # e.g. {"api.example.org": 2.0}
+
+# Per-source settings. enabled: false keeps a source out of dry-run/pilot by default.
+# options are passed to the adapter (see research/<key>.md for what each supports).
+sources:
+  benthicnet: {enabled: true, budget: null, options: {subset: 1m}}
+  pangaea_images: {enabled: true}
+  german_bight: {enabled: true}
+  noaa_ncrmp: {enabled: true}
+  squidle_imos: {enabled: true}
