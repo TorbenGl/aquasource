@@ -17,13 +17,18 @@ How it works
     * One pass over the CSV builds per-site and per-dataset coordinate
       statistics. They drive the precision classification of ``resolve_geo``
       (RLS and shared-coordinate sites are ``station``, one-coordinate datasets
-      are ``region``, everything else is ``image``).
+      are ``region``, everything else is ``image``). A site whose latitude and
+      longitude are transposed in the CSV (EAC_2021/Blue_rocks) gets geo
+      ``none``: the coordinate is not "corrected" by guessing.
     * ``discover`` yields rows in a budget-friendly order (``order=spread``):
       weighted round robin over source groups (share ~ sqrt(images), at most
       15 % for Catlin, RLS and SQUIDLE+), then datasets, then sites, then evenly
       spaced in time inside a site. Any prefix of the stream is well spread, so
       ``--budget N`` does not simply take the first N rows of the file.
-    * Item ids are ``<dataset>/<site>/<image>`` and are stable across runs.
+    * Item ids are ``<dataset>/<site>/<image>`` and are stable across runs. Images are
+      deduplicated by normalised ``url`` (https, lower-case host, percent-escapes decoded,
+      no trailing slash; the CSVs spell one file both as ``%20`` and as a space) and, for
+      ``subset=both``, also by item id.
 
 Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     subset            ``1m`` (default), ``labelled`` or ``both``. ``both`` yields the 1M rows first,
@@ -34,11 +39,12 @@ Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     datasets          only these dataset names (tar names without ``.tar``), case-insensitive.
     exclude_datasets  drop these dataset names.
     exclude_overlap   true drops sources that other aquasource keys also cover (SQUIDLE+, Catlin,
-                      PANGAEA, NOAA, USGS, NRCan, AADC).
+                      PANGAEA, NOAA incl. NOAA (NEFSC) HabCam, USGS, NRCan, AADC).
     all_tiers         true also yields tier U/X rows (audit only; the runner still drops them).
     resolve_pangaea   true (default): a ``pangaea-<id>`` set missing from the licence table is promoted
                       to its own PANGAEA record licence (metainfo_xml) when that record is CC BY or CC0.
-    media             ``original`` (default): GET the row ``url``; ``tar``: take the 512 px JPEG from the
+    media             ``original`` (default): GET the row ``url`` (https first, then the URL as listed);
+                      ``tar``: take the 512 px JPEG from the
                       per-dataset tar on FRDR (the whole tar is downloaded once and kept in
                       ``<root>/tars``); ``auto``: tar when it is at most ``tar_max_mb``, else original.
     tar_max_mb        size limit for ``media=auto`` (default 50).
@@ -47,6 +53,8 @@ Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     refresh_metadata  core option: re-download cached metadata.
 
 Always dropped: ``nrcan-71014`` (collages of 2-6 photos, the paper says it was excluded).
+Licence notes: RLS photo-quadrats carry their origin licence (CC BY 3.0 AU, IMAS record), not the CC BY 4.0
+that BenthicNet lists; Schmidt Ocean ``FK*`` sets are U; FathomNet / MGDS / USAP-DC rows are always X.
 Not handled here (needs image-level checks): black, water-column and on-deck frames.
 """
 
@@ -60,6 +68,7 @@ import logging
 import math
 import os
 import re
+import statistics
 import struct
 import tarfile
 import time
@@ -71,7 +80,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Iterator
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, unquote, urlparse
 
 import requests
 
@@ -103,14 +112,17 @@ BENTHICNET_CITATION = (
 )
 URLS_CITATION = "Misiuk, B., Lowe, S., Xu, I. (2024). BenthicNet-URLs. FRDR. https://doi.org/10.20383/103.0966"
 RLS_RECORD = "6e9c4980-1005-11dd-b28e-00188b4c0af8"
+RLS_LICENCE = "CC BY 3.0 AU"
+RLS_LICENCE_URL = "https://creativecommons.org/licenses/by/3.0/au/"
 RLS_NOTE = (
     "Reef Life Survey (RLS) Habitat Quadrats, IMAS metadata record "
     f"https://metadata.imas.utas.edu.au/geonetwork/srv/api/records/{RLS_RECORD} "
     "(Creative Commons Attribution 3.0 Australia License)"
 )
 
-# Image sets that other aquasource keys also cover (for exclude_overlap).
-OVERLAP_SOURCES = ("squidle+", "xl catlin seaview survey", "pangaea", "noaa", "usgs", "nrcan", "aadc")
+# Image sets that other aquasource keys also cover (for exclude_overlap). "NOAA (NEFSC)" is NOAA_HabCam_2015,
+# which the noaa_habcam key covers (research/benthicnet.md, Overlaps).
+OVERLAP_SOURCES = ("squidle+", "xl catlin seaview survey", "pangaea", "noaa", "noaa (nefsc)", "usgs", "nrcan", "aadc")
 # CSV `source` values that are NC/ND at origin whatever the table says (safety net).
 EXCLUDED_SOURCES = ("fathomnet", "mgds", "usap-dc")
 # Collages of 2-6 photos; the paper says the set was excluded, but its tar is present.
@@ -133,8 +145,15 @@ LICENCE_URLS = {
 CORE_COLS = ("url", "source", "dataset", "site", "image", "latitude", "longitude", "datetime", "gebco_bathymetry")
 REQUIRED_COLS = ("url", "source", "dataset", "site", "image", "latitude", "longitude")
 
-IMAGE_EXTS = {"jpg", "jpeg", "png", "tif", "tiff", "bmp", "gif", "webp"}
+# cr2: 12 Canon raw files in the 1M CSV; keep their real extension instead of calling them .jpg.
+IMAGE_EXTS = {"jpg", "jpeg", "png", "tif", "tiff", "bmp", "gif", "webp", "cr2"}
+# A site whose coordinate lies more than SWAP_FAR_DEG from the median of its dataset's sites while the swapped
+# (lon, lat) lies within SWAP_NEAR_DEG of it has latitude/longitude transposed in the provider CSV
+# (EAC_2021/Blue_rocks: -64.2142, 44.37277 is Blue Rocks, Nova Scotia at 44.37 N 64.21 W).
+SWAP_FAR_DEG = 5.0
+SWAP_NEAR_DEG = 2.0
 MAX_TAR_MEMBER_BYTES = 256 * 1024 * 1024
+MAX_OPEN_TARS = 8  # a spread run touches hundreds of tars; keep only a few file handles / member indexes
 MAX_MEMBER_USIZE = 4 * 1024**3
 
 
@@ -164,11 +183,18 @@ class _LicInfo:
 
 # ------------------------------------------------------------------ small helpers
 def norm_url(url: str) -> str:
-    """Key used to deduplicate images: http -> https, no trailing slash."""
+    """Key used to deduplicate images: http -> https, lower-case host, percent-escapes decoded, no trailing slash.
+
+    The CSVs spell the same file both ways (1M ``...IndentedHead (2).JPG/``, Labelled
+    ``...IndentedHead%20(2).JPG/``), so escapes must be decoded before comparing.
+    """
     u = url.strip()
-    if u.lower().startswith("http://"):
-        u = "https://" + u[7:]
-    return u.rstrip("/")
+    scheme, sep, rest = u.partition("://")
+    if not sep:
+        return unquote(u).rstrip("/")
+    host, slash, path = rest.partition("/")
+    scheme = "https" if scheme.lower() in ("http", "https") else scheme.lower()
+    return f"{scheme}://{host.lower()}{slash}{unquote(path)}".rstrip("/")
 
 
 def https_url(url: str) -> str:
@@ -189,6 +215,30 @@ def sanitize(name: str) -> str:
     for ch in ':*?"<>|':
         s = s.replace(ch, "")
     return s
+
+
+def bn_basename(image: str, url: str) -> str:
+    """Image file name as BenthicNet's ``row2basename`` builds it: sanitized ``image`` plus the URL extension."""
+    base = sanitize(image) or sanitize(url.rstrip("/").split("/")[-1])
+    ext = os.path.splitext(base)[1]
+    want = os.path.splitext(url.strip().rstrip("/"))[1]
+    if want and ext.lower() != want.lower():
+        base = (os.path.splitext(base)[0] if ext.lower() in (".jpg", ".jpeg") else base) + want
+    return base
+
+
+def tar_member_names(dataset: str, site: str, image: str, url: str) -> list[str]:
+    """Possible member paths of one image inside a 512 px tar, most likely first.
+
+    The tars hold ``<sanitize(dataset)>/<sanitize(site)>/<name>.jpg``. Whether ``<name>`` keeps the original
+    extension (``row2basename`` adds the URL's ``.tif`` / ``.png``) is not documented, so both are tried.
+    """
+    d, s = sanitize(dataset), sanitize(site)
+    img = sanitize(image)
+    full = bn_basename(image, url)
+    stem = os.path.splitext(full)[0]
+    names = [f"{d}/{s}/{img}.jpg", f"{d}/{s}/{stem}.jpg", f"{d}/{s}/{full}.jpg", f"{d}/{s}/{full}"]
+    return list(dict.fromkeys(names))
 
 
 def iso_time(value: str) -> str | None:
@@ -293,6 +343,13 @@ def spread_perm(m: int) -> tuple[int, ...]:
     return out
 
 
+def _deg_dist(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Rough distance in degrees (equirectangular); only used to spot transposed coordinates."""
+    dlon = abs(lon1 - lon2) % 360.0
+    dlon = min(dlon, 360.0 - dlon)
+    return math.hypot(lat1 - lat2, dlon * math.cos(math.radians((lat1 + lat2) / 2.0)))
+
+
 def sniff_image(path: Path) -> bool:
     """True when the first bytes look like an image (downloaded content is untrusted)."""
     with open(path, "rb") as fh:
@@ -338,6 +395,7 @@ class _Index:
         self.site_lon0 = array("d")
         self.site_has = bytearray()  # at least one valid coordinate
         self.site_multi = bytearray()  # more than one distinct coordinate
+        self.site_swapped = bytearray()  # latitude/longitude transposed in the provider CSV
         self.site_ds = array("I")
         self.site_hash = array("I")
         # datasets
@@ -368,6 +426,7 @@ class _Index:
         self.site_lon0.append(0.0)
         self.site_has.append(0)
         self.site_multi.append(0)
+        self.site_swapped.append(0)
         self.site_ds.append(di)
         self.site_hash.append(zlib.crc32(f"{dataset}\x00{site}".encode("utf-8", "replace")) & 0xFFFFFF)
         self.ds_nsites[di] += 1
@@ -387,12 +446,30 @@ class _Index:
         return di
 
     def finish_stats(self) -> None:
+        by_ds: dict[int, list[int]] = {}
         for si in range(len(self.site_n)):
+            if self.site_has[si]:
+                by_ds.setdefault(self.site_ds[si], []).append(si)
             if self.site_n[si] > 1:
                 di = self.site_ds[si]
                 self.ds_multi[di] += 1
                 if self.site_has[si] and not self.site_multi[si]:
                     self.ds_shared[di] += 1
+        self._flag_swapped(by_ds)
+
+    def _flag_swapped(self, by_ds: dict[int, list[int]]) -> None:
+        """Mark sites whose coordinate is transposed (far from the dataset, but the swapped pair fits it)."""
+        for sites in by_ds.values():
+            if len(sites) < 3:
+                continue
+            mlat = statistics.median(self.site_lat0[s] for s in sites)
+            mlon = statistics.median(self.site_lon0[s] for s in sites)
+            for s in sites:
+                lat, lon = self.site_lat0[s], self.site_lon0[s]
+                if abs(lon) > 90.0:
+                    continue
+                if _deg_dist(lat, lon, mlat, mlon) > SWAP_FAR_DEG and _deg_dist(lon, lat, mlat, mlon) < SWAP_NEAR_DEG:
+                    self.site_swapped[s] = 1
 
     # ---- precision (research/benthicnet.md "resolve_geo recipe", step 4)
     def classify_site(self, dataset: str, source: str, si: int) -> tuple[str, bool, float | None]:
@@ -406,7 +483,7 @@ class _Index:
         multi = self.ds_multi[di]
         station = (n > 1 and one_coord) or (n == 1 and multi > 0 and self.ds_shared[di] / multi >= 0.5)
         if station:
-            src = source.upper()
+            src = source.upper().split(" (")[0]  # "NOAA (NEFSC)" counts as NOAA
             if src in ("NOAA", "USGS", "USAP-DC"):
                 unc = 5000.0
             elif src == "MGDS" or dataset.lower().startswith("fk"):
@@ -419,6 +496,9 @@ class _Index:
     def precision_counts(self, sources: dict[int, str]) -> dict[str, int]:
         out: Counter = Counter()
         for (dataset, _site), si in self.site_tab.items():
+            if self.site_swapped[si]:
+                out["none"] += self.site_n[si]
+                continue
             prec, _inf, _unc = self.classify_site(dataset, sources.get(self.site_ds[si], ""), si)
             out[prec] += self.site_nc[si]
             out["none"] += self.site_n[si] - self.site_nc[si]
@@ -467,10 +547,12 @@ class BenthicNetAdapter(Adapter):
         self._table: dict[str, dict[str, str]] | None = None
         self._lic_memo: dict[tuple[str, str], _LicInfo] = {}
         self._indexes: dict[str, _Index] = {}
-        self._seen_1m: set[int] | None = None
+        # (url hashes, item id hashes) of the 1M CSV, kept for subset=both
+        self._seen_1m: tuple[set[int], set[int]] | None = None
         self._sizes: dict[str, dict[str, int]] = {}
         self._tar_lower: dict[str, dict[str, str]] = {}
-        self._tars: dict[Path, tuple[tarfile.TarFile, dict[str, tarfile.TarInfo]]] = {}
+        self._tars: dict[Path, tuple[tarfile.TarFile, dict[str, tarfile.TarInfo], dict[str, tarfile.TarInfo]]] = {}
+        self._https_broken: set[str] = set()  # hosts whose https endpoint failed at connection level
         o = self.options
         self._inc_sources = {s.lower() for s in as_list(o.get("sources"))}
         self._exc_sources = {s.lower() for s in as_list(o.get("exclude_sources"))}
@@ -505,6 +587,10 @@ class BenthicNetAdapter(Adapter):
             problems.append("option order must be spread or csv")
         if str(self.options.get("media", "original")) not in ("original", "tar", "auto"):
             problems.append("option media must be original, tar or auto")
+        try:
+            float(self.options.get("tar_max_mb", 50))
+        except (TypeError, ValueError):
+            problems.append("option tar_max_mb must be a number (MB)")
         return problems
 
     # ---------------------------------------------------------------- metadata IO
@@ -580,7 +666,10 @@ class BenthicNetAdapter(Adapter):
     def _remote_member(self, member: str) -> Iterator[bytes]:
         """Decompressed bytes of one zip member, fetched with HTTP Range requests (no full zip download)."""
         url = ZIP_URL
-        size = int(self.http.head(url).headers.get("Content-Length") or 0)
+        head = self.http.head(url)
+        if head.status_code >= 400:
+            raise HttpError(url, head.status_code, "HEAD failed; cannot read the zip central directory")
+        size = int(head.headers.get("Content-Length") or 0)
         if size <= 0:
             raise HttpError(url, None, "no Content-Length from HEAD; cannot read the zip central directory")
         tail_start = max(0, size - 65536)
@@ -680,12 +769,26 @@ class BenthicNetAdapter(Adapter):
 
         self._with_retries(run, f"fetching {member}")
 
-    def _derive_labelled(self, member: str, dest: Path) -> None:
-        """One row per image (first label row wins), CATAMI label columns dropped."""
+    def _derive_labelled(self, member: str, dest: Path, local: Path | None = None) -> None:
+        """One row per image (first label row wins), CATAMI label columns dropped.
+
+        Reads the zip member, or ``local`` (a Labelled CSV the human downloaded) when given.
+        """
+
+        def chunks() -> Iterator[bytes]:
+            if local is None:
+                yield from self._member_stream(member)
+                return
+            with open(local, "rb") as fh:
+                while True:
+                    chunk = fh.read(1 << 20)
+                    if not chunk:
+                        break
+                    yield chunk
 
         def run() -> None:
             tmp = dest.with_name(dest.name + ".part")
-            reader = csv.reader(_iter_lines(self._member_stream(member)))
+            reader = csv.reader(_iter_lines(chunks()))
             header = [h.strip() for h in next(reader)]
             col = {h: i for i, h in enumerate(header)}
             missing = [c for c in REQUIRED_COLS if c not in col]
@@ -718,12 +821,13 @@ class BenthicNetAdapter(Adapter):
                 if p.exists() and p.stat().st_size > 0:
                     return p
         local = self._local(sub.csv_name, f"finalized_csvs/{sub.csv_name}")
-        if local:
-            return local
+        if local and not sub.derived_name:
+            return local  # the 1M CSV is one row per image: read it in place
         raw.mkdir(parents=True, exist_ok=True)
         if sub.derived_name:
+            # Labelled is one row per label (1.3 GB, quoted multi-value fields): always build the compact copy
             dest = raw / sub.derived_name
-            self._derive_labelled(sub.csv_name, dest)
+            self._derive_labelled(sub.csv_name, dest, local)
         else:
             dest = raw / sub.csv_name
             self._save_plain(sub.csv_name, dest)
@@ -752,9 +856,11 @@ class BenthicNetAdapter(Adapter):
                     note="SOI cruise listed as CC BY by BenthicNet but CC BY-NC-SA 4.0 at origin",
                 )
             if dataset.upper().startswith("RLS_") and tier in ("A", "B"):
+                # The rights holder (RLS / IMAS) licenses the photo-quadrats as CC BY 3.0 AU; BenthicNet cannot
+                # relicense them, so the origin licence and URL are stored (still tier B either way).
                 return _LicInfo(
-                    f"{listed} (BenthicNet table; RLS origin record states CC BY 3.0 Australia)",
-                    tier, "record", url, citation, listed, note=RLS_NOTE,
+                    f"{RLS_LICENCE} (RLS origin record; BenthicNet table lists {listed})",
+                    classify(RLS_LICENCE), "record", RLS_LICENCE_URL, citation, listed, note=RLS_NOTE,
                 )
             return _LicInfo(listed, tier, "record", url, citation, listed)
         m = PANGAEA_RX.match(dataset)
@@ -786,20 +892,41 @@ class BenthicNetAdapter(Adapter):
 
         label, lname, uri = tag("label"), tag("name"), tag("URI")
         tier = combine(classify(label or lname), classify(uri)) if uri else classify(label or lname)
-        cit = re.search(r"<md:citation\b.*?</md:citation>", xml, re.S)
         citation = ""
-        if cit:
-            c = cit.group(0)
-            authors = []
-            for a in re.findall(r"<md:author\b.*?</md:author>", c, re.S):
-                last, first = tag("lastName", a), tag("firstName", a)
-                authors.append(f"{last}, {first[:1]}." if first else last)
-            title, year, doi = tag("title", c), tag("year", c), re.findall(r"<md:URI>(.*?)</md:URI>", c)[-1:]
-            citation = f"{', '.join(authors)} ({year}): {title}. PANGAEA, {doi[0] if doi else ''}".strip()
+        if tier in ("A", "B", "C"):  # only promoted sets need the provider's citation
+            citation = self._pangaea_citation(ds_id, xml)
         return _LicInfo(
             label or lname, tier, "record", uri or None, citation, "",
             note=f"not in BenthicNet's table; licence read from its PANGAEA record {ds_id}",
         )
+
+    def _pangaea_citation(self, ds_id: str, xml: str) -> str:
+        """The citation PANGAEA asks for (``?format=citation_text``); built from the metainfo XML if unavailable."""
+        try:
+            text = self.ctx.cached_text(
+                f"https://doi.pangaea.de/10.1594/PANGAEA.{ds_id}?format=citation_text", f"pangaea_{ds_id}_citation.txt"
+            ).strip()
+            if text and "doi.org/10.1594/PANGAEA." in text and "<" not in text:
+                return re.sub(r"\s+", " ", text)
+        except Exception as exc:  # fall back to the XML below
+            log.info("benthicnet: PANGAEA citation_text for %s unavailable: %s", ds_id, exc)
+        cit = re.search(r"<md:citation\b.*?</md:citation>", xml, re.S)
+        if not cit:
+            return ""
+
+        def tag(name: str, text: str) -> str:
+            m = re.search(rf"<md:{name}\b[^>]*>(.*?)</md:{name}>", text, re.S)
+            return re.sub(r"\s+", " ", m.group(1)).strip() if m else ""
+
+        c = cit.group(0)
+        authors = []
+        for a in re.findall(r"<md:author\b.*?</md:author>", c, re.S):
+            last, first = tag("lastName", a), tag("firstName", a)
+            authors.append(f"{last}, {first}" if first else last)
+        body = re.sub(r"<md:author\b.*?</md:author>", "", c, flags=re.S)  # author URIs are not the DOI
+        title, year, doi, src = tag("title", body), tag("year", body), tag("URI", body), tag("source", body)
+        # same form as PANGAEA's citation_text: "Last, First; ... (Year): Title [dataset]. <Source>, PANGAEA, <DOI>"
+        return f"{'; '.join(authors)} ({year}): {title} [dataset]. {src + ', ' if src else ''}PANGAEA, {doi}".strip()
 
     def _lic_info(self, dataset: str, source: str) -> _LicInfo:
         key = (dataset.lower(), source.lower())
@@ -841,7 +968,8 @@ class BenthicNetAdapter(Adapter):
         if self._exc_overlap and s in OVERLAP_SOURCES:
             return "overlaps other catalog keys"
         info = self._lic_info(dataset, source)
-        if info.tier not in ("A", "B") and not self._all_tiers:
+        wanted = {"A", "B"} | ({"C"} & set(self.ctx.config.selected_tiers))  # C only with include_sharealike
+        if info.tier not in wanted and not self._all_tiers:
             return f"tier {info.tier}"
         return None
 
@@ -867,6 +995,8 @@ class BenthicNetAdapter(Adapter):
             ncols = len(header)
             c_dt = c.get("datetime", -1)
             seen: set[int] = set()
+            seen_ids: set[int] = set()
+            c_img = c["image"]
             decision: dict[tuple[str, str], str | None] = {}
             pos = len(head)
             for raw in fh:
@@ -889,6 +1019,8 @@ class BenthicNetAdapter(Adapter):
                     idx.skipped["duplicate url"] += 1
                     continue
                 seen.add(h)
+                ih = hash((dataset, site, f[c_img].strip()))
+                seen_ids.add(ih)
                 dkey = (source, dataset)
                 if dkey not in decision:
                     decision[dkey] = self._drop_reason(source, dataset)
@@ -916,7 +1048,7 @@ class BenthicNetAdapter(Adapter):
                         idx.ds_has[di], idx.ds_lat0[di], idx.ds_lon0[di] = 1, lat, lon
                     elif lat != idx.ds_lat0[di] or lon != idx.ds_lon0[di]:
                         idx.ds_multi_coord[di] = 1
-                if skip is not None and h in skip:
+                if skip is not None and (h in skip[0] or ih in skip[1]):  # same url, or same dataset/site/image
                     idx.skipped["already in 1M"] += 1
                     continue
                 t = parse_time(f[c_dt]) if c_dt >= 0 else None
@@ -926,7 +1058,7 @@ class BenthicNetAdapter(Adapter):
                 idx.row_t.append(tk)
         idx.finish_stats()
         if sub is SUB_1M and str(self.options.get("subset", "1m")).lower() == "both":
-            self._seen_1m = seen
+            self._seen_1m = (seen, seen_ids)
         idx.order = self._build_order(idx)
         self._write_summary(idx, time.time() - t0)
         return idx
@@ -994,6 +1126,7 @@ class BenthicNetAdapter(Adapter):
             "bad_rows": idx.bad_rows,
             "datasets": len(idx.ds_tab),
             "sites": len(idx.site_tab),
+            "sites_with_swapped_lat_lon": [f"{d}/{s}" for (d, s), si in idx.site_tab.items() if idx.site_swapped[si]],
             "geo_precision_rows": idx.precision_counts(sources),
             "seconds": round(seconds, 1),
         }
@@ -1061,6 +1194,12 @@ class BenthicNetAdapter(Adapter):
         si = idx.site_tab.get((dataset, site))
         if si is None:
             return Geo(lat, lon, depth, "image", base, False, None)
+        if idx.site_swapped[si]:
+            # Not corrected: swapping back would be our guess, and GEBCO depth was sampled at the wrong point too.
+            return Geo.none(
+                geo_source=f"{base}: rejected, latitude/longitude transposed in the provider CSV "
+                f"(site {site} lies > {SWAP_FAR_DEG:g} deg from the rest of {dataset}; the swapped pair fits it)"
+            )
         prec, inferred, unc = idx.classify_site(dataset, row.get("source", ""), si)
         return Geo(lat, lon, depth, prec, base, inferred, unc)
 
@@ -1089,51 +1228,77 @@ class BenthicNetAdapter(Adapter):
             name = str(cand.extra["tar"])
             hit = self._tar_lookup(kind, name)
             tar_name, size = hit if hit else (name, None)
-            member = f"{sanitize(cand.extra['dataset'])}/{sanitize(cand.extra['site'])}/{sanitize(cand.extra['image'])}.jpg"
+            members = tar_member_names(cand.extra["dataset"], cand.extra["site"], cand.extra["image"], cand.extra.get("url", ""))
             url = f"{FILES}/01_BenthicNet/images/{kind}/individual_dataset_tars/{quote(tar_name)}"
-            return MediaRef(url=url, ext="jpg", expected_bytes=size, extra={"route": "tar", "member": member, "kind": kind, "tar_name": tar_name})
+            return MediaRef(
+                url=url, ext="jpg", expected_bytes=size,
+                extra={"route": "tar", "member": members[0], "members": members, "kind": kind, "tar_name": tar_name},
+            )
         return MediaRef(url=cand.media_url, ext=cand.ext or url_ext(cand.media_url), extra={"route": "original", "fallback": cand.extra.get("url")})
 
     def fetch_media(self, cand: Candidate, ref: MediaRef, dest: Path) -> tuple[int, str]:
         if ref.extra.get("route") == "tar":
             return self._fetch_from_tar(ref, dest)
-        try:
-            nbytes, sha = self.http.download(ref.url, dest, expected_bytes=ref.expected_bytes)
-        except HttpError:
-            alt = ref.extra.get("fallback")
-            if not alt or alt == ref.url:
-                raise
-            dest.with_name(dest.name + ".part").unlink(missing_ok=True)  # do not resume across hosts/schemes
-            nbytes, sha = self.http.download(alt, dest, expected_bytes=ref.expected_bytes)
-        if not sniff_image(dest):
+        # https first (the CSV lists many plain http:// URLs), then the URL exactly as listed. The listed URL is
+        # also tried when https answers with something that is not an image (e.g. a default https vhost page).
+        urls = [ref.url]
+        alt = ref.extra.get("fallback")
+        if alt and alt != ref.url:
+            host = urlparse(ref.url).netloc.lower()
+            urls = [alt] if host in self._https_broken else [ref.url, alt]
+        last: Exception | None = None
+        for i, url in enumerate(urls):
+            if i:
+                dest.with_name(dest.name + ".part").unlink(missing_ok=True)  # do not resume across hosts/schemes
+            try:
+                nbytes, sha = self.http.download(url, dest, expected_bytes=ref.expected_bytes)
+            except HttpError as exc:
+                last = exc
+                if i == 0 and len(urls) > 1 and exc.status is None:
+                    # connection / TLS failure after all retries: go straight to the listed URL for this host
+                    self._https_broken.add(urlparse(url).netloc.lower())
+                continue
+            if sniff_image(dest):
+                return nbytes, sha
             dest.unlink(missing_ok=True)
-            raise HttpError(ref.url, None, "response is not an image (content sniff failed)")
-        return nbytes, sha
+            last = HttpError(url, None, "response is not an image (content sniff failed)")
+        assert last is not None
+        raise last
 
-    def _tar_index(self, path: Path) -> dict[str, tarfile.TarInfo]:
-        if path not in self._tars:
+    def _open_tar(self, path: Path) -> tuple[tarfile.TarFile, dict[str, tarfile.TarInfo], dict[str, tarfile.TarInfo]]:
+        """Open tar with its member index (exact and lower-case names); at most MAX_OPEN_TARS stay open."""
+        hit = self._tars.pop(path, None)
+        if hit is None:
             tf = tarfile.open(path, "r:")
-            self._tars[path] = (tf, {m.name: m for m in tf.getmembers() if m.isfile()})
-        return self._tars[path][1]
+            members = {m.name: m for m in tf.getmembers() if m.isfile()}
+            lower: dict[str, tarfile.TarInfo] = {}
+            for k, v in members.items():
+                lower.setdefault(k.lower(), v)
+            hit = (tf, members, lower)
+            while len(self._tars) >= MAX_OPEN_TARS:
+                old = next(iter(self._tars))
+                self._tars.pop(old)[0].close()
+        self._tars[path] = hit  # most recently used last
+        return hit
 
     def _fetch_from_tar(self, ref: MediaRef, dest: Path) -> tuple[int, str]:
-        kind, tar_name, member = ref.extra["kind"], ref.extra["tar_name"], ref.extra["member"]
+        kind, tar_name = ref.extra["kind"], ref.extra["tar_name"]
+        names = ref.extra.get("members") or [ref.extra["member"]]
         tar_path = next((p for p in self._tar_candidates(tar_name, kind) if p.is_file()), None)
         if tar_path is None:
             safe = re.sub(r"[^\w.()+ -]", "_", tar_name)
             tar_path = self.ctx.layout.root / "tars" / kind / f"{hashlib.sha1(tar_name.encode()).hexdigest()[:8]}_{safe}"
             if not tar_path.exists():
                 self.http.download(ref.url, tar_path, expected_bytes=ref.expected_bytes)
-        index = self._tar_index(tar_path)
-        info = index.get(member)
-        if info is None:  # tolerate case / separator differences in the stored path
-            low = {k.lower(): v for k, v in index.items()}
-            info = low.get(member.lower())
+        tf, members, lower = self._open_tar(tar_path)
+        info = next((members[n] for n in names if n in members), None)
+        if info is None:  # tolerate case differences in the stored path (.JPG / .jpg)
+            info = next((lower[n.lower()] for n in names if n.lower() in lower), None)
         if info is None:
-            raise RuntimeError(f"{member} not found in {tar_path.name}")
+            raise RuntimeError(f"{names[0]} not found in {tar_path.name} (also tried {names[1:]})")
+        member = info.name
         if info.size > MAX_TAR_MEMBER_BYTES:
             raise RuntimeError(f"{member} is {info.size} bytes; refusing to extract")
-        tf = self._tars[tar_path][0]
         src = tf.extractfile(info)
         if src is None:
             raise RuntimeError(f"{member} is not a regular file")

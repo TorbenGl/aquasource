@@ -74,7 +74,8 @@ def test_discover_1m_default_yields_only_ab_rows(tmp_path):
     assert c.origin_url == "https://doi.org/10.20383/103.01241"
     assert c.timestamp == "2021-04-19T00:00:00+00:00"
     assert c.extra["url"].startswith("http://rls.tpac.org.au/")
-    assert c.extra["url_norm"] == "https://rls.tpac.org.au/pq/912354604/WA167_NEB_5m_N_19042021_Rat%20Island%20East%20(1).JPG"
+    # percent-escapes decoded: the CSVs spell the same file with %20 and with a literal space
+    assert c.extra["url_norm"] == "https://rls.tpac.org.au/pq/912354604/WA167_NEB_5m_N_19042021_Rat Island East (1).JPG"
     assert c.extra["datetime_synthetic"] is True and c.extra["tar"] == "RLS_Abrolhos (WA)_2021.tar"
 
 
@@ -89,9 +90,10 @@ def test_licence_of_rls_row(tmp_path):
     a = make_adapter(tmp_path)
     c = by_id(a.discover())["RLS_Abrolhos (WA)_2021/912354604/WA167_NEB_5m_N_19042021_Rat Island East (1)"]
     lic_ = a.resolve_licence(c)
+    # the rights holder's licence (IMAS RLS record: CC BY 3.0 AU) wins over BenthicNet's CC-BY-4.0 listing
     assert lic_.tier == "B" and lic_.level == "record"
-    assert lic_.name.startswith("CC-BY-4.0") and "3.0 Australia" in lic_.name
-    assert lic_.url == "https://creativecommons.org/licenses/by/4.0/"
+    assert lic_.name == "CC BY 3.0 AU (RLS origin record; BenthicNet table lists CC-BY-4.0)"
+    assert lic_.url == "https://creativecommons.org/licenses/by/3.0/au/"
     assert "Lowe, S.C., Misiuk, B., Xu, I." in lic_.attribution and "doi.org/10.20383/103.01241" in lic_.attribution
     assert "RLS_Abrolhos (WA)_2021" in lic_.attribution and "6e9c4980-1005-11dd-b28e-00188b4c0af8" in lic_.attribution
     assert "BenthicNet-URLs" not in lic_.attribution
@@ -216,37 +218,68 @@ def test_licence_table_is_decoded_as_cp1252(lic_adapter):
     assert table["fathomnet_misc"]["tier"] == "X" and table["hawaii_archipelago_2019"]["tier"] == "A"
 
 
+class Offline(Http):
+    """Every request fails like an unreachable host (exercises fallbacks without touching the network)."""
+
+    def request(self, method, url, **kw):
+        raise HttpError(url, None, "offline")
+
+
+# Licence and citation blocks of https://doi.pangaea.de/10.1594/PANGAEA.615784?format=metainfo_xml (eMail / orcid
+# elements dropped), and the record's ?format=citation_text, both retrieved 2026-10-06.
+PG615784_XML = (
+    '<md:MetaData><md:citation id="dataset615784">'
+    '<md:author id="dataset.author10805"><md:lastName>Schewe</md:lastName><md:firstName>Ingo</md:firstName>'
+    "<md:URI>https://www.awi.de/en/about-us/organisation/staff/single-view/ingo-schewe.html</md:URI></md:author>"
+    '<md:author id="dataset.author925"><md:lastName>Soltwedel</md:lastName><md:firstName>Thomas</md:firstName>'
+    "<md:URI>https://www.awi.de/en/about-us/organisation/staff/single-view/thomas-soltwedel.html</md:URI></md:author>"
+    "<md:year>2007</md:year><md:title>Sea-bed photographs (benthos) from the AWI-Hausgarten area along OFOS profile PS62/161-3</md:title>"
+    '<md:type id="dataset.reftype10" includeInCitation="true">dataset</md:type>'
+    '<md:source id="dataset.sourceinst32" semanticURI="https://ror.org/032e6b942" type="institution">'
+    "Alfred Wegener Institute, Helmholtz Centre for Polar and Marine Research, Bremerhaven</md:source>"
+    "<md:URI>https://doi.org/10.1594/PANGAEA.615784</md:URI></md:citation>"
+    '<md:license id="license101"><md:label>CC-BY-3.0</md:label><md:name>Creative Commons Attribution 3.0 Unported</md:name>'
+    "<md:URI>https://creativecommons.org/licenses/by/3.0/</md:URI></md:license></md:MetaData>"
+)
+PG615784_CITATION = (
+    "Schewe, Ingo; Soltwedel, Thomas (2007): Sea-bed photographs (benthos) from the AWI-Hausgarten area along OFOS "
+    "profile PS62/161-3 [dataset]. Alfred Wegener Institute, Helmholtz Centre for Polar and Marine Research, "
+    "Bremerhaven, PANGAEA, https://doi.org/10.1594/PANGAEA.615784"
+)
+
+
+def _pangaea_cand(ds):
+    return Candidate("benthicnet", f"{ds}/s/i", "image", "https://e.invalid/i.jpg", "o",
+                     extra={"dataset": ds, "bn_source": "PANGAEA", "site": "s", "image": "i", "url": "http://e.invalid/i.jpg"})
+
+
 def test_pangaea_set_missing_from_table_is_read_at_record_level(tmp_path):
     a = make_adapter(tmp_path, seed=("table",), resolve_pangaea=True)
-    # licence and citation blocks of https://doi.pangaea.de/10.1594/PANGAEA.615784?format=metainfo_xml
-    (a.ctx.layout.raw / "pangaea_615784_metainfo.xml").write_text(
-        '<md:MetaData><md:citation id="dataset615784">'
-        "<md:author><md:lastName>Schewe</md:lastName><md:firstName>Ingo</md:firstName><md:URI>https://www.awi.de/a</md:URI></md:author>"
-        "<md:author><md:lastName>Soltwedel</md:lastName><md:firstName>Thomas</md:firstName><md:URI>https://www.awi.de/b</md:URI></md:author>"
-        "<md:year>2007</md:year><md:title>Sea-bed photographs (benthos) from the AWI-Hausgarten area along OFOS profile PS62/161-3</md:title>"
-        "<md:URI>https://doi.org/10.1594/PANGAEA.615784</md:URI></md:citation>"
-        '<md:license id="license101"><md:label>CC-BY-3.0</md:label><md:name>Creative Commons Attribution 3.0 Unported</md:name>'
-        "<md:URI>https://creativecommons.org/licenses/by/3.0/</md:URI></md:license></md:MetaData>",
-        encoding="utf-8",
-    )
+    (a.ctx.layout.raw / "pangaea_615784_metainfo.xml").write_text(PG615784_XML, encoding="utf-8")
+    (a.ctx.layout.raw / "pangaea_615784_citation.txt").write_text(PG615784_CITATION + "\n", encoding="utf-8")
+    # synthetic record with an NC licence (no citation needed: it is never promoted)
     (a.ctx.layout.raw / "pangaea_907013_metainfo.xml").write_text(
         '<md:MetaData><md:license id="l"><md:label>CC-BY-NC-4.0</md:label><md:URI>https://creativecommons.org/licenses/by-nc/4.0/</md:URI></md:license></md:MetaData>',
         encoding="utf-8",
     )
-
-    def make(ds):
-        return Candidate("benthicnet", f"{ds}/s/i", "image", "https://e.invalid/i.jpg", "o",
-                         extra={"dataset": ds, "bn_source": "PANGAEA", "site": "s", "image": "i", "url": "http://e.invalid/i.jpg"})
-
-    got = a.resolve_licence(make("pangaea-615784"))
+    got = a.resolve_licence(_pangaea_cand("pangaea-615784"))
     assert (got.tier, got.level, got.name) == ("B", "record", "CC-BY-3.0")
     assert got.url == "https://creativecommons.org/licenses/by/3.0/"
-    assert "Schewe, I., Soltwedel, T. (2007): Sea-bed photographs" in got.attribution
-    assert "PANGAEA, https://doi.org/10.1594/PANGAEA.615784" in got.attribution
-    assert a.resolve_licence(make("pangaea-907013")).tier == "X"  # a record-level NC licence never gets promoted
+    assert got.attribution.startswith(PG615784_CITATION)  # exactly the citation PANGAEA asks for
+    assert a.resolve_licence(_pangaea_cand("pangaea-907013")).tier == "X"  # a record-level NC licence never gets promoted
     # without the option the set stays U
     b = make_adapter(tmp_path / "off", seed=("table",))
-    assert b.resolve_licence(make("pangaea-615784")).tier == "U"
+    assert b.resolve_licence(_pangaea_cand("pangaea-615784")).tier == "U"
+
+
+def test_pangaea_citation_falls_back_to_the_metainfo_xml(tmp_path):
+    a = make_adapter(tmp_path, seed=("table",), http=Offline(dry_run=True), resolve_pangaea=True)
+    (a.ctx.layout.raw / "pangaea_615784_metainfo.xml").write_text(PG615784_XML, encoding="utf-8")
+    got = a.resolve_licence(_pangaea_cand("pangaea-615784"))
+    assert got.tier == "B" and got.attribution.startswith(PG615784_CITATION)  # same text, built from the XML
+    # an unreachable record is logged and stays U
+    assert a.resolve_licence(_pangaea_cand("pangaea-999999")).tier == "U"
+    assert "PANGAEA metainfo unavailable" in a.ctx.layout.failures_jsonl.read_text()
 
 
 # -------------------------------------------------------------------------- missing coordinates
@@ -344,6 +377,11 @@ def test_filters_and_always_dropped_sets(tmp_path):
     assert {c.extra["dataset"] for c in run(tmp_path / "s", sources="SEAM")} == {"Bay_of_Fundy_2019"}
     assert {c.extra["dataset"] for c in run(tmp_path / "x", exclude_datasets=["bastos"])} == {"Bay_of_Fundy_2019", "Hawaii_Archipelago_2019"}
     assert {c.extra["bn_source"] for c in run(tmp_path / "o", exclude_overlap=True)} == {"SEAM", "LaboGeo (Marine Geosciences Lab/UFES)"}
+    # NOAA_HabCam_2015 has source "NOAA (NEFSC)" and is covered by the noaa_habcam key
+    habcam = ["http://e.invalid/h.jpg,NOAA (NEFSC),NOAA_HabCam_2015,Georges_Bank,h,41.25885,-69.23932,2015-01-01 00:00:00,-85.7528,1"]
+    a = make_adapter(tmp_path / "hab", seed=("table",), exclude_overlap=True, all_tiers=True)
+    (a.ctx.layout.raw / "benthicnet_unlabelled_sub.csv").write_text("\n".join([header, *habcam]) + "\n", encoding="utf-8")
+    assert list(a.discover()) == []
 
 
 def test_helpers():
@@ -353,9 +391,17 @@ def test_helpers():
     assert share["Catlin"] == pytest.approx(0.15) and sum(share.values()) == pytest.approx(1.0)
     assert share["NGU"] > share["PANGAEA"] > 0
     assert bn.norm_url("http://rls.tpac.org.au/pq/1/a.JPG/") == "https://rls.tpac.org.au/pq/1/a.JPG"
+    assert bn.norm_url("http://RLS.tpac.org.au/pq/1/a%20(2).JPG/") == bn.norm_url("https://rls.tpac.org.au/pq/1/a (2).JPG")
     assert bn.sanitize(" Fundy: Bay/2019? ") == "Fundy Bay-2019"
     assert bn.sanitize("Café.") == "Caf"
     assert bn.url_ext("http://x/y/z.TIF") == "tif" and bn.url_ext("http://x/y/z.JPG/") == "jpg" and bn.url_ext("http://x/y") == "jpg"
+    assert bn.url_ext("https://x/y/IMG_0001.CR2") == "cr2"  # 12 Canon raw files in the 1M CSV keep their extension
+    # tar member names: <image>.jpg first, then BenthicNet's row2basename form (URL extension kept)
+    assert bn.tar_member_names("Bay_of_Fundy_2019", "BoF_001", "20170413_BoF_001_4K_133626_040", f"{IMG}/x/20170413_BoF_001_4K_133626_040.tif") == [
+        "Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040.jpg",
+        "Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040.tif.jpg",
+        "Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040.tif",
+    ]
 
 
 # ----------------------------------------------------------------------------- readiness / estimate
@@ -474,35 +520,52 @@ def test_local_dir_with_a_downloaded_zip_needs_no_network(tmp_path):
 # ------------------------------------------------------------------------------------------- media
 def test_media_original_route_and_content_sniff(tmp_path):
     a = make_adapter(tmp_path)
-    c = next(iter(a.discover()))
+    cands = list(a.discover())
+    c = cands[0]
     ref = a.resolve_media(c)
     assert ref.url == c.media_url and ref.ext == "jpg" and c.extra["image_route"] == "original"
+    assert ref.url.startswith("https://") and ref.extra["fallback"] == c.extra["url"] and c.extra["url"].startswith("http://")
 
     calls = []
+    jpeg, html = b"\xff\xd8\xff\xe0jpegdata", b"<html>login</html>"
 
-    def fake_download(url, dest, **kw):
-        calls.append(url)
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(b"<html>login</html>" if url.startswith("https") else b"\xff\xd8\xff\xe0jpegdata")
-        return dest.stat().st_size, "sha"
+    def serve(https_body, http_body=jpeg):
+        def fake_download(url, dest, **kw):
+            calls.append(url)
+            if isinstance(https_body, Exception) and url.startswith("https"):
+                raise https_body
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(https_body if url.startswith("https") else http_body)
+            return dest.stat().st_size, "sha"
+        return fake_download
 
-    a.http.download = fake_download
     dest = tmp_path / "out" / "x.jpg"
-    # https answers with an HTML page: refused and removed; the listed http URL is not retried after a sniff failure
+    # https answers 200 with an HTML page: not stored; the URL exactly as listed (http) is tried next
+    a.http.download = serve(html)
+    n, _sha = a.fetch_media(c, ref, dest)
+    assert calls == [c.media_url, c.extra["url"]] and dest.read_bytes() == jpeg and n == len(jpeg)
+    # both answer with HTML: refused, nothing left behind
+    calls.clear()
+    dest.unlink()
+    a.http.download = serve(html, html)
     with pytest.raises(HttpError, match="not an image"):
         a.fetch_media(c, ref, dest)
-    assert not dest.exists() and calls == [c.media_url]
-
-    def https_fails(url, dest, **kw):
-        if url.startswith("https"):
-            calls.append(url)
-            raise HttpError(url, None, "tls")
-        return fake_download(url, dest)  # the listed http:// URL
-
-    a.http.download = https_fails
+    assert not dest.exists() and len(calls) == 2
+    # https 404: fall back to http for this file only
     calls.clear()
-    n, _sha = a.fetch_media(c, ref, dest)
-    assert n > 0 and calls == [c.media_url, c.extra["url"]] and dest.exists()
+    a.http.download = serve(HttpError(c.media_url, 404, "not found"))
+    a.fetch_media(c, ref, dest)
+    assert calls == [c.media_url, c.extra["url"]] and a._https_broken == set()
+    # https unreachable after all retries (status None): later files of that host go straight to the listed URL
+    calls.clear()
+    dest.unlink()
+    a.http.download = serve(HttpError(c.media_url, None, "gave up after 6 attempts: SSLError"))
+    a.fetch_media(c, ref, dest)
+    assert calls == [c.media_url, c.extra["url"]] and a._https_broken == {"rls.tpac.org.au"}
+    calls.clear()
+    c2 = cands[1]
+    a.fetch_media(c2, a.resolve_media(c2), tmp_path / "out" / "y.jpg")
+    assert calls == [c2.extra["url"]]
 
 
 def _tar_bytes(members):
@@ -584,3 +647,123 @@ def test_runner_dry_run_on_the_fixture(tmp_path):
     assert (s2.candidates, s2.selected) == (9, 4) and s2.dropped == {"tier U not selected": 5}
     s3 = run_source(cfg, "benthicnet", "dry-run", options={"subset": "11m"})
     assert s3.error and "no published image list" in s3.error and s3.candidates == 0
+
+
+# ------------------------------------------------------------------------- review additions (real rows)
+# Rows copied verbatim from the live CSVs (finalized_csvs.zip, retrieved 2026-10-06): 1M line 184877 and the same
+# image in the Labelled CSV (compact one-row-per-image form the adapter derives; values unchanged).
+PPB_1M = ("http://rls.tpac.org.au/pq/912353209/PPB37_ATC2m03022020IndentedHead (2).JPG/,SQUIDLE+,RLS_Port Phillip Bay_2020,"
+          "912353209,PPB37_ATC2m03022020IndentedHead (2),-38.13998,144.71,2020-02-02 13:00:01,0.0,11.0")
+PPB_LAB = ("http://rls.tpac.org.au/pq/912353209/PPB37_ATC2m03022020IndentedHead%20(2).JPG/,SQUIDLE+,RLS_Port Phillip Bay_2020,"
+           "912353209,PPB37_ATC2m03022020IndentedHead (2),-38.1399775,144.710024878876,2020-02-02 13:00:01,0.0")
+# 1M lines 382417-382418 (EAC_2021/Blue_rocks: latitude and longitude transposed by the provider; Blue Rocks,
+# Nova Scotia is at 44.37 N 64.21 W) and two rows of each of four other EAC_2021 sites (lines 1186890-1, 1186437-8,
+# 1186831-2, 382422-3).
+EAC_ROWS = [
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/Blue_rocks/DSCF0304 130839 11Jul20.jpeg,EAC,EAC_2021,Blue_rocks,DSCF0304 130839 11Jul20,-64.2142,44.37277,2020-07-11,-4245.0,14.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/Blue_rocks/DSCF0304 130848 11Jul20.jpeg,EAC,EAC_2021,Blue_rocks,DSCF0304 130848 11Jul20,-64.21427,44.37276,2020-07-11,-4245.0,14.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/Owls_Head/G0164434.JPG,EAC,EAC_2021,Owls_Head,G0164434,44.70989,-62.82338,2020-08-10,0.0,23.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/Owls_Head/G0164435.JPG,EAC,EAC_2021,Owls_Head,G0164435,44.70984,-62.82316,2020-08-10,0.0,23.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/Port_Medway/G0040183.JPG,EAC,EAC_2021,Port_Medway,G0040183,44.14795,-64.60516,2019-10-16,0.0,25.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/Port_Medway/G0040198.JPG,EAC,EAC_2021,Port_Medway,G0040198,44.14805,-64.60474,2019-10-16,0.0,25.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/West_Jeddore/G0111323.JPG,EAC,EAC_2021,West_Jeddore,G0111323,44.72545,-63.00793,2020-07-24,-3.511383,23.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/West_Jeddore/G0111243.JPG,EAC,EAC_2021,West_Jeddore,G0111243,44.72294,-63.00839,2020-07-24,-9.976167,23.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/North_River/G0030442.JPG,EAC,EAC_2021,North_River,G0030442,46.29596,-60.61515,2020-09-08,0.0,25.0",
+    "https://www.frdr-dfdr.ca/repo/files/9/published/publication_961/submitted_data/01_Data/images/EAC_2021/North_River/G0030435.JPG,EAC,EAC_2021,North_River,G0030435,46.2965,-60.61568,2020-09-08,0.0,25.0",
+]
+# Real rows of the live all_licenses_refs.csv for the two datasets above (appended to the fixture excerpt).
+EXTRA_TABLE_ROWS = b"SQUIDLE+,RLS_Port Phillip Bay_2020,CC-BY-4.0,\r\nEAC,EAC_2021,CC-BY-4.0,\r\n"
+HEADER_1M = "url,source,dataset,site,image,latitude,longitude,datetime,gebco_bathymetry,emu"
+HEADER_LAB_COMPACT = "url,source,dataset,site,image,latitude,longitude,datetime,gebco_bathymetry"
+
+
+def _adapter_with_rows(path, rows_1m=(), rows_lab=(), **opts):
+    a = make_adapter(path, seed=(), **opts)
+    (a.ctx.layout.raw / "all_licenses_refs.csv").write_bytes(TABLE.read_bytes() + EXTRA_TABLE_ROWS)
+    (a.ctx.layout.raw / "benthicnet_unlabelled_sub.csv").write_text("\n".join([HEADER_1M, *rows_1m]) + "\n", encoding="utf-8")
+    (a.ctx.layout.raw / "benthicnet_labelled_images.csv").write_text("\n".join([HEADER_LAB_COMPACT, *rows_lab]) + "\n", encoding="utf-8")
+    return a
+
+
+def test_subset_both_dedupes_percent_encoded_urls_and_item_ids(tmp_path):
+    a = _adapter_with_rows(tmp_path, [PPB_1M], [PPB_LAB], subset="both")
+    cands = list(a.discover())
+    assert [c.extra["bn_subset"] for c in cands] == ["1m"]  # the %20 spelling in Labelled is the same file
+    assert cands[0].extra["url_norm"] == bn.norm_url(PPB_LAB.split(",")[0])
+    # synthetic: same dataset/site/image under a different URL is still the same item id (one sample_id) -> skipped
+    other = PPB_LAB.replace("/pq/912353209/", "/pq/other/")
+    b = _adapter_with_rows(tmp_path / "ids", [PPB_1M], [other], subset="both")
+    assert [c.extra["bn_subset"] for c in b.discover()] == ["1m"]
+    summary = json.loads((b.ctx.layout.metadata / "index_labelled.json").read_text())
+    assert summary["rows_skipped"] == {"already in 1M": 1}
+    # alone, the Labelled row is yielded under the same item id (so a later 1M run sees the same sample_id)
+    c = _adapter_with_rows(tmp_path / "lab", [], [PPB_LAB], subset="labelled")
+    assert [x.item_id for x in c.discover()] == [cands[0].item_id]
+
+
+def test_transposed_site_coordinates_are_rejected_not_corrected(tmp_path):
+    a = _adapter_with_rows(tmp_path, EAC_ROWS)
+    got = {c.extra["image"]: c for c in a.discover()}
+    assert len(got) == 10
+    blue = a.resolve_geo(got["DSCF0304 130839 11Jul20"])
+    assert (blue.lat, blue.lon, blue.depth_m, blue.geo_precision, blue.geo_inferred) == (None, None, None, "none", False)
+    assert "transposed" in blue.geo_source and blue.geo_source.startswith(GEO_1M)
+    owls = a.resolve_geo(got["G0164434"])
+    assert (owls.lat, owls.lon, owls.depth_m, owls.geo_precision, owls.geo_inferred) == (44.70989, -62.82338, None, "image", False)
+    jed = a.resolve_geo(got["G0111323"])
+    assert (jed.lat, jed.lon, jed.depth_m, jed.geo_precision) == (44.72545, -63.00793, 3.5, "image")
+    summary = json.loads((a.ctx.layout.metadata / "index_1m.json").read_text())
+    assert summary["sites_with_swapped_lat_lon"] == ["EAC_2021/Blue_rocks"]
+    assert summary["geo_precision_rows"] == {"none": 2, "image": 8}
+    # the real fixture rows (FK*, RLS) are never flagged
+    b = make_adapter(tmp_path / "fx", all_tiers=True)
+    list(b.discover())
+    assert json.loads((b.ctx.layout.metadata / "index_1m.json").read_text())["sites_with_swapped_lat_lon"] == []
+
+
+def test_tar_member_with_the_original_extension_kept_and_open_tar_limit(tmp_path, monkeypatch):
+    a = make_adapter(tmp_path, subset="labelled", media="tar")
+    (a.ctx.layout.raw / "frdr_tar_sizes_labelled.json").write_text(json.dumps({"contents": []}), encoding="utf-8")
+    got = by_id(a.discover())
+    bof = got["Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040"]
+    ref = a.resolve_media(bof)
+    assert ref.extra["members"][:2] == [
+        "Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040.jpg",
+        "Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040.tif.jpg",
+    ]
+    img = b"\xff\xd8\xff\xe0bof"
+    tars = {
+        "Bay_of_Fundy_2019.tar": _tar_bytes({"Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040.tif.jpg": img}),
+        "Bastos.tar": _tar_bytes({"Bastos/A_001_margem/A_001_margem.jpg": img}),
+        "Chesterfield.tar": _tar_bytes({"Chesterfield/CI_01/CI_01_H00001.JPG": img}),  # case differs
+    }
+
+    def fake_download(url, dest, **kw):
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(tars[url.rsplit("/", 1)[1]])
+        return 1, "sha"
+
+    a.http.download = fake_download
+    monkeypatch.setattr(bn, "MAX_OPEN_TARS", 2)
+    opened = []
+    for item in ("Bay_of_Fundy_2019/BoF_001/20170413_BoF_001_4K_133626_040", "Bastos/A_001_margem/A_001_margem", "Chesterfield/CI_01/CI_01_H00001"):
+        c = got[item]
+        dest = tmp_path / "out" / f"{len(opened)}.jpg"
+        assert a.fetch_media(c, a.resolve_media(c), dest)[0] == len(img) and dest.read_bytes() == img
+        opened.append(next(reversed(a._tars.values()))[0])
+    assert len(a._tars) == 2 and opened[0].closed and not opened[2].closed  # least recently used tar was closed
+
+
+def test_local_dir_labelled_csv_is_reduced_to_one_row_per_image(tmp_path):
+    local = tmp_path / "from_human"
+    local.mkdir()
+    shutil.copyfile(CSV_LAB, local / "benthicnet_labelled.csv")
+    shutil.copyfile(TABLE, local / "all_licenses_refs.csv")
+    a = make_adapter(tmp_path / "run", seed=(), local_dir=str(local), subset="labelled")
+    assert len(list(a.discover())) == 7
+    derived = a.ctx.layout.raw / "benthicnet_labelled_images.csv"
+    assert derived.read_text().splitlines()[0] == HEADER_LAB_COMPACT and len(derived.read_text().splitlines()) == 8
+
+
+def test_check_ready_rejects_a_bad_tar_size_limit(tmp_path):
+    assert make_adapter(tmp_path, tar_max_mb="fifty").check_ready() == ["option tar_max_mb must be a number (MB)"]
