@@ -1,0 +1,27 @@
+/* DATA DESCRIPTION:
+Citation:	Purser, Autun; Bodur, Yasemin V; Ramalo, Sofia; Stratmann, Tanja; Schoening, Timm (2021): Seafloor images of undisturbed and disturbed polymetallic nodule province seafloor collected along OFOS profile SO268/1_21-1 RV SONNE SO268/1 cruise [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.935896, 
+	In: Purser, A et al. (2021): Seafloor images of undisturbed and disturbed polymetallic nodule province seafloor collected during RV SONNE expeditions SO268/1+2 [dataset publication series]. PANGAEA, https://doi.org/10.1594/PANGAEA.935856
+Keyword(s):	CCZ; deep sea ecology; deep sea mining; polymetallic nodules
+Project(s):	JPI Oceans - Ecological Aspects of Deep-Sea Mining (JPIO-MiningImpact) (URI: https://miningimpact.geomar.de)
+Funding:	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812A: JPI-O MiningImpact: Monitoringkonzepte für einen Manganknollenabbau in der Tiefsee (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0812A)
+	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812B: JPI-O MiningImpact: Modellierung der Ausbreitung und Ablagerung einer Sedimentfahne (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0812B)
+	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812C: JPI-O MiningImpact: IT-Service-Systeme und Software für die Überwachung mariner Ökosysteme im Kontext von Unterwasserbergbau (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0812C)
+	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812D: JPI-O MiningImpact: Auswirkungen von Manganknollen-Abbau auf benthische Megafauna- und Mikroorganismen-Gemeinschaften und ihre Funktionen (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0812D)
+	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812E: JPI-O MiningImpact: Molekulare Biodiversitätserfassung (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0812E)
+	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812F: JPI-O MiningImpact: Auswirkungen von Manganknollenbergbau auf biogeochemische Prozesse und die Ausbreitung von Stoffen in der Tiefsee (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0812F)
+	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812G: JPI-O MiningImpact: Großskaliger Umwelteinfluss eines Manganknollenkollektors auf den Spurenelementkreislauf und die Bildung und das Verhalten von Sediment-Plumes (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0812G)
+	Federal Ministry of Education and Research (BMBF) (URI: https://www.bmftr.bund.de), grant/award no. 03F0812H: JPI-O MiningImpact: (URI: https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=03F0707H)
+Coverage:	LATITUDE: 11.930071 * LONGITUDE: -117.021376
+	DATE/TIME START: 2019-03-04T08:37:24 * DATE/TIME END: 2019-03-04T19:39:26
+	MINIMUM ELEVATION: -4093.9 m * MAXIMUM ELEVATION: -4093.9 m
+Event(s):	SO268/1_21-1 (OFOS-02) * LATITUDE: 11.929500 * LONGITUDE: -117.040817 * DATE/TIME: 2019-03-04T08:30:24 * ELEVATION: -4093.9 m * LOCATION: Clarion-Clipperton Fraction Zone, North East Pacific Ocean * CAMPAIGN: SO268/1 * BASIS: Sonne_2 (URI: https://uol.de/icbm/forschungsplattformen-schiffe/sonne) * METHOD/DEVICE: Ocean Floor Observation System (OFOS) * COMMENT: GER Trial; Position USBL; Start Transect
+Comment:	Positioning failed for this dive. All images should be logged as the same position.
+License:	Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)
+Status:	Curation Level: Basic curation (URI: https://wiki.pangaea.de/wiki/Curation_levels)
+Size:	3923 data points
+Files:	All files referred to in data matrix can be downloaded in one go as ZIP <https://download.pangaea.de/dataset/935896/allfiles.zip> or TAR <https://download.pangaea.de/dataset/935896/allfiles.tar> (PANGAEA user account required). To download single files, use the filename from data matrix appended to "https://download.pangaea.de/dataset/935896/files/".
+*/
+Date/Time	Longitude	Latitude	Binary
+2019-03-04T08:37:24	-117.021376	11.930071	00952019-03-0408-37-24.JPG
+2019-03-04T08:37:34	-117.021376	11.930071	00962019-03-0408-37-34.JPG
+2019-03-04T08:37:44	-117.021376	11.930071	00972019-03-0408-37-44.JPG

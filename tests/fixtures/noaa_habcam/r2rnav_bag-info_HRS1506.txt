@@ -1,0 +1,31 @@
+Source-Organization: Rolling Deck to Repository (R2R) Program
+contributor-name_0: Data Manager
+contributor-email_0: info@rvdata.us
+contributor-role_0: pointOfContact
+contributor-name_1: Uribe, Rafael
+contributor-email_1: 
+contributor-role_1: resourceProvider
+contributor-name_2: Clark, Dru
+contributor-email_2: dru.clark@gmail.com
+contributor-role_2: processor
+External-Description: Environmental sensor data and documentation from U.S. oceanographic research vessels
+Bagging-Date: 2025-11-18T16:07:32Z
+External-Identifier: doi:10.7284/616376
+Bag-Size: 43.82 MB
+Payload-Oxum: 45947875.3
+Bag-Group-Identifier: HRS1506
+Bag-Count: 1 of 1
+Internal-Sender-Identifier: HRS1506_616376_r2rnav.tar
+Internal-Sender-Description: Fileset 616376 (r2rnav data) from cruise HRS1506
+R2R-CruiseID: HRS1506
+R2R-CruiseDOI: doi:10.7284/906846
+R2R-FilesetID: 616376
+R2R-FormatID: 100157
+R2R-ProcessType: processed
+R2R-FilesetInformation: https://service.rvdata.us/info/fileset/616376
+R2R-ParentFileset: 122564
+R2R-ParentDeviceType: gnss
+R2R-ParentDeviceModel: com.furuno GP-37
+R2R-ParentFilesetInformation: https://service.rvdata.us/info/fileset/122564
+R2R-License: Creative Commons - Public Domain Mark 1.0
+R2R-Manifest: file-info.txt has fileid,md5sum,path,size(byte)

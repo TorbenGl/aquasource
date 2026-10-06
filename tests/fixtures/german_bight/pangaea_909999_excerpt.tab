@@ -1,0 +1,23 @@
+/* DATA DESCRIPTION:
+Citation:	Papenmeier, Svenja; Hass, H Christian (2019): Video observation during R/V Heincke cruise HE436 in the German Bight with link to raw data files [dataset]. Alfred Wegener Institute - Wadden Sea Station Sylt, PANGAEA, https://doi.org/10.1594/PANGAEA.909999
+Abstract:	At 44 stations in the German Bitght underwater videos were recorded with Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition to ground truth sidescan sonar backscatter data. The R/V Heincke was drifting while data acquisition.
+Related to:	Michaelis, Rune; Hass, H Christian; Mielck, Finn; Papenmeier, Svenja; Sander, Lasse; Ebbe, Brigitte; Gutow, Lars; Wiltshire, Karen Helen (2019): Hard-substrate habitats in the German Bight (South-Eastern North Sea) observed using drift videos. Journal of Sea Research, 144, 78-84, https://doi.org/10.1016/j.seares.2018.11.009
+	Michaelis, Rune; Hass, H Christian; Mielck, Finn; Papenmeier, Svenja; Sander, Lasse; Gutow, Lars; Wiltshire, Karen Helen (2019): Epibenthic assemblages of hard-substrate habitats in the German Bight (south-eastern North Sea) described using drift videos. Continental Shelf Research, 175, 30-41, https://doi.org/10.1016/j.csr.2019.01.011
+	Papenmeier, Svenja; Hass, H Christian (2018): Detection of stones in marine habitats combining simultaneous hydroacoustic surveys. Geosciences, 8(8), 279, https://doi.org/10.3390/geosciences8080279
+Coverage:	MEDIAN LATITUDE: 54.724753 * MEDIAN LONGITUDE: 6.829526 * SOUTH-BOUND LATITUDE: 54.222480 * WEST-BOUND LONGITUDE: 5.942333 * NORTH-BOUND LATITUDE: 54.981470 * EAST-BOUND LONGITUDE: 7.288450
+	DATE/TIME START: 2014-11-17T03:05:51 * DATE/TIME END: 2014-11-18T13:59:47
+Event(s):	HE436-track * LATITUDE START: 53.563960 * LONGITUDE START: 8.548130 * LATITUDE END: 53.563960 * LONGITUDE END: 8.548130 * DATE/TIME START: 2014-11-09T00:00:00 * DATE/TIME END: 2014-11-20T00:00:00 * CAMPAIGN: HE436 * BASIS: Heincke (URI: https://doi.org/10.17815/jlsrf-3-164) * METHOD/DEVICE: Underway cruise track measurements (CT)
+Parameter(s):	LATITUDE (Latitude) * GEOCODE * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	LONGITUDE (Longitude) * GEOCODE * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	DATE/TIME (Date/Time) * GEOCODE * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	Depth, bathymetric [m] (Bathy depth) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	Uniform resource locator/link to movie (URL movie) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828) * METHOD/DEVICE: Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition * COMMENT: avi
+	Uniform resource locator/link to movie (URL movie) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828) * METHOD/DEVICE: Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition * COMMENT: MP4
+License:	Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)
+Size:	132 data points
+*/
+Latitude	Longitude	Date/Time	Bathy depth [m]	URL movie (avi)	URL movie (MP4)
+54.79000	6.00733	2014-11-17T03:05:51	41.6	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE436/He436_001.avi	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE436/HE436_GOPRO_001.MP4
+54.90007	6.64600	2014-11-17T12:54:18		https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE436/He436_012-1.avi	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE436/HE436_GOPRO_012-1.MP4
+54.83072	6.78097	2014-11-17T14:46:06	41.4	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE436/He436_014.avi	
+54.69607	7.10933	2014-11-18T00:29:18	33.2	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE436/He436_029.avi	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE436/HE436_GOPRO_029.MP4

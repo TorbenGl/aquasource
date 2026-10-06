@@ -1,0 +1,76 @@
+MAREANO licence statements, quoted verbatim (retrieved 2026-10-06).
+Whitespace/line breaks were normalised when extracting text from HTML; wording is unchanged.
+
+1) HI (Havforskningsinstituttet) media archive / Imageshop -- hosts the MAREANO image files
+   URL: https://hi.imageshop.no/1636899/StaticText/TermsOfUse
+   Level: collection (whole archive); individual asset pages show only a credit line, no licence.
+   ---
+   Vilkår for bruk
+   Generell lisens
+   Bileta i dette arkivet er til fri deling og gjenbruk med CC-BY-SA 4.0 lisens dersom ikkje anna er oppgitt.
+     [link target: https://creativecommons.org/licenses/by-sa/4.0/deed.no]
+   Andre lisensar
+   Bileta under Illustrasjonar og teikningar og Kart er lisensierte med CC BY-NC-ND 4.0 lisens.
+     [link target: https://creativecommons.org/licenses/by-nc-nd/4.0/deed.no]
+   Kreditering
+   Bileta skal krediterast slik: Fotografens namn / Havforskingsinstituttet. Korrekt kreditering finn du i copyright‑feltet på det enkelte biletet.
+   Ta kontakt med mediearkiv@hi.no dersom du har spørsmål.
+   ---
+   Per-asset credit field example (https://hi.imageshop.no/1636899/Detail/Index/8626077, asset HAV-006059):
+   "Kreditering: MAREANO / Havforskningsinstituttet"
+
+2) Geonorge metadata record "Mareanobilder, biologi" (the point layer mareano_stasjoner:bilder_biologi)
+   URL: https://kartkatalog.geonorge.no/api/getdata/305852ff-5686-4454-ab11-b3ef55a9f5c7
+   Level: record (the geolocated image-link layer)
+   ---
+   "AccessConstraints": "Åpne data",
+   "OtherConstraintsLink": "https://creativecommons.org/licenses/by/4.0/",
+   "OtherConstraintsLinkText": "Creative Commons BY 4.0 (CC BY 4.0)",
+   "UseConstraints": "Lisens"
+   Abstract: "Punktdatasett med lenker til bilder av biologi fra havbunnskartlegging i regi av Mareano.
+   Bildene er et lite utvalg stillbilder fra video, som er tatt med slept videorigg eller ROV, under havbunnskartlegging."
+   ---
+
+3) Geonorge metadata record "Mareano videostasjoner" (station positions)
+   URL: https://kartkatalog.geonorge.no/api/getdata/8bb5b637-51a8-4f0d-905a-378493ae2354
+   Level: record
+   ---
+   "AccessConstraints": "Åpne data",
+   "OtherConstraintsLink": "http://data.norge.no/nlod/no/1.0",
+   "OtherConstraintsLinkText": "Norsk lisens for offentlige data (NLOD)",
+   "UseLimitations": "Ingen begrensninger på bruk er oppgitt."
+   ---
+
+4) mareano.no "Biologiske data" page (all HI MAREANO map-layer datasets)
+   URL: https://www.mareano.no/kart-og-data/biologisk-data_test
+   Level: collection
+   ---
+   "Datasettene kan fritt brukes under disse lisensvilkårene: CC BY 4.0 og NLOD - fritt bruk mot at kilden oppgis."
+   Heading "Rådata fra Havforskningsinstituttet", text:
+   "Alle rådata som samles inn på Havforskningsinstituttet sine skip, herunder Mareano sine geologi- og biologitokt,
+   er tilgjengelig omkring en uke etter toktslutt. Dette er rådata, de er ikke kvalitetssikret og heller ikke KI-klare,
+   og vil dermed ha et begrenset bruksområde. De er tilgjengelig for eksterne via en Amazon S3 løsning, kontakt
+   datahjelp@hi.no for veiledning og bruker."
+   ---
+
+5) MAREANO cruise report 2026007006 (raw video archive access; no licence stated)
+   URL: https://www.hi.no/en/hi/nettrapporter/toktrapport-en-2026-17 (section 9 - Data Availability)
+   ---
+   "Video files (with metadata/navigation data) and Seabed observations from the field (georeferenced observation
+   logs for geology and biology) are shared upon request within one month after the cruise. These data are shared via
+   a file-sharing solution upon request datahjelp@hi.no with Subject: “S3 aksess til toktdata” or “S3 access to cruise
+   data”. Ask for access to the folder \\ces.hi.no\cruise_data\2026\S2026007006_PKRONPRINSHAAKON_9566 at
+   https://s3browser.hi.no ."
+   ---
+
+6) mareano.no website footer (applies to the website itself, not to the data)
+   URL: https://www.mareano.no/bilder-og-video
+   ---
+   "Kopirett Mareano - samler kunnskap om havet 2019. Alle rettigheter reservert"
+   ---
+
+7) NGU photo archive (27 MAREANO-tagged items, mostly maps / on-deck; not used)
+   URL: https://foto.ngu.no/fotoweb/views/terms-and-conditions
+   ---
+   "Bilder som er lagt ut i NGUs fotoarkiv, kan benyttes etter CC BY 4.0"
+   ---

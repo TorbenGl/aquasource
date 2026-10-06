@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><md:MetaData xmlns:md="http://www.pangaea.de/MetaData" version="2026-04-13">
+<md:citation id="dataset898338">
+<md:author id="dataset.author10386">
+<md:lastName>Gutt</md:lastName>
+<md:firstName>Julian</md:firstName>
+<md:URI>https://www.awi.de/en/about-us/organisation/staff/single-view/julian-gutt.html</md:URI>
+<md:orcid>0000-0003-3773-9370</md:orcid>
+</md:author>
+<md:year>2019</md:year>
+<md:title>Sea-bed videos (benthos) from the shelf west of Svalbard along ROV profile HE153/1274-3</md:title>
+<md:type id="dataset.reftype10" includeInCitation="true">dataset</md:type>
+<md:URI>https://doi.org/10.1594/PANGAEA.898338</md:URI>
+<md:dateTime>2019-02-12T19:04:07</md:dateTime>
+<md:parentURI>https://doi.org/10.1594/PANGAEA.898362</md:parentURI>
+</md:citation>
+<md:reference dataciteRelType="References" group="210" id="refds320055" relationType="Related to" relationTypeId="12">
+<md:author id="refds320055.author10386">
+<md:lastName>Gutt</md:lastName>
+<md:firstName>Julian</md:firstName>
+<md:URI>https://www.awi.de/en/about-us/organisation/staff/single-view/julian-gutt.html</md:URI>
+<md:orcid>0000-0003-3773-9370</md:orcid>
+</md:author>
+<md:year>2005</md:year>
+<md:title>Sea-bed photographs (benthos) from the shelf west of Svalbard along ROV profile HE153_1274-3</md:title>
+<md:type id="refds320055.reftype10" includeInCitation="true">dataset</md:type>
+<md:URI>https://doi.org/10.1594/PANGAEA.320055</md:URI>
+</md:reference>
+<md:reference dataciteRelType="IsDocumentedBy" group="640" id="ref98591" relationType="Further details" relationTypeId="17">
+<md:title>Track line map of ROV profile HE153/1274-3</md:title>
+<md:URI>https://hs.pangaea.de/Images/Benthos/HE/HE153/HE153_1274/HE153_1274_map.pdf</md:URI>
+</md:reference>
+<md:reference dataciteRelType="IsDocumentedBy" group="640" id="ref98592" relationType="Further details" relationTypeId="17">
+<md:title>Track line of ROV profile HE153/1274-3</md:title>
+<md:URI>https://hs.pangaea.de/Images/Benthos/HE/HE153/HE153_1274/HE153_1274_track.txt</md:URI>
+</md:reference>
+<md:extent>
+<md:geographic>
+<md:westBoundLongitude>9.395667</md:westBoundLongitude>
+<md:eastBoundLongitude>9.403717</md:eastBoundLongitude>
+<md:southBoundLatitude>78.254233</md:southBoundLatitude>
+<md:northBoundLatitude>78.265567</md:northBoundLatitude>
+<md:meanLongitude>9.399692</md:meanLongitude>
+<md:meanLatitude>78.2599</md:meanLatitude>
+</md:geographic>
+<md:temporal>
+<md:minDateTime>2001-09-07T11:57:42</md:minDateTime>
+<md:maxDateTime>2001-09-07T13:12:40</md:maxDateTime>
+</md:temporal>
+<md:elevation name="Elevation" unit="m">
+<md:min>-431.0</md:min>
+<md:max>-402.0</md:max>
+</md:elevation>
+<md:topoType id="topotype1">not specified</md:topoType>
+</md:extent>
+<md:project id="project4027" type="National institution">
+<md:label>AUI</md:label>
+<md:name>Archive of Underwater Imaging</md:name>
+<md:institution id="project4027.inst32">
+<md:name>Alfred Wegener Institute, Helmholtz Centre for Polar and Marine Research, Bremerhaven</md:name>
+<md:optionalName>AWI</md:optionalName>
+<md:URI>https://www.awi.de/</md:URI>
+<md:ROR>https://ror.org/032e6b942</md:ROR>
+</md:institution>
+</md:project>
+<md:event displayTypeName="Event" id="event2062664" typeName="Generic Event">
+<md:label>HE153/1274-3</md:label>
+<md:latitude>78.254233</md:latitude>
+<md:longitude>9.403717</md:longitude>
+<md:elevation>-402.0</md:elevation>
+<md:dateTime>2001-09-07T11:57:42</md:dateTime>
+<md:latitude2>78.265567</md:latitude2>
+<md:longitude2>9.395667</md:longitude2>
+<md:elevation2>-431.0</md:elevation2>
+<md:dateTime2>2001-09-07T13:12:40</md:dateTime2>
+<md:campaign displayTypeName="Campaign" id="event2062664.campaign3375767" legacyId="event2062664.campaign24707" typeName="Generic Campaign">
+<md:label>HE153</md:label>
+<md:name warning="deprecated">HE153</md:name>
+<md:location id="event2062664.campaign3375767.loc1.term22636">
+<md:name>Bremerhaven, Germany</md:name>
+</md:location>
+<md:dateTime>2001-08-22T00:00:00</md:dateTime>
+<md:start warning="deprecated">2001-08-22</md:start>
+<md:location2 id="event2062664.campaign3375767.loc2.term22636">
+<md:name>Bremerhaven, Germany</md:name>
+</md:location2>
+<md:dateTime2>2001-09-21T00:00:00</md:dateTime2>
+<md:end warning="deprecated">2001-09-21</md:end>
+<md:basis id="event2062664.campaign3375767.basis505">
+<md:name>Heincke</md:name>
+<md:URI>https://doi.org/10.17815/jlsrf-3-164</md:URI>
+<md:callSign>DBCK</md:callSign>
+<md:IMOnumber>8806113</md:IMOnumber>
+</md:basis>
+<md:responsible>Damm, Ellen</md:responsible>
+<md:chiefScientist warning="deprecated">Damm, Ellen</md:chiefScientist>
+<md:responsible>Mackensen, Andreas</md:responsible>
+<md:chiefScientist warning="deprecated">Mackensen, Andreas</md:chiefScientist>
+<md:attribute attid="76863" name="Report">hdl:10013/epic.42212.d001</md:attribute>
+<md:attribute attid="2055" name="BSH ID">20030147</md:attribute>
+</md:campaign>
+<md:basis id="event2062664.basis505">
+<md:name>Heincke</md:name>
+<md:URI>https://doi.org/10.17815/jlsrf-3-164</md:URI>
+<md:callSign>DBCK</md:callSign>
+<md:IMOnumber>8806113</md:IMOnumber>
+</md:basis>
+<md:method id="event2062664.method11520">
+<md:name>Remote operated vehicle</md:name>
+<md:optionalName>ROV</md:optionalName>
+</md:method>
+</md:event>
+<md:size unit="GBytes">3.2</md:size>
+<md:license id="license21">
+<md:label>CC-BY-4.0</md:label>
+<md:name>Creative Commons Attribution 4.0 International</md:name>
+<md:URI>https://creativecommons.org/licenses/by/4.0/</md:URI>
+</md:license>
+<md:comment>Positions and depths from the ship's automatic data recording system. The ROV-system sprint 103 was equipped with two video- and one 36mm still camera, lights, flash-lights, compass, and parallel lasers providing a scale in the images, a tether-management system (TMS), a winch, and the board units. All cameras used the same main lens and could be tilted. Videos were recorded in Betacam-format. Videos were uploaded for documentation reasons independently of partly low quality due to a ROV driving strategy responding to varying environmental conditions such as sunlight and turbidity. Photographs along the same ROV-transect are available at https://doi.pangaea.de/10.1594/PANGAEA.320055. J. Gutt: mailto:Julian.Gutt@awi.de</md:comment>
+<md:keywords>
+<md:techKeyword type="autoGenerated">citable</md:techKeyword>
+<md:techKeyword type="autoGenerated">author10386</md:techKeyword>
+<md:techKeyword type="autoGenerated">basis505</md:techKeyword>
+<md:techKeyword type="autoGenerated">campaign24707</md:techKeyword>
+<md:techKeyword type="autoGenerated">campaign3375767</md:techKeyword>
+<md:techKeyword type="autoGenerated">event2062664</md:techKeyword>
+<md:techKeyword type="autoGenerated">geocode1599</md:techKeyword>
+<md:techKeyword type="autoGenerated">geocode1600</md:techKeyword>
+<md:techKeyword type="autoGenerated">geocode1601</md:techKeyword>
+<md:techKeyword type="autoGenerated">geocode8128</md:techKeyword>
+<md:techKeyword type="autoGenerated">inst32</md:techKeyword>
+<md:techKeyword type="autoGenerated">license21</md:techKeyword>
+<md:techKeyword type="autoGenerated">method11520</md:techKeyword>
+<md:techKeyword type="autoGenerated">project4027</md:techKeyword>
+<md:techKeyword type="autoGenerated">ref98591</md:techKeyword>
+<md:techKeyword type="autoGenerated">ref98592</md:techKeyword>
+<md:techKeyword type="autoGenerated">refds320055</md:techKeyword>
+<md:techKeyword type="autoGenerated">term22636</md:techKeyword>
+<md:techKeyword type="autoGenerated">topotype1</md:techKeyword>
+</md:keywords>
+<md:technicalInfo>
+<md:entry key="xmlLastModified" value="2026-06-17T14:31:25Z"/>
+<md:entry key="lastModified" value="2019-02-13T11:26:43"/>
+<md:entry key="mimeType" value="video/mpeg"/>
+<md:entry key="status" value="published"/>
+<md:entry key="status_num" value="4"/>
+<md:entry key="DOIRegistryStatus" value="registered"/>
+<md:entry key="DOIRegistryStatus_num" value="4"/>
+<md:entry key="DOIRegistrationDate" value="2019-03-14T03:08:01"/>
+<md:entry key="hierarchyLevel" value="child"/>
+<md:entry key="loginOption" value="unrestricted"/>
+<md:entry key="loginOption_num" value="1"/>
+<md:entry key="staticURL" value="https://hs.pangaea.de/Movies/HE/HE153/HE153_1274-3.mpeg"/>
+</md:technicalInfo>
+</md:MetaData>

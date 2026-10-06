@@ -1,0 +1,28 @@
+/* DATA DESCRIPTION:
+Citation:	Papenmeier, Svenja; Hass, H Christian (2019): Video observation during R/V Heincke cruise HE415 and HE416 in the German Bight with link to raw data files [dataset]. Alfred Wegener Institute - Wadden Sea Station Sylt, PANGAEA, https://doi.org/10.1594/PANGAEA.907386
+Abstract:	At 85 stations in the German Bitght underwater videos were recorded with Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition to ground truth sidescan sonar backscatter data. The R/V Heincke was drifting while data acquisition.
+Related to:	Michaelis, Rune; Hass, H Christian; Mielck, Finn; Papenmeier, Svenja; Sander, Lasse; Ebbe, Brigitte; Gutow, Lars; Wiltshire, Karen Helen (2019): Hard-substrate habitats in the German Bight (South-Eastern North Sea) observed using drift videos. Journal of Sea Research, 144, 78-84, https://doi.org/10.1016/j.seares.2018.11.009
+	Michaelis, Rune; Hass, H Christian; Mielck, Finn; Papenmeier, Svenja; Sander, Lasse; Gutow, Lars; Wiltshire, Karen Helen (2019): Epibenthic assemblages of hard-substrate habitats in the German Bight (south-eastern North Sea) described using drift videos. Continental Shelf Research, 175, 30-41, https://doi.org/10.1016/j.csr.2019.01.011
+	Papenmeier, Svenja; Hass, H Christian (2018): Detection of stones in marine habitats combining simultaneous hydroacoustic surveys. Geosciences, 8(8), 279, https://doi.org/10.3390/geosciences8080279
+Coverage:	MEDIAN LATITUDE: 54.882040 * MEDIAN LONGITUDE: 6.926948 * SOUTH-BOUND LATITUDE: 54.430500 * WEST-BOUND LONGITUDE: 6.436500 * NORTH-BOUND LATITUDE: 55.264330 * EAST-BOUND LONGITUDE: 7.516500
+	DATE/TIME START: 2014-02-19T10:18:00 * DATE/TIME END: 2014-03-05T02:57:00
+Event(s):	HE415-track * LATITUDE START: 53.937280 * LONGITUDE START: 8.665560 * LATITUDE END: 53.937280 * LONGITUDE END: 8.665560 * DATE/TIME START: 2014-02-10T00:00:00 * DATE/TIME END: 2014-02-27T00:00:00 * LOCATION: North Sea * CAMPAIGN: HE415 * BASIS: Heincke (URI: https://doi.org/10.17815/jlsrf-3-164) * METHOD/DEVICE: Underway cruise track measurements (CT)
+	HE416-track * LATITUDE START: 53.937280 * LONGITUDE START: 8.665560 * LATITUDE END: 53.634970 * LONGITUDE END: 8.438500 * DATE/TIME START: 2014-02-27T00:00:00 * DATE/TIME END: 2014-03-06T00:00:00 * CAMPAIGN: HE416 * BASIS: Heincke (URI: https://doi.org/10.17815/jlsrf-3-164) * METHOD/DEVICE: Underway cruise track measurements (CT)
+Parameter(s):	Event label (Event) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	File content (Content) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	LONGITUDE (Longitude) * GEOCODE * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	LATITUDE (Latitude) * GEOCODE * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	DATE/TIME (Date/Time) * GEOCODE * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	Depth, bathymetric [m] (Bathy depth) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828)
+	Uniform resource locator/link to movie (URL movie) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828) * METHOD/DEVICE: Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition * COMMENT: avi
+	Uniform resource locator/link to file (URL file) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828) * METHOD/DEVICE: Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition * COMMENT: LRV
+	Uniform resource locator/link to movie (URL movie) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828) * METHOD/DEVICE: Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition * COMMENT: MP4
+	Uniform resource locator/link to file (URL file) * PI: Hass, H Christian (https://orcid.org/0000-0003-2649-6828) * METHOD/DEVICE: Kongsberg Color Zoom Camera and GOPRO 3+ Black Edition * COMMENT: THM
+License:	Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)
+Size:	426 data points
+*/
+Event	Content	Longitude	Latitude	Date/Time	Bathy depth [m]	URL movie (avi)	URL file (LRV)	URL movie (MP4)	URL file (THM)
+HE415-track	Profile Spots_01-1	6.71440	54.86993	2014-02-19T10:18:00	45.00	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/He415_Spots_01-1.avi			
+HE415-track	Profile Greifer_AG1_005	6.69785	54.97638	2014-02-21T11:11:00	41.12	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG1_005.avi	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG1_006_HD.LRV	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG1_006_HD.MP4	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG1_006_HD.THM
+HE415-track	Profile Greifer_AG1_006	6.66713	54.98333	2014-02-21T11:38:00	41.00	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG1_006.avi			
+HE416-track	Profile Greifer_AG3_024	7.03933	54.54667	2014-02-28T06:59:00	38.00	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG3_024.avi	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG3_024_HD.LRV	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG3_024_HD.MP4	https://hs.pangaea.de/platforms/towed_systems/video/exdata/HE415/HE415_Greifer_AG3_024_HD.THM

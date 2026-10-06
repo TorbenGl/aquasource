@@ -1,0 +1,22 @@
+/* DATA DESCRIPTION:
+Citation:	Boehringer, Lilian; Bergmann, Melanie (2026): Seabed photographs taken along OFOS profile MSM77_11-1 during RV MARIA S. MERIAN cruise MSM77 [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.989683, 
+	In: Boehringer, L; Bergmann, M (2026): Ocean Floor Observation System (OFOS) seafloor images of the Fram Strait collected during RV MARIA S. MERIAN cruise MSM77 [dataset publication series]. PANGAEA, https://doi.org/10.1594/PANGAEA.989682
+Abstract:	During the RV MARIA S. MERIAN cruise MSM77 (2018-09-15 to 2018-10-13) to the long-term ecological research station HAUSGARTEN observatory in the Fram Strait the Ocean Floor Observation System (OFOS) was used to collect still images from various locations surveyed during the expedition. The OFOS consisted of a towed underwater camera system equipped with a high-resolution photo-camera (iSiTEC, CANON EOS 5D Mark III). The camera was mounted on a steel frame (140 L x 92 W x 135 H cm), together with two strobe lights, three laser pointers spaced with a distance of 50 cm used to estimate the size of seafloor structures, four LED lights, and a USBL positioning system (Posidonia) to track the position of the OFOS during deployments. An automatic seafloor image was taken every 20 seconds to obtain 'TIMER' stills distributed at regular distances along each of the survey profiles. Additional 'HOTKEY' photos were triggered individually when interesting objects appeared in the live feed. Here, image data of OFOS deployment MSM77_11-1 is presented.
+Keyword(s):	Benthos; Deep-sea ecology; Fram Strait; HAUSGARTEN Long Term Observatory; Seafloor images
+Supplement to:	Boehringer, Lilian; Hasemann, Christiane; Dannheim, Jennifer (2026): Drivers of benthic megafauna community dynamics in the Fram Strait, Arctic Ocean: Insights from the HAUSGARTEN observatory (2016-2021). Deep Sea Research Part II: Topical Studies in Oceanography, 227, 105621, https://doi.org/10.1016/j.dsr2.2026.105621
+Related to:	Soltwedel, Thomas; Bäger, Jana; Barz, Kristina; Bergmann, Melanie; Busack, Michael; Chikina, Margarita V; Hagemann, Jonas; Hasemann, Christiane; Hofbauer, Michael; Hoge, Ulrich; Iversen, Morten Hvitfeldt; Käß, Melissa; Klüver, Tania; Konrad, Christian; Lehmenhecker, Sascha; Nordhausen, Axel; Schewe, Ingo; Sonnek, Andreas; Tekman, Mine Banu; von Jackowski, Anabel; Wenzhöfer, Frank; Wulff, Thorben (2019): LTER HAUSGARTEN 2018 - Long-Term Ecological Research in the Fram Strait, Cruise No. MSM77, September 15 - October 13, 2018, Longyearbyen (Svalbard) - Edinburgh (Scotland). MSM77, 51 pp, https://doi.org/10.2312/cr_msm77
+Project(s):	AWI-Hausgarten off Svalbard long-term observation (LTO_Hausgarten) (URI: https://www.awi.de/en/science/biosciences/deep-sea-ecology-and-technology/observatories/lter-observatory-hausgarten.html)
+	FRontiers in Arctic marine Monitoring (FRAM) (URI: https://www.awi.de/en/science/research-infrastructure/observatories/ocean-fram.html)
+Coverage:	LATITUDE: 79.132210 * LONGITUDE: 6.261720
+	DATE/TIME START: 2018-09-20T00:39:48 * DATE/TIME END: 2018-09-20T04:30:28
+	MINIMUM ELEVATION: -1290.0 m * MAXIMUM ELEVATION: -1290.0 m
+Event(s):	MSM77_11-1 * LATITUDE: 79.132210 * LONGITUDE: 6.261720 * DATE/TIME: 2018-09-20T01:07:00 * ELEVATION: -1290.0 m * LOCATION: North Atlantic Ocean * CAMPAIGN: MSM77 * BASIS: Maria S. Merian (URI: https://en.wikipedia.org/wiki/RV_Maria_S._Merian) * METHOD/DEVICE: Ocean Floor Observation System (OFOS)
+License:	Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)
+Status:	Curation Level: Enhanced curation (URI: https://wiki.pangaea.de/wiki/Curation_levels) * Processing Level: PANGAEA data processing level 1 (URI: https://wiki.pangaea.de/wiki/Processing_levels#PANGAEA_data_processing_level_1)
+Size:	964 data points
+Files:	All files referred to in data matrix can be downloaded in one go as ZIP <https://download.pangaea.de/dataset/989683/allfiles.zip> or TAR <https://download.pangaea.de/dataset/989683/allfiles.tar> (PANGAEA user account required). To download single files, use the filename from data matrix appended to "https://download.pangaea.de/dataset/989683/files/".
+*/
+Date/Time	IMAGE water	Metadata
+2018-09-20T00:39:48	HOTKEY_2018_09_20_at_00_39_48_4W9A2891.JPG	HOTKEY_2018_09_20_at_00_39_48_4W9A2891.txt
+2018-09-20T02:58:22	HOTKEY_2018_09_20_at_02_58_22_4W9A3130.JPG	HOTKEY_2018_09_20_at_02_58_22_4W9A3130.txt
+2018-09-20T02:58:40	TIMER_2018_09_20_at_02_58_40_4W9A3131.JPG	TIMER_2018_09_20_at_02_58_40_4W9A3131.txt

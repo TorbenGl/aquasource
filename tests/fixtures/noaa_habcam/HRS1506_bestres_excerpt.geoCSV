@@ -1,0 +1,30 @@
+#dataset: GeoCSV 2.0
+#title: Processed Trackline Navigation Data: Best Resolution
+#field_unit: ISO_8601,degree_east,degree_north,(unitless),(unitless),(unitless),meter,meter\second,degree
+#field_type: datetime,float,float,integer,integer,float,float,float,float
+#field_standard_name: iso_time,ship_longitude,ship_latitude,nmea_quality,nsv,hdop,antenna_height,speed_made_good,course_made_good
+#field_long_name: date and time,longitude of vessel,latitude of vessel,NMEA quality indicator,number of satellite vehicles observed,horizontal dilution of precision,height of antenna above mean sea level,course made good,speed made good
+#standard_name_cv: http://www.rvdata.us/voc/fieldname
+#ellipsoid: WGS-84 (EPSG:4326)
+#delimiter: ,
+#field_missing: NAN
+#attribution: Rolling Deck to Repository (R2R) Program; http://www.rvdata.us/
+#source_repository: doi:10.17616/R39C8D
+#source_event: doi:10.7284/906846
+#source_dataset: doi:10.7284/122564
+#cruise_id: HRS1506
+#creation_date: 2025-03-08T01:09:45Z
+iso_time,ship_longitude,ship_latitude,nmea_quality,nsv,hdop,antenna_height,speed_made_good,course_made_good
+2015-05-17T16:06:23Z,-74.641680,37.687988,2,9,0.3,8,3.42,203.061
+2015-05-17T16:06:24Z,-74.641695,37.687960,2,9,0.3,8,3.38,201.670
+2015-05-17T16:06:25Z,-74.641710,37.687930,2,9,0.3,8,3.58,203.061
+2015-05-17T16:06:56Z,-74.642142,37.687055,2,9,0.3,8,3.34,203.822
+2015-05-17T16:06:57Z,-74.642157,37.687028,2,9,0.3,8,3.28,200.252
+2015-05-17T16:06:58Z,-74.642170,37.687000,2,9,0.3,8,3.31,203.061
+2015-05-17T16:07:13Z,-74.642383,37.686570,2,9,0.3,8,3.31,200.348
+2015-05-17T16:07:14Z,-74.642397,37.686540,2,9,0.3,8,3.55,203.822
+2015-05-17T16:07:15Z,-74.642412,37.686513,2,9,0.3,8,3.28,204.424
+#2015-05-17T10:38:16Z,-74.449985,37.909573,2,6,0.4,19
+#2015-05-17T10:38:17Z,-74.449953,37.909558,2,6,0.4,19
+#2015-05-17T10:38:18Z,-74.449922,37.909545,2,6,0.4,19
+#2015-05-17T10:38:19Z,-74.449887,37.909532,2,6,0.9,19

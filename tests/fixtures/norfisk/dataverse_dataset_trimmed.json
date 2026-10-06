@@ -1,0 +1,327 @@
+{
+ "status": "OK",
+ "data": {
+  "id": 86670,
+  "identifier": "H5G3K5",
+  "persistentUrl": "https://doi.org/10.18710/H5G3K5",
+  "protocol": "doi",
+  "authority": "10.18710",
+  "separator": "/",
+  "publisher": "DataverseNO",
+  "publicationDate": "2020-12-07",
+  "storageIdentifier": "S3://10.18710/H5G3K5",
+  "datasetType": "dataset",
+  "latestVersion": {
+   "id": 3717,
+   "datasetId": 86670,
+   "datasetPersistentId": "doi:10.18710/H5G3K5",
+   "storageIdentifier": "S3://10.18710/H5G3K5",
+   "versionNumber": 1,
+   "versionMinorNumber": 1,
+   "versionState": "RELEASED",
+   "latestVersionPublishingState": "RELEASED",
+   "deaccessionLink": "",
+   "lastUpdateTime": "2023-09-28T19:08:49Z",
+   "releaseTime": "2023-09-28T19:08:49Z",
+   "createTime": "2023-09-28T15:32:34Z",
+   "publicationDate": "2020-12-07",
+   "citationDate": "2020-12-07",
+   "license": {
+    "name": "CC0 1.0",
+    "uri": "http://creativecommons.org/publicdomain/zero/1.0",
+    "iconUri": "https://licensebuttons.net/p/zero/1.0/88x31.png",
+    "rightsIdentifier": "CC0-1.0",
+    "rightsIdentifierScheme": "SPDX",
+    "schemeUri": "https://spdx.org/licenses/",
+    "languageCode": "en"
+   },
+   "fileAccessRequest": true,
+   "metadataBlocks": {
+    "citation": {
+     "displayName": "Citation Metadata",
+     "name": "citation",
+     "fields": [
+      {
+       "typeName": "title",
+       "multiple": false,
+       "typeClass": "primitive",
+       "value": "NorFisk Dataset"
+      },
+      {
+       "typeName": "author",
+       "multiple": true,
+       "typeClass": "compound",
+       "value": [
+        {
+         "authorName": {
+          "typeName": "authorName",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Maximiliano, Crescitelli Alberto"
+         },
+         "authorAffiliation": {
+          "typeName": "authorAffiliation",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "NTNU – Norwegian University of Science and Technology"
+         },
+         "authorIdentifierScheme": {
+          "typeName": "authorIdentifierScheme",
+          "multiple": false,
+          "typeClass": "controlledVocabulary",
+          "value": "ORCID"
+         },
+         "authorIdentifier": {
+          "typeName": "authorIdentifier",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "0000-0003-1706-5938"
+         }
+        }
+       ]
+      },
+      {
+       "typeName": "dsDescription",
+       "multiple": true,
+       "typeClass": "compound",
+       "value": [
+        {
+         "dsDescriptionValue": {
+          "typeName": "dsDescriptionValue",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Long-term autonomous monitoring of wild fish populations surrounding fish farms can contribute to a better understanding of interactions between wild and farmed fish, which can have wide-ranging implications for disease transmission, stress in farmed fish, wild fish behavior and nutritional status, etc. The ability to monitor the presence of wild fish and its variability with time and space will improve our understanding of the dynamics of such interactions and the implications that follow. Many efforts are underway to \r\nrecognize fish species using artificial intelligence. However there are not many image datasets publicly available to train these neural networks, and even fewer that include species that are relevant for the aquaculture sector. Here we present a public dataset  of annotated images for fish species recognition with deep learning. The dataset contains 9487 annotated images of farmed salmonids and 3027 annotated images of saithe and it is expected to grow in the near future. This dataset was the result of processing nearly 50 hours of video footage taken inside and outside cages from several fish farms in Norway. The footage was processed with a semi-automatic system to create large image datasets of fish under water. The system combines techniques of image processing with deep neural networks in an iterative process to extract, label, and annotate images from video sources. The details of the system are described in a journal paper that is currently under review. This information will be updated when the paper is published."
+         },
+         "dsDescriptionDate": {
+          "typeName": "dsDescriptionDate",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "2020-11-12"
+         }
+        }
+       ]
+      },
+      {
+       "typeName": "subject",
+       "multiple": true,
+       "typeClass": "controlledVocabulary",
+       "value": [
+        "Agricultural Sciences",
+        "Computer and Information Science"
+       ]
+      },
+      {
+       "typeName": "keyword",
+       "multiple": true,
+       "typeClass": "compound",
+       "value": [
+        {
+         "keywordValue": {
+          "typeName": "keywordValue",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Annotated images"
+         }
+        },
+        {
+         "keywordValue": {
+          "typeName": "keywordValue",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Fish species detection"
+         }
+        },
+        {
+         "keywordValue": {
+          "typeName": "keywordValue",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Object recognition"
+         }
+        },
+        {
+         "keywordValue": {
+          "typeName": "keywordValue",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Deep Learning"
+         }
+        },
+        {
+         "keywordValue": {
+          "typeName": "keywordValue",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Marine aquaculture applications"
+         }
+        }
+       ]
+      },
+      {
+       "typeName": "publication",
+       "multiple": true,
+       "typeClass": "compound",
+       "value": [
+        {
+         "publicationCitation": {
+          "typeName": "publicationCitation",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Submitted for review"
+         }
+        }
+       ]
+      },
+      {
+       "typeName": "producer",
+       "multiple": true,
+       "typeClass": "compound",
+       "value": [
+        {
+         "producerName": {
+          "typeName": "producerName",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "NTNU – Norwegian University of Science and Technology"
+         },
+         "producerAbbreviation": {
+          "typeName": "producerAbbreviation",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "NTNU"
+         },
+         "producerURL": {
+          "typeName": "producerURL",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "https://www.ntnu.edu/"
+         }
+        }
+       ]
+      },
+      {
+       "typeName": "distributor",
+       "multiple": true,
+       "typeClass": "compound",
+       "value": [
+        {
+         "distributorName": {
+          "typeName": "distributorName",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "NTNU – Norwegian University of Science and Technology"
+         },
+         "distributorAffiliation": {
+          "typeName": "distributorAffiliation",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "NTNU – Norwegian University of Science and Technology"
+         },
+         "distributorAbbreviation": {
+          "typeName": "distributorAbbreviation",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "NTNU"
+         },
+         "distributorURL": {
+          "typeName": "distributorURL",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "https://dataverse.no/dataverse/ntnu"
+         }
+        }
+       ]
+      },
+      {
+       "typeName": "depositor",
+       "multiple": false,
+       "typeClass": "primitive",
+       "value": "Crescitelli, Alberto Maximiliano"
+      },
+      {
+       "typeName": "dateOfDeposit",
+       "multiple": false,
+       "typeClass": "primitive",
+       "value": "2020-11-12"
+      },
+      {
+       "typeName": "dateOfCollection",
+       "multiple": true,
+       "typeClass": "compound",
+       "value": [
+        {
+         "dateOfCollectionStart": {
+          "typeName": "dateOfCollectionStart",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "2017-01-01"
+         },
+         "dateOfCollectionEnd": {
+          "typeName": "dateOfCollectionEnd",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "2020-08-01"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "files": [
+    {
+     "label": "00_ReadMe.txt",
+     "restricted": false,
+     "version": 1,
+     "datasetVersionId": 3717,
+     "dataFile": {
+      "id": 86886,
+      "persistentId": "doi:10.18710/H5G3K5/CPGKKO",
+      "pidURL": "https://doi.org/10.18710/H5G3K5/CPGKKO",
+      "filename": "00_ReadMe.txt",
+      "contentType": "text/plain",
+      "friendlyType": "Plain Text",
+      "filesize": 5022,
+      "storageIdentifier": "S3://uit-dataverseno-prod01:176199ffccf-4837b1e53098",
+      "rootDataFileId": -1,
+      "md5": "84336d67d00a58b4cf4ef19a5f83e7f6",
+      "checksum": {
+       "type": "MD5",
+       "value": "84336d67d00a58b4cf4ef19a5f83e7f6"
+      },
+      "tabularData": false,
+      "creationDate": "2020-11-30",
+      "publicationDate": "2020-12-07",
+      "fileAccessRequest": true
+     }
+    },
+    {
+     "label": "NorFisk_v1.0.zip",
+     "restricted": false,
+     "version": 1,
+     "datasetVersionId": 3717,
+     "dataFile": {
+      "id": 86889,
+      "persistentId": "doi:10.18710/H5G3K5/QK355D",
+      "pidURL": "https://doi.org/10.18710/H5G3K5/QK355D",
+      "filename": "NorFisk_v1.0.zip",
+      "contentType": "application/zip",
+      "friendlyType": "ZIP Archive",
+      "filesize": 2641300775,
+      "storageIdentifier": "S3://uit-dataverseno-prod01:17619aeee81-17d7571d99a8",
+      "rootDataFileId": -1,
+      "md5": "6ec799e74054dec2dadb6f9179e51ea5",
+      "checksum": {
+       "type": "MD5",
+       "value": "6ec799e74054dec2dadb6f9179e51ea5"
+      },
+      "tabularData": false,
+      "creationDate": "2020-11-30",
+      "publicationDate": "2020-12-07",
+      "fileAccessRequest": true
+     }
+    }
+   ]
+  }
+ }
+}

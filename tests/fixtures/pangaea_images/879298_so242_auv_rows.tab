@@ -1,0 +1,24 @@
+/* DATA DESCRIPTION:
+Citation:	Greinert, Jens; Schoening, Timm; Köser, Kevin; Rothenbeck, Marcel (2017): Seafloor images and raw context data along AUV track SO242/1_41-1_AUV05 (Abyss_191) during SONNE cruise SO242/1 [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.879298, 
+	In supplement to: Schoening, Timm; Köser, Kevin; Greinert, Jens (2018): An acquisition, curation and management workflow for sustainable, terabyte-scale marine image analysis. Scientific Data, 5, 180181, https://doi.org/10.1038/sdata.2018.181
+Abstract:	The raw images (available on request) have been captured using a Canon 8-15mm fisheye lens and therefore they have a wide field of view, which results in a dark image boundary as the lights did not illuminate the outer sectors well. The images in this dataset have then been undistorted to virtual images that an ideal perspective camera with only 90 degrees horizontal field of view would have seen from the same position. To achieve this, the color of each pixel in the ideal image is obtained by
+	- computing the ray in space associated with this virtual pixel (using rectilinear un-projection)
+	- projecting this ray into the original fisheye image (using equidistant projection), yielding a sub-pixel position
+	- interpolating the colors of the neighboring pixels
+	Technically, the undistortion has been performed using the tool https://svn.geomar.de/dsm-general/trunk/src/BIAS/Tools/biasproject.cpp (at revision 418, and earlier, compatible revisions).
+	Manual image annotation is available here: https://annotate.geomar.de/volumes/259
+Related to:	Greinert, Jens (2015): RV SONNE Fahrtbericht / Cruise Report SO242-1: JPI OCEANS Ecological Aspects of Deep-Sea Mining, DISCOL Revisited, Guayaquil - Guayaquil (Equador), 28.07.-25.08.2015. GEOMAR Report (N. Ser.), 26, 290 pp, https://doi.org/10.3289/GEOMAR_REP_NS_26_2015
+Other version:	Gallery of sea-bed photographs at station SO242/1_41-1 [dataset]. https://www.pangaea.de/helpers/Benthos.php?B=SO&C=SO242&S=SO242-1_41-1&ID=879298
+Project(s):	JPI Oceans - Ecological Aspects of Deep-Sea Mining (JPIO-MiningImpact) (URI: https://miningimpact.geomar.de)
+Coverage:	MEDIAN LATITUDE: -7.125445 * MEDIAN LONGITUDE: -88.451121 * SOUTH-BOUND LATITUDE: -7.126669 * WEST-BOUND LONGITUDE: -88.451508 * NORTH-BOUND LATITUDE: -7.124239 * EAST-BOUND LONGITUDE: -88.450814
+	DATE/TIME START: 2015-08-04T03:47:19 * DATE/TIME END: 2015-08-04T04:27:01
+	MINIMUM DEPTH, water: 4139.1 m * MAXIMUM DEPTH, water: 4148.7 m
+Event(s):	SO242/1_41-1 (SO242/1_41-1_AUV 5) * LATITUDE START: -7.074280 * LONGITUDE START: -88.459850 * LATITUDE END: -7.133750 * LONGITUDE END: -88.471800 * DATE/TIME START: 2015-08-04T00:35:00 * DATE/TIME END: 2015-08-04T15:23:00 * ELEVATION START: -4152.9 m * ELEVATION END: -4153.9 m * LOCATION: Reference Area South * CAMPAIGN: SO242/1 (JPI-OCEANS) * BASIS: Sonne_2 (URI: https://uol.de/icbm/forschungsplattformen-schiffe/sonne) * METHOD/DEVICE: Autonomous underwater vehicle (AUV)
+Comment:	Target Altitude of AUV above seafloor: 7.5m
+License:	Creative Commons Attribution 3.0 Unported (CC-BY-3.0) (URI: https://creativecommons.org/licenses/by/3.0/)
+Size:	29820 data points
+*/
+Date/Time	Latitude	Longitude	Depth water [m]	Distance [m]	Time rel [ms]	Img brightness [relative units]	Ground vis [#]	File name	File format	File size [kByte]	URL image	Pitch [deg]	Roll [deg]	Chl a [µg/l]	Turbidity [NTU]	Cond [mS/cm]	Temp [°C]	Sal	SV [m/s]	AUV forward vel [m/s]	AUV starboard vel [m/s]	AUV vertical vel [m/s]	Head [deg]
+2015-08-04T03:47:19	-7.1256556	-88.4513694	4142.3	10.6	2	144.6	0	20150804_034740_IMG_1785.JPG	JPG	367	https://hs.pangaea.de/Images/Benthos/SO/SO242/SO242-1_41-1/20150804_034740_IMG_1785.jpg	-11.91	-1.30	0.0287920	0.0344720	32.0664215	1.84	34.68386	1527.85381	1.44	0.04	-0.16	178.6
+2015-08-04T03:47:20	-7.1256722	-88.4513694	4142.5	10.5	52	145.5	0	20150804_034740_IMG_1786.JPG	JPG	368	https://hs.pangaea.de/Images/Benthos/SO/SO242/SO242-1_41-1/20150804_034740_IMG_1786.jpg	-10.84	-0.72	0.0322533	0.0318267	32.0662895	1.84	34.68410	1527.85323	1.45	0.04	-0.16	179.0
+2015-08-04T03:53:04	-7.1247861	-88.4512639	4140.9	9.3	4	149.0	1	20150804_035324_IMG_2000.JPG	JPG	367	https://hs.pangaea.de/Images/Benthos/SO/SO242/SO242-1_41-1/20150804_035324_IMG_2000.jpg	-8.21	-1.53	0.0389400	0.0328600	32.0658989	1.84	34.68420	1527.83105	1.48	0.05	-0.14	174.9

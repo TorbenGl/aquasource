@@ -1,0 +1,2 @@
+site_id,site_name,lat,lon,depth_m,uncertainty_m,source
+norfisk_alesund_farm,"Unnamed fish (salmon) farm 'near Ålesund', Møre og Romsdal, Norway (paper prints 'near lesund'; place geocoded = Ålesund city)",62.4711412,6.1551755,,30000,"Crescitelli, Gansel & Zhang 2021, Modeling Identification and Control 42(1):1-16, doi:10.4173/mic.2021.1.1, Sec. 3.2 Data collection (p. 9); geocoded 'Ålesund' with OSM Nominatim (node 31264149)"

@@ -1,0 +1,29 @@
+/* DATA DESCRIPTION:
+Citation:	Mielck, Finn; Bartsch, Inka; Hass, H Christian; Wölfl, Anne-Cathrin; Bürk, Dietmar; Betzler, Christian (2014): Links to sea-bottom video files along 13 transects off Helgoland [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.831731, 
+	In supplement to: Mielck, F et al. (2014): Predicting spatial kelp abundance in shallow coastal waters using the acoustic ground discrimination system RoxAnn. Estuarine, Coastal and Shelf Science, 143, 1-11, https://doi.org/10.1016/j.ecss.2014.03.016
+Project(s):	Coastal Ecology @ AWI (AWI_Coast) (URI: https://www.awi.de/en/science/biosciences/coastal-ecology.html)
+Coverage:	MEDIAN LATITUDE: 54.199262 * MEDIAN LONGITUDE: 7.896593 * SOUTH-BOUND LATITUDE: 54.173279 * WEST-BOUND LONGITUDE: 7.873450 * NORTH-BOUND LATITUDE: 54.224995 * EAST-BOUND LONGITUDE: 7.925542
+	DATE/TIME START: 2011-06-15T15:06:00 * DATE/TIME END: 2011-06-17T16:11:50
+Event(s):	off_Helgoland * LATITUDE START: 54.227000 * LONGITUDE START: 7.873000 * LATITUDE END: 54.171000 * LONGITUDE END: 7.928000 * LOCATION: German Bight, North Sea * CAMPAIGN: Helgoland__Campaign * BASIS: Marine Station Helgoland (URI: https://www.awi.de/en/about-us/sites/helgoland.html) * METHOD/DEVICE: Multiple investigations (MULT)
+Parameter(s):	File name (File name) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html)
+	DATE/TIME (Date/Time) * GEOCODE
+	LATITUDE (Latitude) * GEOCODE
+	LONGITUDE (Longitude) * GEOCODE
+	UTM Easting, Universal Transverse Mercator [m] (UTM east) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html) * COMMENT: start
+	UTM Northing, Universal Transverse Mercator [m] (UTM north) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html) * COMMENT: start
+	UTM Zone, Universal Transverse Mercator (UTM Zone) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html) * COMMENT: start
+	Date/time end (Date/time end) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html)
+	Latitude 2 (Latitude 2) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html)
+	Longitude 2 (Longitude 2) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html)
+	UTM Easting, Universal Transverse Mercator [m] (UTM east) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html) * COMMENT: end
+	UTM Northing, Universal Transverse Mercator [m] (UTM north) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html) * COMMENT: end
+	UTM Zone, Universal Transverse Mercator (UTM Zone) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html) * COMMENT: end
+	File size [kByte] (File size) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html)
+	Uniform resource locator/link to movie (URL movie) * PI: Mielck, Finn (https://orcid.org/0000-0003-4071-641X, Finn.Mielck@awi.de, https://www.awi.de/en/about-us/organisation/staff/single-view/finn-mielck.html) * COMMENT: mpeg-format
+License:	Creative Commons Attribution 3.0 Unported (CC-BY-3.0) (URI: https://creativecommons.org/licenses/by/3.0/)
+Size:	156 data points
+*/
+File name	Date/Time	Latitude	Longitude	UTM east [m] (start)	UTM north [m] (start)	UTM Zone (start)	Date/time end	Latitude 2	Longitude 2	UTM east [m] (end)	UTM north [m] (end)	UTM Zone (end)	File size [kByte]	URL movie (mpeg-format)
+Video01_2011-06-15T15_06_00	2011-06-15T15:06:00	54.2096123	7.8946811	427912.73	6007407.69	32U	2011-06-15T15:13:40	54.2108879	7.8937084	427851.52	6007550.61	32U	287996	https://hs.pangaea.de/Movies/mielck_etal_2014/Video01_2011-06-15T15_06_00.mpg
+Video06_2011-06-16T15_20_00	2011-06-16T15:20:00	54.2249948	7.8742418	426607.04	6009140.18	32U	2011-06-16T15:22:50	54.2257163	7.8731138	426534.79	6009221.62	32U	112788	https://hs.pangaea.de/Movies/mielck_etal_2014/Video06_2011-06-16T15_20_00.mpg
+Video13_2011-06-17T16_11_50	2011-06-17T16:11:50	54.1786550	7.9167851	429301.45	6003941.12	32U	2011-06-17T16:18:00	54.1791842	7.9146060	429160.14	6004002.18	32U	252954	https://hs.pangaea.de/Movies/mielck_etal_2014/Video13_2011-06-17T16_11_50.mpg

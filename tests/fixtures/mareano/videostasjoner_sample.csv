@@ -1,0 +1,5 @@
+FID,the_geom,RefStation,CruiseNo_V,CruiseNo_B,Beamtrawl,Video,Boxcorer,Grab,Sledge,CTD,Multicorer,TotalMeasu,BottomMeasure,StationType,Type,Latitude,Longitude,BottomDepth,Location,Comment,Y_Video,Y_Bottom,date_shape
+videostasjoner_aarlig.446,POINT (15.84851 71.552138),449,2009111,0,0,1,0,0,0,0,0,1,0,Videostasjon,1,71.5521,15.8485,967.59,Eggakanten skråning utenfor TROMS I,,2009,0,20260518
+videostasjoner_aarlig.5,POINT (22.534508 71.29443),5,2006612,2006612,0,1,1,2,0,1,1,6,4,Videostasjon + Bunnprøver,2,71.2944,22.5345,424,FINNMARK VEST - Tromsøflaket,,2006,2006,20260518
+videostasjoner_aarlig.73,POINT (22.478092 70.267008),73,2007105,0,0,4,0,0,0,1,0,5,0,Videostasjon,1,70.267,22.4781,233.87,Stjernsund,,2007,0,20260518
+videostasjoner_aarlig.731,POINT (10.22658 67.788213),734,2011113,0,0,1,0,0,0,0,0,1,0,Videostasjon,1,67.7882,10.2266,270.49,NORDLAND VI,,2011,0,20260518
