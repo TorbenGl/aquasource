@@ -1,4 +1,4 @@
-"""Command line: aquasource list | check | dry-run | pilot | download | report."""
+"""Command line: aquasource list | check | dry-run | pilot | download | frames | report."""
 
 from __future__ import annotations
 
@@ -65,6 +65,11 @@ def main(argv: list[str] | None = None) -> int:
     dl.add_argument("--dry-run", action="store_true", help="metadata only for this dataset")
 
     sub.add_parser("report", help="build _reports/: samples.jsonl, samples.geojson, geo_report.md, failures.jsonl")
+
+    fr = sub.add_parser("frames", help="extract still frames from downloaded videos (needs ffmpeg)")
+    fr.add_argument("key")
+    fr.add_argument("--every", type=float, default=10.0, help="seconds between frames (default 10)")
+    fr.add_argument("--max-per-video", type=int, default=30)
 
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -137,6 +142,13 @@ def main(argv: list[str] | None = None) -> int:
         s = run_source(cfg, args.key, mode, budget=budget, options=_parse_options(args.opt))
         print(json.dumps(s.to_dict(), indent=2))
         return 1 if s.error else 0
+
+    if args.cmd == "frames":
+        from .frames import extract_frames
+
+        counts = extract_frames(cfg, args.key, every_s=args.every, max_per_video=args.max_per_video)
+        print(json.dumps(counts))
+        return 0
 
     if args.cmd == "report":
         out = build_reports(cfg.data_root)
