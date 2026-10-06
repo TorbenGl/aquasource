@@ -369,10 +369,18 @@ def test_check_ready(tmp_path):
 def test_estimate_uses_the_cached_size_listing(tmp_path):
     a = make_adapter(tmp_path)
     (a.ctx.layout.raw / "frdr_tar_sizes_unlabelled.json").write_text(
-        json.dumps({"contents": [{"name": "Bastos.tar", "size": 45465600}, {"name": "x.txt", "size": 5}]}), encoding="utf-8"
+        json.dumps({"contents": [
+            {"name": "Bastos.tar", "size": 45465600},
+            {"name": "FathomNet_misc.tar", "size": 1000},  # both case variants exist on FRDR and must both be counted
+            {"name": "fathomnet_misc.tar", "size": 2000},
+            {"name": "x.txt", "size": 5},
+        ]}), encoding="utf-8"
     )
     est = a.estimate()
-    assert est["images_1m"] == 1_345_096 and est["tars_1m"] == 1 and est["tar_gb_1m"] == 0.05
+    assert est["images_1m"] == 1_345_096 and est["tars_1m"] == 3 and est["tar_gb_1m"] == 0.05
+    assert a._tar_lookup("unlabelled", "FathomNet_misc.tar") == ("FathomNet_misc.tar", 1000)
+    assert a._tar_lookup("unlabelled", "fathomnet_misc.tar") == ("fathomnet_misc.tar", 2000)
+    assert a._tar_lookup("unlabelled", "BASTOS.tar") == ("Bastos.tar", 45465600) and a._tar_lookup("unlabelled", "nope.tar") is None
 
 
 # --------------------------------------------------------------------- zip member over Range requests

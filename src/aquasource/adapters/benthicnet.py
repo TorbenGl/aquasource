@@ -468,7 +468,8 @@ class BenthicNetAdapter(Adapter):
         self._lic_memo: dict[tuple[str, str], _LicInfo] = {}
         self._indexes: dict[str, _Index] = {}
         self._seen_1m: set[int] | None = None
-        self._sizes: dict[str, dict[str, tuple[str, int]]] = {}
+        self._sizes: dict[str, dict[str, int]] = {}
+        self._tar_lower: dict[str, dict[str, str]] = {}
         self._tars: dict[Path, tuple[tarfile.TarFile, dict[str, tarfile.TarInfo]]] = {}
         o = self.options
         self._inc_sources = {s.lower() for s in as_list(o.get("sources"))}
@@ -532,17 +533,31 @@ class BenthicNetAdapter(Adapter):
             log.info("benthicnet: licence table has %d datasets", len(self._table))
         return self._table
 
-    def _tar_sizes(self, kind: str) -> dict[str, tuple[str, int]]:
-        """``name.lower()`` -> (tar file name, bytes) from the FRDR size cache of the per-dataset tar folder."""
+    def _tar_sizes(self, kind: str) -> dict[str, int]:
+        """Tar file name -> bytes, from the FRDR size cache of the per-dataset tar folder.
+
+        Names are kept exactly: FathomNet_misc.tar and fathomnet_misc.tar are two different tars.
+        """
         if kind not in self._sizes:
             folder = f"01_BenthicNet/images/{kind}/individual_dataset_tars"
             digest = hashlib.sha256(folder.encode()).hexdigest()
             data = self.ctx.cached_json(f"{SIZE_CACHE}/file_sizes-{digest}.json", f"frdr_tar_sizes_{kind}.json")
             entries = data.get("contents", []) if isinstance(data, dict) else data
-            self._sizes[kind] = {
-                e["name"].lower(): (e["name"], int(e["size"])) for e in entries if str(e.get("name", "")).endswith(".tar")
-            }
+            self._sizes[kind] = {e["name"]: int(e["size"]) for e in entries if str(e.get("name", "")).endswith(".tar")}
         return self._sizes[kind]
+
+    def _tar_lookup(self, kind: str, name: str) -> tuple[str, int] | None:
+        """(listed tar name, bytes): exact name first, then case-insensitively."""
+        sizes = self._tar_sizes(kind)
+        if name in sizes:
+            return name, sizes[name]
+        low = self._tar_lower.get(kind)
+        if low is None:
+            low = self._tar_lower[kind] = {}
+            for n in sizes:
+                low.setdefault(n.lower(), n)
+        hit = low.get(name.lower())
+        return (hit, sizes[hit]) if hit else None
 
     def estimate(self) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -558,7 +573,7 @@ class BenthicNetAdapter(Adapter):
                 continue
             tag = "1m" if sub.kind == "unlabelled" else "labelled"
             out[f"tars_{tag}"] = len(sizes)
-            out[f"tar_gb_{tag}"] = round(sum(s for _n, s in sizes.values()) / 1e9, 2)
+            out[f"tar_gb_{tag}"] = round(sum(sizes.values()) / 1e9, 2)
         return out
 
     # ------------------------------------------------------- remote zip member
@@ -1062,7 +1077,7 @@ class BenthicNetAdapter(Adapter):
         if media != "auto":
             return media
         kind = SUBSETS[cand.extra.get("bn_subset", "1m")].kind
-        hit = self._tar_sizes(kind).get(str(cand.extra["tar"]).lower())
+        hit = self._tar_lookup(kind, str(cand.extra["tar"]))
         limit = float(self.options.get("tar_max_mb", 50)) * 1e6
         return "tar" if hit and hit[1] <= limit else "original"
 
@@ -1072,7 +1087,7 @@ class BenthicNetAdapter(Adapter):
         if route == "tar":
             kind = SUBSETS[cand.extra["bn_subset"]].kind
             name = str(cand.extra["tar"])
-            hit = self._tar_sizes(kind).get(name.lower())
+            hit = self._tar_lookup(kind, name)
             tar_name, size = hit if hit else (name, None)
             member = f"{sanitize(cand.extra['dataset'])}/{sanitize(cand.extra['site'])}/{sanitize(cand.extra['image'])}.jpg"
             url = f"{FILES}/01_BenthicNet/images/{kind}/individual_dataset_tars/{quote(tar_name)}"

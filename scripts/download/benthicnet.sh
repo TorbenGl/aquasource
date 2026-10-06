@@ -14,6 +14,8 @@
 # Size:     1M: 1,345,096 JPEG photos, 215 GB as 512 px tars (originals vary, 1.6 MB to 12 MB);
 #           Labelled: 188,688 photos, 28 GB. BenthicNet-11M has no published list (use squidle_imos,
 #           catlin_seaview, pangaea_images). The CSV metadata is a ~25 MB Range request (1M) into metadata/raw/.
+#           Measured on the CSVs (2026-10-06): 1M has 1,235,807 of 1,345,096 rows in tier A/B (91.9 %; by geo:
+#           image 802,714, station 422,094, region 10,953, none 46); Labelled has 186,614 of 188,688 (98.9 %).
 #
 # Manual steps before running:
 #   none (anonymous HTTPS, no Globus account). Optional: --opt local_dir=<folder> with files you downloaded
