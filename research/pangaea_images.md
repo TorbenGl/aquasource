@@ -57,7 +57,7 @@ PANGAEA (AWI/MARUM, Germany) publishes seafloor imagery as DOI'd "dataset public
   - Not underwater: ES hits for image parameters also include sky imagers, Parasound echograms, side-scan/multibeam "Binary" files, aerial DEM photos, ship webcams (PS122 Panomax), and core/microscope photos. Restrict to underwater platforms (see the discovery query) and exclude titles matching `side scan|bathymetr|multibeam|Parasound|quicklook|Sky Imager|aerial`.
 
 ## Geolocation
-- Precision levels (open seed images): **image ≈ 99 %** (~443 k: 882349, 911904, 936205, 935856 except 935896, 989684, 989732). **station ≈ 1 %** (~4.4 k: 935896 constant position 3,923; 989683 482; the 25 position-less rows of 989684). The video 898338 is **station**. 994607 will be image-level once open.
+- Precision levels (open seed images): **image ≈ 99 %** (~433 k: 882349, 911904, 936205, 935856 except 935896, 989684, 989732). **station ≈ 1 %** (~4.4 k: 935896 constant position 3,923; 989683 482; the 25 position-less rows of 989684). The video 898338 is **station**. 994607 will be image-level once open.
 - geo_source / CRS:
   - Per image: data-table columns `Latitude`, `Longitude` (PANGAEA GEOCODE 1600/1601). Wiki quote: "LATITUDE and LONGITUDE are given in decimal degree (positive for North, negative for South, WGS84). They are specified in each Event and can additionally expand the data tables and georeference individual samples more precisely." (https://wiki.pangaea.de/wiki/Geocode). Column order varies (`Longitude` comes first in 935856), so always map by header name.
   - Per station: header line `Event(s):` (`LATITUDE`/`LONGITUDE`/`ELEVATION`, or `LATITUDE START`/`END` etc.), equal to pan_md `<md:event>` `latitude`/`longitude`/`elevation` and `latitude2`/`longitude2`/`elevation2`. Multi-event tables carry an `Event` column; match on its label.
@@ -139,8 +139,8 @@ Expected values for the fixtures are listed in `tests/fixtures/pangaea_images/SO
 - Sampling strategy for N samples:
   1. Build the candidate list: seeds plus the discovery query, keeping only open, CC BY/CC0 children with an underwater platform and an image column.
   2. Compute per-child image counts and the region (meanPosition) and year.
-  3. Allocate N across parent series ∝ sqrt(images), with a cap of max(50, N/20) per series and a floor of 1 per series, so the 380 k-image AUV series does not dominate.
-  4. Within a child, apply the filters (depth ≥ 0.9 × median depth, `Ground vis = 1`, no `SW_` files, not before the event time). Then take evenly spaced rows by time, mixing TIMER and HOTKEY.
+  3. Allocate N across parent series ∝ sqrt(images), with a cap of max(50, N/20) per series and a floor of 1 per series, so the ~370 k-image AUV series does not dominate.
+  4. Within a child, apply the filters (depth ≥ 0.9 × median depth, `Ground vis = 1`, no coordinate outliers, no position-less rows before the event time or the first fix, optionally no `SW_` files). Then take evenly spaced rows by time, mixing TIMER and HOTKEY.
   5. Prefer hs.pangaea.de URLs, which are mostly disk-cached. Stage download.pangaea.de files in batches.
   6. Spread across regions (Arctic HAUSGARTEN, Antarctic, CCZ/Peru Basin abyss, GBR shallow reef) and years (1997-2023).
   7. Videos: download at most 1-2 per series (each 2-3.5 GB), sample frames at ≥ 30 s spacing, and tag them station-level.
@@ -169,10 +169,10 @@ Expected values for the fixtures are listed in `tests/fixtures/pangaea_images/SO
 
 ## Open questions / risks
 - The ToU bulk-download clause could throttle or disconnect a full harvest (~1 M+ images across PANGAEA). Prior authorisation is advisable. Rate limits are not published; only Retry-After was observed.
-- Tape recall latency at scale is unknown: ~60 s for one small file. Batches of large OFOBS JPGs and multi-GB videos may take much longer. Unintended HEADs trigger recalls; this research HEADed 24 HE153 MPEGs (21 returned 503 and were recalled).
+- Tape recall latency at scale is unknown: ~1-3 min for one small file (60 s in research, ~3 min in verification). Batches of large OFOBS JPGs and multi-GB videos may take much longer. Unintended HEADs trigger recalls; this research HEADed 24 HE153 MPEGs (21 returned 503 and were recalled).
 - SO295 (994607): the abstract says per-image iFDOs exist ("The actual images can be accessed through the image-handles provided in each iFDO"), but every child returns 401 until 2027-04-22. The iFDO location and its field mapping (`image-latitude`, `image-longitude`, `image-altitude-meters`, negative below sea level) are unverified.
 - Uncertainty defaults (USBL 20 m, AUV 50 m, ship-GPS layback heuristic, 4 km station) are estimates. Only MSM77/SO295 publish a per-image `Coord unc [m]`.
-- The ~380 k count for 882349 and the other row counts are `nDataPoints` / data-column estimates, not row counts of every table. Tables above ~5 MB (e.g. 882182, 41 k rows) were not downloaded.
+- The ~370 k count for 882349 and the other row counts are `nDataPoints` / data-column estimates, not row counts of every table. Tables above ~5 MB (e.g. 882182, 41 k rows) were not downloaded.
 - Depth sign is inconsistent between series (MSM77 negative). Some series have no depth column (872719, 935896). Legacy OFOS positions are ship GPS, not camera positions.
 - The MOSAiC BEAST images (958183) carry only floe-relative X/Y. The floe drifted during surveys, so a station uncertainty of ~1-2 km should be checked against drift speed.
 - Overlap with other aquasource sources: `obsea`, `german_bight` and `benthicnet` (see Filters → Duplicates), plus the GEOMAR BIIGLE volumes, FathomNet or other image hubs that may re-host PANGAEA images. Dedupe on hs.pangaea.de / download.pangaea.de origin URLs and DOIs.
@@ -183,7 +183,7 @@ Expected values for the fixtures are listed in `tests/fixtures/pangaea_images/SO
 Independent verifier, run on 2026-10-07 UTC against the live provider (metadata only: pan_md XML, TSV tables < 1 MB, ES queries, one image HEAD, one 9.5 KB sidecar). Verdict: **corrected** (tier and main geo claims confirmed; recipe gaps and several factual details fixed).
 
 Checked and confirmed:
-- Licence, record level: pan_md `<md:license>` of all 7 seeds (https://doi.pangaea.de/10.1594/PANGAEA.<id>?format=metadata_panmd): 989682, 898338, 935856, 911904, 936205 = `license21` CC-BY-4.0; 882349 = `license101` CC-BY-3.0; 994607 = `license21` CC-BY-4.0 with `preliminary="true"`, `loginOption` "access rights needed", `moratoriumUntil` 2027-04-22. ES `parentIdDataSet` query: all 77 seed children carry the same licence as their series (56 CC-BY-4.0 incl. 14 SO295, 21 CC-BY-3.0), no NC/ND/SA child. Re-fetched table headers of 989683, 989684, 935896 (CC-BY-4.0) and 879298 (CC-BY-3.0) show the quoted `License:` line. → **Tier B** stands.
+- Licence, record level: pan_md `<md:license>` of all 7 seeds (`https://doi.pangaea.de/10.1594/PANGAEA.<id>?format=metadata_panmd`): 989682, 898338, 935856, 911904, 936205 = `license21` CC-BY-4.0; 882349 = `license101` CC-BY-3.0; 994607 = `license21` CC-BY-4.0 with `preliminary="true"`, `loginOption` "access rights needed", `moratoriumUntil` 2027-04-22. ES `parentIdDataSet` query: all 77 seed children carry the same licence as their series (56 CC-BY-4.0 incl. 14 SO295, 21 CC-BY-3.0), no NC/ND/SA child. Re-fetched table headers of 989683, 989684, 935896 (CC-BY-4.0) and 879298 (CC-BY-3.0) show the quoted `License:` line. → **Tier B** stands.
 - Licence ID map: one ES sample per ID read back the pan_md label: 29 CC0, 22 CC-BY-SA-4.0, 102 CC-BY-SA-3.0, 23 CC-BY-ND-4.0, 103 CC-BY-ND-3.0, 24 CC-BY-NC-4.0, 25 CC-BY-NC-SA-4.0, 26 CC-BY-NC-ND-4.0, 104 CC-BY-NC-3.0, 105 CC-BY-NC-SA-3.0, 106 CC-BY-NC-ND-3.0, 107 BSRN-1.0, 108 UNKNOWN. All match the note.
 - ToU quotes (https://www.pangaea.de/about/terms.php): §6.2 "CC0 for metadata and CC-BY for data", the two-year moratorium sentence, "Metadata is always freely accessible" and the bulk-download / "prior authorization" clause are verbatim. No NC or research-only clause applies to the data.
 - Citation: `?format=citation_text` of 911902 returns exactly the quoted attribution string.
