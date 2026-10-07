@@ -55,8 +55,9 @@ How it works
       ``Orientation`` tag, ``DateTimeOriginal`` is wrong on some cameras and is ignored; the survey date comes
       from the site-info CSV), black / on-deck frame filters. Frame extraction is not needed (images).
     * Politeness: 1 request per second to www.ncei.noaa.gov (listings, CSVs, images), one transfer at a time.
-      The server sometimes drops TLS: the project Http client retries with back-off. Every image is checked for the
-      JPEG magic number after the download. Downloaded files are data and are never executed.
+      The server sometimes drops TLS: the project Http client retries requests with back-off and ``fetch_media``
+      retries a reset in the middle of a body (resuming the ``.part`` file). Every image is checked for the JPEG magic
+      number after the download. Downloaded files are data and are never executed.
 
 Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     accessions        only these NCEI accession numbers, e.g. ``0317534,0159155`` (default: all 38).
@@ -82,6 +83,7 @@ import html
 import io
 import logging
 import re
+import time
 import xml.etree.ElementTree as ET
 from collections import deque
 from dataclasses import dataclass, field
@@ -115,6 +117,7 @@ MAX_DEPTH_M = 200.0  # NCRMP photo-quadrats are shot at 0-30 m; anything deeper 
 BOX = (-20.0, 30.0)  # latitude sanity range: Samoa 14.6 S ... Kure 28.5 N
 LON_RANGES = ((140.0, 180.0), (-180.0, -150.0))  # Marianas (144.6 E) across the antimeridian to Hawaii (154.8 W)
 LISTING_TIMEOUT_S = 600
+DOWNLOAD_ATTEMPTS = 4
 MAX_DIRS_PER_ACCESSION = 6000
 MAX_DEPTH_LEVELS = 12
 SKIP_DIRS = {"datadocumentation", "documentation"}
@@ -152,7 +155,7 @@ class Acc:
     first: str  # first / last survey date
     last: str
     site_info: tuple[str, ...]
-    approx: bool = False  # image count is an estimate (nested cruise trees 0176286, 0176288)
+    approx: bool = False  # image count is an estimate (the nested cruise tree 0176286)
     inport: str = "71813"  # InPort collection record (71813 climate, 71814 StRS, 59193 bleaching 2019)
 
     @property
@@ -192,7 +195,9 @@ ACCESSIONS: tuple[Acc, ...] = (
     _a("0317534", "arc0247/0317534/1.1", "climate", 2024, "hawaii", "Hawaiian Archipelago", 2577, 30.7, "2024-05-29", "2024-08-27", "NCRMP_CLIMATE_SITEINFO_HAWAII_2024.csv"),
     _a("0317752", "arc0247/0317752/1.1", "climate", 2025, "pria", "Pacific Remote Island Areas (Wake)", 300, 3.4, "2025-04-03", "2025-04-08", "NCRMP_CLIMATE_SITEINFO_PRIA_2025.csv"),
     _a("0317786", "arc0247/0317786/1.1", "climate", 2025, "marianas", "Mariana Archipelago", 2114, 25.4, "2025-05-09", "2025-06-28", "NCRMP_CLIMATE_SITEINFO_MARIAN_2025.csv"),
-    # stratified random sites: 21 accessions, 176,597 counted + about 20,600 estimated images, 1.41 TB
+    # stratified random sites: 21 accessions, 182,144 counted + about 15,300 estimated images (0176286), 1.41 TB.
+    # 0176288 = 5,547 images in 184 visits (complete walk of the cruise tree 2026-10-07; the research estimate was about 5,400);
+    # 0176286 = about 15,300 (192 of its 509 site folders listed: 30.3 frames per visit; manifest 16,846 entries minus 3 folders per site).
     _a("0159144", "arc0104/0159144/1.1", "strs", 2013, "hawaii", "Hawaiian Archipelago", 12628, 39.4, "2013-04-30", "2013-10-31", "Site_Info_HAWAII_2013.csv"),
     _a("0159142", "arc0104/0159142/1.1", "strs", 2014, "marianas", "Mariana Archipelago", 13326, 40.5, "2014-03-25", "2014-05-07", "Site_Info_MARIAN_2014.csv"),
     _a("0159157", "arc0104/0159157/1.1", "strs", 2014, "pria", "Pacific Remote Island Areas (Wake)", 599, 1.3, "2014-03-16", "2014-03-20", "Site_Info_PRIAs_2014.csv"),
@@ -202,8 +207,8 @@ ACCESSIONS: tuple[Acc, ...] = (
     _a("0276273", "arc0211/0276273/1.1", "strs", 2015, "hawaii", "Northwestern Hawaiian Islands (PMNM RAMP HA1505)", 4159, 16.3, "2015-07-30", "2015-08-21", "NWHI_PMNM_PQ_siteinfo_2015.csv"),
     _a("0164293", "arc0111/0164293/1.1", "strs", 2016, "hawaii", "Hawaiian Archipelago", 19667, 93.2, "2016-07-13", "2016-09-27", "Site_Info_HAWAII_2016.csv"),
     _a("0176287", "arc0125/0176287/1.1", "strs", 2016, "pria", "Pacific Remote Island Areas (Jarvis)", 1751, 7.9, "2016-05-16", "2016-05-22", "Site_Info_PRIAs_2016.csv"),
-    _a("0176286", "arc0190/0176286/1.1", "strs", 2017, "marianas", "Mariana Archipelago", 15200, 104.2, "2017-05-03", "2017-06-21", "Site_Info_MARIAN_2017.csv", approx=True),
-    _a("0176288", "arc0190/0176288/1.1", "strs", 2017, "pria", "Pacific Remote Island Areas (Wake, Baker, Howland, Jarvis)", 5400, 38.4, "2017-04-02", "2017-04-23", "Site_Info_PRIAs_2017.csv", approx=True),
+    _a("0176286", "arc0190/0176286/1.1", "strs", 2017, "marianas", "Mariana Archipelago", 15300, 104.2, "2017-05-03", "2017-06-21", "Site_Info_MARIAN_2017.csv", approx=True),
+    _a("0176288", "arc0190/0176288/1.1", "strs", 2017, "pria", "Pacific Remote Island Areas (Wake, Baker, Howland, Jarvis)", 5547, 38.4, "2017-04-02", "2017-04-23", "Site_Info_PRIAs_2017.csv"),
     _a("0187563", "arc0180/0187563/1.1", "strs", 2018, "samoa", "American Samoa", 7008, 76.4, "2018-06-19", "2018-07-18", "Site_Info_SAMOA_2018.csv"),
     _a("0187564", "arc0180/0187564/1.1", "strs", 2018, "pria", "Pacific Remote Island Areas", 7964, 74.8, "2018-06-08", "2018-08-11", "Site_Info_PRIAs_2018.csv"),
     _a("0211063", "arc0157/0211063/1.1", "strs", 2019, "hawaii", "Main Hawaiian Islands", 14445, 122.4, "2019-04-21", "2019-10-31", "Site_Info_HAWAII_2019.csv"),
@@ -1103,8 +1108,22 @@ class NoaaNcrmpAdapter(Adapter):
         return MediaRef(url=cand.media_url, ext=cand.ext or "jpg")
 
     def fetch_media(self, cand: Candidate, ref: MediaRef, dest: Path) -> tuple[int, str]:
-        """Plain GET (resumable, Range supported); the file must start with the JPEG magic number."""
-        nbytes, sha = self.http.download(ref.url, dest, expected_bytes=ref.expected_bytes, headers=ref.headers or None)
+        """Plain GET (resumable, Range supported); the file must start with the JPEG magic number.
+
+        NCEI sometimes resets the TLS connection in the middle of a body (``SSL_ERROR_SYSCALL``). The shared client only
+        retries the request, so a reset while streaming is retried here (up to ``DOWNLOAD_ATTEMPTS`` times, the ``.part`` file
+        is resumed with a Range request).
+        """
+        for attempt in range(1, DOWNLOAD_ATTEMPTS + 1):
+            try:
+                nbytes, sha = self.http.download(ref.url, dest, expected_bytes=ref.expected_bytes, headers=ref.headers or None)
+                break
+            except OSError as exc:  # requests.ConnectionError / ChunkedEncodingError / SSLError are OSErrors; HttpError is not
+                if attempt == DOWNLOAD_ATTEMPTS:
+                    raise
+                delay = 2.0**attempt
+                log.warning("noaa_ncrmp: %s interrupted (%s); retry %d in %.0fs", ref.url, exc, attempt, delay)
+                time.sleep(delay)
         with open(dest, "rb") as fh:
             head = fh.read(3)
         if head != b"\xff\xd8\xff":

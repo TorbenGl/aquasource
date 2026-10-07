@@ -309,7 +309,8 @@ def test_accession_table_matches_the_research_totals():
     climate = [a for a in nc.ACCESSIONS if a.kind == "climate"]
     strs = [a for a in nc.ACCESSIONS if a.kind == "strs"]
     assert (len(climate), sum(a.images for a in climate), round(sum(a.gb for a in climate), 1)) == (17, 20068, 167.6)
-    assert (len(strs), sum(a.images for a in strs if not a.approx), sum(a.images for a in strs if a.approx)) == (21, 176597, 20600)
+    # research: 176,597 counted + about 20,600 estimated (0176286, 0176288); 0176288 was then listed completely: 5,547 images
+    assert (len(strs), sum(a.images for a in strs if not a.approx), sum(a.images for a in strs if a.approx)) == (21, 176597 + 5547, 15300)
     assert round(sum(a.gb for a in nc.ACCESSIONS) / 1000, 2) == 1.57  # TB
     assert nc.ACC_BY_ID["0159168"].path == "arc0103/0159168/2.2"  # the one accession that is not at version 1.1
     assert nc.ACC_BY_ID["0317534"].root_url == f"{ARCH}/arc0247/0317534/1.1/data/0-data/"
@@ -798,7 +799,7 @@ def test_listing_that_cannot_be_read_is_recorded_and_skipped(tmp_path):
 def test_estimate_reports_the_provider_totals(tmp_path):
     est = make_adapter(tmp_path).estimate()
     assert (est["accessions"], est["climate_accessions"], est["strs_accessions"]) == (38, 17, 21)
-    assert est["images_in_accessions"] == 20068 + 176597 + 20600 and est["images_estimated_counts"] == 20600
+    assert est["images_in_accessions"] == 20068 + 176597 + 5547 + 15300 and est["images_estimated_counts"] == 15300
     assert est["approx_gb_all_images"] == pytest.approx(1573.5, abs=0.1) and est["frames_per_visit"] == 3
     small = make_adapter(tmp_path / "s", kind="climate", regions="samoa", frames_per_visit="all").estimate()
     assert small["accessions"] == 3 and small["frames_per_visit"] == "all" and small["images_in_accessions"] == 1439 + 894 + 1137
@@ -834,6 +835,43 @@ def test_fetch_media_checks_for_a_jpeg(tmp_path, monkeypatch):
     with pytest.raises(HttpError, match="not a JPEG"):
         a.fetch_media(cand, MediaRef(url=cand.media_url), dest)
     assert not dest.exists()  # an error page is never kept as an image
+
+
+def test_fetch_media_retries_a_connection_reset_in_the_middle_of_a_body(tmp_path, monkeypatch):
+    a = make_adapter(tmp_path, dry_run=False, http=NoNet(dry_run=False), accessions="0317534", depth="off")
+    seed_2024(a)
+    cand = by_name(a.discover())["OCC-FFS-001_2024_02.JPG"]
+    dest = tmp_path / "out" / "x.jpg"
+    slept, calls = [], []
+    monkeypatch.setattr(nc.time, "sleep", lambda s: slept.append(s))
+
+    def flaky(url, dst, expected_bytes=None, headers=None):
+        calls.append(url)
+        if len(calls) < 3:
+            raise ConnectionResetError("SSL_ERROR_SYSCALL")  # an OSError, like requests' ChunkedEncodingError / SSLError
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(b"\xff\xd8\xff\xe0 jpeg")
+        return 9, "abc"
+
+    monkeypatch.setattr(a.http, "download", flaky)
+    assert a.fetch_media(cand, a.resolve_media(cand), dest) == (9, "abc") and len(calls) == 3 and slept == [2.0, 4.0]
+
+    def gone(url, dst, expected_bytes=None, headers=None):
+        raise HttpError(url, 404, "download failed")
+
+    monkeypatch.setattr(a.http, "download", gone)
+    slept.clear()
+    with pytest.raises(HttpError):  # a real HTTP error is not retried
+        a.fetch_media(cand, a.resolve_media(cand), dest)
+    assert slept == []
+
+    def always_down(url, dst, expected_bytes=None, headers=None):
+        raise ConnectionResetError("down")
+
+    monkeypatch.setattr(a.http, "download", always_down)
+    with pytest.raises(ConnectionResetError):  # gives up after the last attempt
+        a.fetch_media(cand, a.resolve_media(cand), dest)
+    assert slept == [2.0, 4.0, 8.0]
 
 
 def test_adapter_metadata_for_the_catalogue():
