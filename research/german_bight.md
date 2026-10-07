@@ -1,5 +1,5 @@
 # German Bight seafloor drift videos (HE415/HE416, HE436, Helgoland 2011) (`german_bight`)
-Status: researched · researched 2026-10-06
+Status: verified · researched 2026-10-06 · verified 2026-10-06
 
 ## Summary
 This key covers three PANGAEA data tables of seafloor video from the German Bight (SE North Sea), all recorded by AWI's Wadden Sea Station Sylt:
@@ -13,7 +13,7 @@ Every record is CC BY (4.0 for the Heincke tables, 3.0 for Helgoland), read at r
 
 Each table row gives one ship-GPS position per video, which is **station** precision (`geo_inferred=true`).
 - Heincke: the ship drifts about 30–240 m during a 4–16 min drift. We use a 200 m uncertainty.
-- Helgoland: start and end positions are given, so we use their midpoint, with an uncertainty of 84–140 m.
+- Helgoland: start and end positions are given, so we use their midpoint, with an uncertainty of 62–139 m.
 
 Verdict: **ingest**. Everything is anonymous HTTPS with Range support. About 40 % of the files sit on tape; the first request returns HTTP 503 and recalls the file automatically, and it was online after about 7 minutes.
 
@@ -94,7 +94,7 @@ Six sibling cruise tables in the same format (HE400, HE474, HE478, HE501, HE502,
 - **Recording setup:**
   - Heincke (CSR 2019 §2.2): "The camera systems were equipped with two ahead-oriented cameras, artificial light sources and a laser scale reference. Recordings were taken from the drifting ship (max. speed: 1 knot) while the camera system was kept as close to the seafloor as possible."
   - Helgoland (Mielck 2014 §2.3.1): a Kongsberg OE14-106/107 camera, "recorded at low vessel speed of approximately 0.5 knots".
-  - Scenes: sand, gravel, cobbles and boulders with epifauna (Metridium, Flustra, Alcyonium), and kelp (Laminaria hyperborea) off Helgoland. Water depth is 18–47 m for Heincke and 2–18 m for Helgoland.
+  - Scenes: sand, gravel, cobbles and boulders with epifauna (Metridium, Flustra, Alcyonium), and kelp (Laminaria hyperborea) off Helgoland. Water depth is 24–47 m for the seeded Heincke tables (`Bathy depth [m]` 24.4–47.0) and 2–18 m for Helgoland.
 - **Filters needed:**
   - **On-deck, surface and descent frames at the start and end of clips.** The GoPro starts before deployment: `HE436_GOPRO_001.MP4` begins at 03:02:06 UTC, while the DSHIP "Video camera" event starts at 03:03 UTC and the table time is 03:05:51 UTC. Trim the first and last 60 s, then drop frames with no seafloor (low texture or blue water column) and above-water frames.
   - **Sediment clouds** when the frame touches down; **turbid, low-visibility** German Bight water; **dark frames** (many stations were filmed at night under artificial light). Use a blur/variance filter and a near-black filter.
@@ -124,7 +124,7 @@ Six sibling cruise tables in the same format (HE400, HE474, HE478, HE501, HE502,
     - Event start-to-end drift: median 46 m (max 182 m) and 64 m (max 237 m).
     - Event duration: median 5 min and 8 min (max 37 min).
   - **Uncertainty is therefore 200 m.** That covers the drift, the layback and the GPS error.
-- **Known coordinate errors:** 5 rows disagree with the DSHIP event log by more than 300 m, all in longitude only, at the same time and latitude.
+- **Known coordinate errors:** 5 rows disagree with the DSHIP event log by more than 300 m, all in longitude only, at the same time and latitude. The distances below are to the event *start*; the recipe's `min(start, end)` gives 651, 4,221, 464, 503 and 3,226 m.
 
   | Row | Disagreement |
   |---|---|
@@ -138,10 +138,10 @@ Six sibling cruise tables in the same format (HE400, HE474, HE478, HE501, HE502,
   - Do not silently replace the coordinate: keep the table value and inflate the uncertainty (recipe step 6).
 - **GoPro row mis-assignment in 907386:** row `Profile Greifer_AG1_005` links `HE415_Greifer_AG1_006_HD.{MP4,LRV,THM}`, and row AG1_006 has no GoPro links.
   - The MP4 `mvhd` creation_time is 2014-02-21 12:38:36 in CET, which is 11:38 UTC. That equals the `Date/Time` of row AG1_006 (11:38), not that of AG1_005 (11:11). The two coordinates are 2.1 km apart.
-  - Map every file to a row by the station token in its filename. This is the only mismatch among the 284 file links of 907386.
+  - Map every file to a row by the station token in its filename. This is the only mismatch among the 252 file links of 907386 (87 AVI + 55 each of MP4, LRV, THM).
 - **Helgoland:**
   - Transects are 63–218 m long, at about 0.25 m/s in 2–18 m of water, with DGPS on the vessel (Mielck 2014 §2.2).
-  - We use the midpoint of start and end, with uncertainty = half the length + 30 m, which gives 61–139 m.
+  - We use the midpoint of start and end, with uncertainty = half the length + 30 m, which gives 62–139 m.
   - Optional depth enrichment: PANGAEA.831686 (RoxAnn, 1 Hz DGPS with `Bathy depth [m]`) has 47–857 points within 50 m of each midpoint, with medians of 4.0–17.4 m. If used, mark it in `geo_source` as a nearby-sounding depth (not tide-corrected). Its timestamps (Feb 2011 and 2011-06-16 00:47–04:58) do not overlap any video, so it cannot be used as navigation.
 - **Better than station? No, not worth it now.**
   - HE436 and HE400 have 1 Hz ship master tracks. However:
@@ -164,7 +164,7 @@ Input: one data row (a dict of column name to string) from a PANGAEA `?format=te
    - Heincke: `geo_uncertainty_m = 200`, `geo_source = "PANGAEA.<id> data table columns Latitude/Longitude (ship GPS at drift-video station, WGS 84); depth: Bathy depth [m]"`.
    - 831731: `geo_uncertainty_m = round(L/2 + 30)`, `geo_source = "PANGAEA.831731 midpoint of Latitude/Longitude (start) and Latitude 2/Longitude 2 (end) of the video transect, WGS 84"`.
 6. **Optional QC (Heincke, when event lists are cached).**
-   - Find the `Method/Device == "Video camera"` event with `Date/Time - 2 min <= row Date/Time <= Date/Time end + 2 min`.
+   - Find the `Method/Device == "Video camera"` event with `Date/Time - 5 min <= row Date/Time <= Date/Time end + 5 min`. (A ±2 min window, as first written, matches only 74 of 87 rows of 907386 and misses the typo row `Spots_03`, whose minute-rounded time is 4 min before its event; ±5 min matches 87/87 and 44/45 with no ambiguous match.)
    - Let `d` = min(haversine to the event start, haversine to the event end).
    - If `d > 300`, set `geo_uncertainty_m = round(d + 200, -1)`, append `"; QC: table position differs by <d> m from DSHIP event <label>"` to `geo_source`, and keep the table coordinate.
    - If no event matches, keep step 5.
@@ -194,7 +194,7 @@ Input: one data row (a dict of column name to string) from a PANGAEA `?format=te
   - Resume with `Range: bytes=<n>-`; `206` was verified.
   - Store `etag` and `content-length` in the manifest and check the size after download.
 - **Tape staging:**
-  - About 40 % of the files are offline: 33 of 82 probed answered `HTTP 503`, with `content-type: text/html`, `retry-after: 7`, `refresh: 5` and a page reading "The requested file He415_Spots_06.avi is loading from tape... Download will start automatically after a minute".
+  - About 40 % of the files are offline: 33 of 82 probed answered `HTTP 503`, with `content-type: text/html`, `retry-after: 7` (2 on 2026-10-07), `refresh: 5` and a page reading "The requested file He415_Spots_06.avi is loading from tape... Download will start automatically after a minute".
   - Any request, including HEAD, triggers the recall; no login or ticket is needed.
   - Measured: `He415_Spots_06.avi` (91 MB) was first requested at about 14:35 UTC, still answered 503 at 14:41:20, and answered 200 at 14:42:50. So it took 7–8 min.
   - Never save a 503 HTML body as media; check `content-type` starts with `video/`.
@@ -242,3 +242,40 @@ Input: one data row (a dict of column name to string) from a PANGAEA `?format=te
   - The GoPro clocks run on CET (+1 h). Any future `segment` work must correct for this.
 - **Tape behaviour may change:** the 503 page and its timings were observed once, for a 91 MB file. Recall of 2 GB MP4s may take longer, so keep retries patient (≥ 30 min) and polite.
 - **Requests made in this research:** our HEAD probes triggered recalls of about 33 files. That is harmless, but further probing should stay small.
+- **Unpublished HE415 video deployments (found in verification):** the HE415 DSHIP list has 114 `Video camera` events, but 907386 holds only the 32 from 19 and 21 Feb 2014. The 82 events of 13–14 Feb (a transect along about 8.06 E, 53.96–54.47 N) and 24 Feb 2014 (around Helgoland) have no video on PANGAEA. A PANGAEA search for "Video observation during R/V Heincke" returns exactly 8 tables (the 2 seeded Heincke ones plus the 6 siblings), so those videos are not published elsewhere under that title. Only a request to the PIs could recover them.
+- **HE505 sibling timestamps are not acquisition times (found in verification):** in PANGAEA.907340 all 26 `Date/Time` values fall in 13 minutes (2018-03-14T18:10:49 to 18:23:44) although the stations are up to 30 km apart. Use its coordinates but not its times. HE505 used a "C-Technics Camera" plus GoPro, not the Kongsberg camera.
+- **Helgoland paper vs data:** Mielck et al. 2014 §2.3.1 describes "8 concurrent video transect[s]" of about 1,200 m and 60 min in total; PANGAEA.831731 lists 13 transects totalling about 1,564 m and 80.5 min. Use the data table.
+- **Download script header** (`scripts/download/german_bight.sh`, not changed here): it says "CC BY 4.0 per PANGAEA record" (831731 is CC BY 3.0) and "one AVI is ~175 MB" (that is the largest AVI; the median is about 22 MB).
+
+## Verification (2026-10-06)
+Independent re-check against primary sources (requests made 2026-10-07 UTC with the project User-Agent; metadata only, plus three header Range reads of at most 4 KB and two HEADs).
+
+**Checked and confirmed**
+- Licence, record level, tier **B**:
+  - `?format=textfile` headers of https://doi.pangaea.de/10.1594/PANGAEA.907386 and https://doi.pangaea.de/10.1594/PANGAEA.909999: "License: Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)".
+  - https://doi.pangaea.de/10.1594/PANGAEA.831731?format=textfile: "License: Creative Commons Attribution 3.0 Unported (CC-BY-3.0) (URI: https://creativecommons.org/licenses/by/3.0/)".
+  - `?format=metadata_jsonld` of 907386, 909999, 831731 and the parent 831732: `license` by/4.0, by/4.0, by/3.0, by/3.0; `conditionsOfAccess` "unrestricted". The HTML landing page of 907386 shows the same licence. No NC, ND or moratorium term anywhere.
+  - The CC BY-NC-ND notice is in the CSR article PDF (https://www.vliz.be/imisdocs/publications/ocrd/323837.pdf), not in the data records.
+  - The three citation strings in the note match the `Citation:` lines verbatim.
+- Columns and counts, from the live exports:
+  - 907386: `Event, Content, Longitude, Latitude, Date/Time, Bathy depth [m], URL movie (avi), URL file (LRV), URL movie (MP4), URL file (THM)`; 87 rows, 87 AVI, 55 MP4, 55 LRV, 55 THM, all in the `HE415/` folder; depth 25.2–47.0 m, none missing.
+  - 909999: `Latitude, Longitude, Date/Time, Bathy depth [m], URL movie (avi), URL movie (MP4)`; 45 rows, 45 AVI, 44 MP4; depth 24.4–46.3 m, empty for He436_012-1 and 012-2.
+  - 831731: start/end `Latitude`/`Longitude`, `Latitude 2`/`Longitude 2`, UTM, `File size [kByte]` (sum 3,100,876), 13 MPG; no depth column.
+  - Total 244 videos (145 station + 99 GoPro).
+- GoPro mis-assignment: row `Profile Greifer_AG1_005` links `HE415_Greifer_AG1_006_HD.*`; a 1 KB Range read of that MP4 gives `mvhd` creation 2014-02-21 12:38:36 (file 1,457,159,957 B). `HE436_GOPRO_001.MP4` gives 2014-11-17 04:02:06 and 471 s (1,709,542,405 B), consistent with a CET camera clock (03:02 UTC, DSHIP event 03:03 UTC).
+- He436_029 typo: https://doi.pangaea.de/10.1594/PANGAEA.840690?format=textfile has `2014-11-18T00:30 54.69528 7.15924`; the DSHIP event HE436/032-2 has 7.15950; the table has 7.10933 (3,226 m off).
+- DSHIP lists (https://www.pangaea.de/ddi/HE415.tab?..., HE416, HE436): with a ±5 min window, 87/87 and 44/45 rows match (He436_020 has no event), median table-to-event-start distance 21 m and 15 m, drift median 46/64 m, max 182/237 m. The farthest ship position from the table point is ≤ 200 m for 125 of 126 rows (median 48 m), so the 200 m station uncertainty is honest.
+- Helgoland positions are in water: every transect midpoint has 47–857 RoxAnn soundings (PANGAEA.831686, 2.8 MB export) within 50 m, median depth 4.0–17.4 m. All coordinates are N/E with positive signs, as expected for the North Sea.
+- Fixtures: every line of the three `*_excerpt.tab` files and of `events_HE436_excerpt.tab` occurs verbatim and in order in the live responses; `pangaea_909999_jsonld.json` and `tests/fixtures/_core/pangaea_907386.tab` are byte-identical to the live files. The SOURCE.md URLs are correct.
+- Access: `HEAD He415_Spots_01-1.avi` gave 200, `video/x-msvideo`, 175,314,120 B, `accept-ranges: bytes`; its header has `vidsH264`, 640×480, 29.97 fps and 61,756 frames (34.3 min). `HEAD Video06_2011-06-16T15_20_00.mpg` gave 503 `text/html` with `retry-after: 2` (tape). The HE436 master track zip is 9,783,698 B.
+- Siblings: the 6 tables exist, are CC BY 4.0, and hold 114 + 25 + 43 + 63 + 3 + 26 = 274 rows; the PANGAEA search above finds no other Heincke video table.
+- Precision `station` with `geo_inferred=true` is right: one ship position per video; no per-frame navigation linked to the files. Not an observatory, so no archive enumeration is needed.
+
+**Corrected**
+- Helgoland uncertainty range: 62–139 m (the summary said 84–140 m and the Geolocation section 61–139 m).
+- 907386 has 252 file links, not 284.
+- Heincke depth: 24–47 m for the seeded tables, not 18–47 m.
+- QC recipe step 6: the time window must be ±5 min, not ±2 min (±2 min misses 13 of 87 rows, including the typo row Spots_03). The per-row distances in the typo table are to the event start; the recipe's `min(start, end)` values are 651, 4,221, 464, 503 and 3,226 m.
+- Added risks: 82 unpublished HE415 video deployments, HE505 timestamps, the Helgoland paper vs data count, the download script header.
+
+No fixture file needed changing.
