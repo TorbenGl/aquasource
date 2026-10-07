@@ -236,7 +236,11 @@ class GermanBightAdapter(Adapter):
     )
     media_types = ("video",)
     env_vars: tuple[str, ...] = ()
-    manual_steps = ""
+    manual_steps = (
+        "None for the default media=station (about 16 GB; the tape recall is automatic, rerun later for files in "
+        "metadata/failures.jsonl). A GoPro harvest (media=gopro|all, about 450 GB) is beyond sampled use: PANGAEA ToU "
+        "section 5.5 lets PANGAEA throttle bulk downloads, so ask first (https://www.pangaea.de/contact/)."
+    )
     host_intervals = {"doi.pangaea.de": 1.0, "www.pangaea.de": 1.0, "hs.pangaea.de": 1.0}
 
     def __init__(self, ctx):

@@ -22,7 +22,9 @@
 #           siblings. Plan for the station videos only unless the budget is in bytes.
 #
 # Manual steps before running:
-#   none. About 40 % of the files sit on tape: the first request answers HTTP 503 and recalls the file, it is online
+#   none for the default media=station. A GoPro harvest (media=gopro|all, ~450 GB) is beyond sampled use: PANGAEA ToU
+#   section 5.5 lets PANGAEA throttle bulk downloads, so ask first (https://www.pangaea.de/contact/).
+#   About 40 % of the files sit on tape: the first request answers HTTP 503 and recalls the file, it is online
 #   after ~7-15 min. The adapter waits (up to 30 min per file) and HEADs the next files so that recalls overlap;
 #   whatever still fails is listed in <data_root>/german_bight/metadata/failures.jsonl: just rerun the script later.
 #
