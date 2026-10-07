@@ -14,11 +14,12 @@
 # Geo:      station precision, geo_inferred=true: one ship-GPS position per video (columns Latitude/Longitude,
 #           depth "Bathy depth [m]"), applied to every frame. geo_uncertainty_m is 200 m for the Heincke tables
 #           (inflated to distance + 200 m where the position disagrees with the DSHIP event log by > 300 m: 5 known
-#           longitude typos of the seed tables, 2 in HE400) and half the transect length + 30 m for Helgoland.
+#           longitude typos in the seed tables, 2 in HE400) and half the transect length + 30 m for Helgoland.
 #           GoPro clips are mapped to their table row by file name (PANGAEA.907386 lists one clip in the wrong row).
-# Size:     default media=station: ~145 seed videos (AVI median 22 MB, mean 32 MB; Helgoland MPG 110-469 MB), ~420
-#           with the siblings (see the "provider total" line of --dry-run). GoPro MP4 (--opt media=gopro|all) are
-#           1.3-2.2 GB each: ~99 seed clips = ~170 GB, about 190 GB with the siblings. Plan for the station videos only.
+# Size:     default media=station: 145 seed videos (AVI median 22 MB, mean 32 MB; Helgoland MPG 110-469 MB) and 419
+#           with the siblings, about 16 GB projected (see the "provider total" line of --dry-run). GoPro MP4
+#           (--opt media=gopro|all) are 1.3-2.2 GB each: 99 seed clips = ~170 GB, 260 clips = ~450 GB with the
+#           siblings. Plan for the station videos only unless the budget is in bytes.
 #
 # Manual steps before running:
 #   none. About 40 % of the files sit on tape: the first request answers HTTP 503 and recalls the file, it is online

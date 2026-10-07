@@ -38,8 +38,10 @@ How it works
       whose start - 5 min <= row Date/Time <= end + 5 min is looked up; with ``d`` = the smaller
       distance from the table position to the event start / end, ``d > 300 m`` keeps the table
       coordinate, sets ``geo_uncertainty_m = round(d + 200, -1)`` and writes the disagreement
-      into ``geo_source`` and ``extra`` (5 known longitude typos, 0.5-4.3 km, e.g. He436_029
-      3,226 m off). No event, no change. HE505 (907340) times are not acquisition times
+      into ``geo_source`` and ``extra`` (5 known longitude typos in the seed tables, 0.5-4.3 km,
+      e.g. He436_029 3,226 m off; two in HE400, 3.7 and 18.5 km). No event, no change: the
+      HE478, HE501, HE502 and HE505 times do not fall into any DSHIP video event, so those rows
+      keep 200 m. HE505 (907340) times are not acquisition times
       (13 min for stations up to 30 km apart): its ``timestamp`` is left empty.
     * Licence: the ``License:`` line of the record header is cross-checked with the JSON-LD
       ``license`` and ``conditionsOfAccess`` (``licence_check=true``, default). A contradiction
@@ -69,8 +71,9 @@ Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     siblings        false limits the default list to 907386, 909999 and 831731 (default true).
     cruises         only these groups, e.g. ``["HE436","Helgoland2011"]`` (group = cruise from the
                     ``Event`` column / header, ``Helgoland2011`` for 831731, ``PANGAEA.<id>`` else).
-    media           ``station`` (default: AVI / MPG / ASF, about 8 GB for ~420 files), ``gopro``
-                    (MP4 only, about 190 GB) or ``all``.
+    media           ``station`` (default: AVI / MPG / ASF, 419 files, about 16 GB projected), ``gopro``
+                    (MP4 only, 260 clips of 1.3-2.2 GB, about 450 GB; the three seed tables 170 GB)
+                    or ``all``.
     order           ``spread`` (default) or ``table`` (table and column order).
     qc              false skips the DSHIP event check (default true).
     qc_reject_m     > 0: a row whose table position differs from its DSHIP event by more than this
