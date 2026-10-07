@@ -12,7 +12,8 @@ parent series is tier U (the sources contradict each other).
 How it works
     * Series -> children: ``?format=metadata_panmd`` of the series lists ``collectionChilds``.
       A series with ``loginOption`` != unrestricted (moratorium, e.g. SO295 994607 until
-      2027-04-22) is skipped and re-checked on every run, so it is picked up once it opens.
+      2027-04-22) is skipped; its pan_md is re-read (not from the cache) once per run, so it is
+      picked up once it opens.
     * Per child: ``?format=textfile`` (cached in metadata/raw/pangaea_<id>.tab). A dataset
       without a data matrix answers 303 to its media file (a video such as 898338): that
       redirect is never followed; the pan_md ``staticURL`` becomes one video candidate.
@@ -24,8 +25,12 @@ How it works
       ``Latitude`` / ``Longitude`` that survives the outlier check is ``image`` precision;
       constant positions ("Positioning failed") and rows without a usable position fall back
       to the event position of the dataset (``station``, ``geo_inferred`` true, uncertainty
-      4000 m for a point event or half the start-end distance + 500 m). Depth is
-      ``abs(Depth water [m])`` (MSM77 serves it negative), else -ELEVATION of the event.
+      4000 m for a point event or half the start-end distance + 500 m). A position that is
+      constant over a whole event (the event coordinate copied into a multi-event table) is
+      station, not image. A video listed in a table row with a position is ``segment``
+      (position at the video start, geo_inferred true). Depth is ``abs(Depth water [m])``
+      (MSM77 serves it negative), else -ELEVATION of the event, except for under-ice /
+      upward-looking cameras (BEAST), whose event ELEVATION is the seafloor, not the camera.
       Coordinates are never invented and the sidecar ``Posidonia`` fields are never parsed.
     * Coordinate outliers: a fix farther than max(3 km, start-end distance of the event) from
       the child's median position (for 20+ fixes also 4 x the 75th percentile distance, so a
@@ -35,7 +40,8 @@ How it works
     * Deck / descent frames and bad rows are dropped before they become candidates: rows
       without position before the event time or before the first valid fix, depth < 0.9 x the
       child's median depth, AUV ``Ground vis [#]`` = 0, AUV altitude (``Distance [m]``)
-      > 12 m. Black frames need pixel checks and are not handled here.
+      > 12 m. A date-only ``Date/Time`` (no clock time) is never compared with the event time.
+      Black frames need pixel checks and are not handled here.
     * Budget-friendly order (``order=spread``): equal share per series (round robin), then per
       child (children and rows are visited in a bit-reversed order, so any prefix of the
       stream is spread over the whole series / time range), instead of the first N rows of
@@ -59,12 +65,14 @@ Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     discovery_max     stop after this many discovery hits.
     exclude           more dataset ids to skip.
     exclude_overlap   true (default) skips datasets that belong to other aquasource keys or are
-                      derived copies (german_bight, obsea, 957274 ...).
+                      derived copies (german_bight, obsea, 957274 ...); an excluded series id also
+                      excludes all of its children (series group or the child's parent DOI).
     check_parent      true (default): compare the licence of the parent series (NC / ND -> U).
     order             ``spread`` (default) or ``table`` (series, children and rows in file order).
     max_per_child     at most N candidates per child dataset.
     max_per_series    at most N candidates per series.
-    max_videos_per_series  at most N video files per series (default 2; one video is 2-3.5 GB).
+    max_videos_per_series  at most N video files per series (default 2; one video is 2-3.5 GB), counted
+                      over single-video datasets and video rows of tables alike.
     keep_flagged      true keeps rows that the filters would drop (they carry ``flags`` in extra).
     depth_filter      fraction of the median depth below which a row is a descent frame
                       (default 0.9, 0 disables).
@@ -175,6 +183,12 @@ PLATFORM_TOWED = re.compile(r"OFOS|OFOBS|Ocean Floor Observation|\bROV\b|remote"
 PLATFORM_NO_DECK_RULES = re.compile(r"BEAST|diver", re.I)
 PLATFORM_NO_DEPTH_RULE = re.compile(r"\bROV\b|remote|BEAST|diver", re.I)
 DEPTH_RULE_MIN_GAP_M = 10.0  # also needs this many metres above the median: shallow reefs vary by more than 10 %
+# Under-ice / upward-looking cameras (MOSAiC BEAST, ROV under sea ice): the event ELEVATION is the seafloor depth
+# (thousands of metres), not the camera depth, so it is never used as depth_m for them.
+UNDER_ICE = re.compile(r"BEAST|under[\s-]?ice|upward[\s-]?looking", re.I)
+SHIP_GPS_UNKNOWN_DEPTH_M = 2000.0  # cap of the layback heuristic, used when the depth is unknown
+# Media types of a ?format=textfile answer that is a media file, not a data table (never read as metadata).
+NON_TABLE_TYPES = ("image/", "video/", "audio/", "application/octet-stream", "application/zip", "application/x-tar")
 
 # Flags that make a row a candidate for dropping (unless keep_flagged).
 DROP_FLAGS = frozenset(
@@ -497,9 +511,15 @@ class TableGeo:
     median_depth: float | None = None
     ship_gps: bool = False
     flags: list[list[str]] = field(default_factory=list)
+    # Event labels ("" = no Event column) whose rows all carry one position: the event coordinate copied into
+    # the table (or a failed positioning), never a per-image fix.
+    constant_groups: set[str] = field(default_factory=set)
 
     def has_position(self, i: int) -> bool:
         return self.pairs[i] is not None and i not in self.outliers
+
+    def is_constant(self, i: int) -> bool:
+        return self.ev_labels[i] in self.constant_groups
 
 
 @dataclass
@@ -534,6 +554,10 @@ class PanDataset:
     def platform(self) -> str:
         return "; ".join(e.method for e in self.events if e.method)
 
+    @property
+    def under_ice(self) -> bool:
+        return bool(UNDER_ICE.search(self.platform) or UNDER_ICE.search(self.title or ""))
+
     def event_at(self, idx: int | None) -> Event | None:
         """Event of table row ``idx`` (its ``Event`` column), else the only / first event."""
         if self.geo is not None and idx is not None:
@@ -561,6 +585,9 @@ def analyse_table(
     )
     rows = table.rows
     n = len(rows)
+    # Times with a clock time. A date-only "Date/Time" (e.g. 2023-06-02 in ARTofMELT 961934) is fine for ordering
+    # but must not be compared with an event time or used for speeds: midnight is not when the photo was taken.
+    exact: list[float | None] = []
     for row in rows:
         lat = num(row.get(g.lat_col)) if g.lat_col else None
         lon = num(row.get(g.lon_col)) if g.lon_col else None
@@ -572,29 +599,40 @@ def analyse_table(
             and not (lat == 0.0 and lon == 0.0)
         )
         g.pairs.append((lat, lon) if ok else None)
-        g.times.append(parse_time(row.get(g.time_col)) if g.time_col and row.get(g.time_col) else None)
+        stamp = (row.get(g.time_col) or "").strip() if g.time_col else ""
+        t = parse_time(stamp) if stamp else None
+        g.times.append(t)
+        exact.append(t if ":" in stamp else None)
         g.depths.append(num(row.get(g.depth_col)) if g.depth_col else None)
         g.uncs.append(num(row.get(g.unc_col)) if g.unc_col else None)
         g.ev_labels.append((row.get(g.event_col) or "").strip() if g.event_col else "")
     valid = [i for i, p in enumerate(g.pairs) if p is not None]
     g.n_valid = len(valid)
-    g.n_unique = len({g.pairs[i] for i in valid})
 
-    # 1) distance from the child's median position
+    # 1) distance from the median position, per event: a multi-event table (several stations km apart, rows
+    #    labelled in an Event column) is checked station by station, never against one median of all stations
     if valid:
         g.median_pos = (
             statistics.median(g.pairs[i][0] for i in valid),
             statistics.median(g.pairs[i][1] for i in valid),
         )
-    if g.n_valid > 2 and g.median_pos:
-        dist = {i: haversine_m(g.median_pos[0], g.median_pos[1], *g.pairs[i]) for i in valid}
-        limit = max(OUTLIER_MIN_M, max((e.span_m for e in events), default=0.0))
-        if g.n_valid >= 20:
+    by_event: dict[str, list[int]] = {}
+    for i in valid:
+        by_event.setdefault(g.ev_labels[i], []).append(i)
+    for label, idxs in by_event.items():
+        if len(idxs) <= 2:
+            continue
+        med = (statistics.median(g.pairs[i][0] for i in idxs), statistics.median(g.pairs[i][1] for i in idxs))
+        ev = _event_by_label(events, label) if label else None
+        span = ev.span_m if ev is not None else max((e.span_m for e in events), default=0.0)
+        dist = {i: haversine_m(med[0], med[1], *g.pairs[i]) for i in idxs}
+        limit = max(OUTLIER_MIN_M, span)
+        if len(idxs) >= 20:
             ds = sorted(dist.values())
             limit = max(limit, 4.0 * ds[int(0.75 * (len(ds) - 1))])
-        g.outliers = {i for i, d in dist.items() if d > limit}
+        g.outliers |= {i for i, d in dist.items() if d > limit}
     # 2) spikes: implied speed above 3 m/s to both time neighbours
-    seq = sorted((g.times[i], i) for i in valid if i not in g.outliers and g.times[i] is not None)
+    seq = sorted((exact[i], i) for i in valid if i not in g.outliers and exact[i] is not None)
     for k in range(1, len(seq) - 1):
         (t0, i0), (t1, i1), (t2, i2) = seq[k - 1], seq[k], seq[k + 1]
         if t1 <= t0 or t2 <= t1:
@@ -603,7 +641,16 @@ def analyse_table(
         v_next = haversine_m(*g.pairs[i1], *g.pairs[i2]) / (t2 - t1)
         if v_prev > OUTLIER_SPEED_MS and v_next > OUTLIER_SPEED_MS:
             g.outliers.add(i1)
-    good = sorted((g.times[i], i) for i in valid if i not in g.outliers and g.times[i] is not None)
+    # distinct positions, overall and per event, counted on the fixes that survived the outlier tests
+    kept = [i for i in valid if i not in g.outliers]
+    g.n_unique = len({g.pairs[i] for i in kept})
+    per_group: dict[str, set[tuple[float, float]]] = {}
+    per_group_n: Counter = Counter()
+    for i in kept:
+        per_group.setdefault(g.ev_labels[i], set()).add(g.pairs[i])
+        per_group_n[g.ev_labels[i]] += 1
+    g.constant_groups = {lab for lab, s in per_group.items() if len(s) == 1 and per_group_n[lab] >= 2}
+    good = sorted((exact[i], i) for i in valid if i not in g.outliers and exact[i] is not None)
     if good:
         g.first_fix_t = good[0][0]
     # 3) runs of one held USBL fix
@@ -631,7 +678,7 @@ def analyse_table(
         if i in g.outliers:
             fl.append("position_outlier")
         if deck_rules and not g.has_position(i):
-            t = g.times[i]
+            t = exact[i]
             ev = _event_by_label(events, g.ev_labels[i])
             ev_t = parse_time(ev.dt) if ev and ev.dt else None
             if ev is None and events:
@@ -719,6 +766,7 @@ class PangaeaImagesAdapter(Adapter):
         self._lookahead: deque[Candidate] = deque()
         self._warmed: dict[str, bool] = {}  # url -> already on disk when the warm-up HEAD asked
         self._staging_seen = False
+        self._rechecked: set[str] = set()  # restricted records re-read in this run
         self.excluded = self._excluded_ids()
 
     # ----------------------------------------------------------------- options
@@ -743,9 +791,25 @@ class PangaeaImagesAdapter(Adapter):
         return problems
 
     # ----------------------------------------------------------------- metadata fetch
-    def _panmd(self, ds_id: str) -> PanMd:
-        text = self.ctx.cached_text(pangaea.landing_url(ds_id) + "?format=metadata_panmd", f"pangaea_{ds_id}.panmd.xml")
+    def _panmd(self, ds_id: str, *, refresh: bool = False) -> PanMd:
+        text = self.ctx.cached_text(
+            pangaea.landing_url(ds_id) + "?format=metadata_panmd", f"pangaea_{ds_id}.panmd.xml", refresh=refresh
+        )
         return parse_panmd(text)
+
+    def _open_panmd(self, ds_id: str, today: str) -> tuple[PanMd, str | None]:
+        """pan_md plus the reason it is restricted. A restricted record is re-read once per run (not from the
+        cache), so a moratorium that PANGAEA lifts or changes is noticed on the next run."""
+        pm = self._panmd(ds_id)
+        why = pm.restricted_reason(today)
+        if why and ds_id not in self._rechecked:
+            self._rechecked.add(ds_id)
+            try:
+                pm = self._panmd(ds_id, refresh=True)
+                why = pm.restricted_reason(today)
+            except HttpError as exc:
+                log.info("re-check of restricted PANGAEA.%s failed: %s", ds_id, exc)
+        return pm, why
 
     def _table_text(self, ds_id: str) -> str:
         """The ``?format=textfile`` export, cached. "" means: no data matrix (the server redirects to the file).
@@ -768,6 +832,10 @@ class PangaeaImagesAdapter(Adapter):
                 raise _Skip(f"restricted: HTTP {resp.status_code} (access rights needed or moratorium)")
             if resp.status_code >= 400:
                 raise HttpError(url, resp.status_code, "textfile request failed")
+            if (resp.headers.get("Content-Type") or "").lower().startswith(NON_TABLE_TYPES):
+                # the server handed out the media file itself: no data matrix, and the body is never read
+                self.ctx.save_raw(name, "")
+                return ""
             if int(resp.headers.get("Content-Length") or 0) > limit:
                 raise _Skip(f"table larger than max_table_mb={limit / 1e6:g}")
             buf = bytearray()
@@ -883,12 +951,11 @@ class PangaeaImagesAdapter(Adapter):
             return list(g.children)
         sid = g.series_id
         try:
-            pm = self._panmd(sid)
+            pm, why = self._open_panmd(sid, today)
         except (HttpError, ET.ParseError, ValueError) as exc:
             self.ctx.fail(f"PANGAEA.{sid}", "discover", f"series metadata: {type(exc).__name__}: {exc}")
             return []
         self._series[sid] = pm
-        why = pm.restricted_reason(today)
         if why:
             self.ctx.fail(f"PANGAEA.{sid}", "licence", f"series skipped, {why}")
             return []
@@ -914,6 +981,10 @@ class PangaeaImagesAdapter(Adapter):
             self.ctx.fail(item, "discover", f"{type(exc).__name__}: {exc}")
             return None
         if ds is None:
+            return None
+        if ds.parent_id and ds.parent_id in self.excluded:
+            # e.g. a child of 957274 reached through datasets= or another series: excluded with its series
+            self.ctx.fail(item, "discover", f"excluded: parent series PANGAEA.{ds.parent_id}: {self.excluded[ds.parent_id]}")
             return None
         self._apply_parent_licence(ds)
         if classify(ds.licence_name) == "X" and not ds.tier_override:
@@ -957,9 +1028,8 @@ class PangaeaImagesAdapter(Adapter):
         return ds
 
     def _static_dataset(self, ds_id: str, g: Group | None) -> PanDataset | None:
-        pm = self._panmd(ds_id)
         today = date.today().isoformat()
-        why = pm.restricted_reason(today)
+        pm, why = self._open_panmd(ds_id, today)
         if why:
             raise _Skip(f"restricted: {why}")
         url = pm.technical.get("staticURL")
@@ -1035,6 +1105,7 @@ class PangaeaImagesAdapter(Adapter):
         self._seen_urls.clear()
         self._videos.clear()
         self._datasets.clear()  # tables are freed after listing: reload from the metadata cache
+        self._lookahead.clear()  # a previous run may have stopped at its budget with candidates still buffered
         stream = self._stream()
         n = self._opt_int("stage_batch", 20) or 0
         if self.ctx.dry_run or n <= 0:
@@ -1056,6 +1127,11 @@ class PangaeaImagesAdapter(Adapter):
         return _interleave(series)
 
     def _series_stream(self, g: Group) -> Iterator[Candidate]:
+        if g.series_id in self.excluded and g.children != [g.series_id]:
+            # a whole series that another key covers or that copies seed images (e.g. 957274, 892623): its
+            # children have their own ids, so the check on the child id alone would let them through
+            self.ctx.fail(f"PANGAEA.{g.series_id}", "discover", f"excluded series: {self.excluded[g.series_id]}")
+            return
         kids = self._expand(g)
         if not kids:
             return
@@ -1148,12 +1224,16 @@ class PangaeaImagesAdapter(Adapter):
         entries: list[tuple[float, int, str, str, list[str], str | None]] = []
         dropped: Counter = Counter()
         local: set[str] = set()
+        # first row of each file name (all rows, before any filter): a second file with the same name gets the
+        # suffix ~<row>, whatever the options and the order, so item ids stay stable across runs
+        first_row: dict[str, tuple[int, str]] = {}
         for i, row in enumerate(t.rows):
             pick = self._pick_media(ds, row, cols)
             if pick is None:
                 dropped["no_media_file"] += 1
                 continue
             url, col = pick
+            first_row.setdefault(os.path.basename(urlparse(url).path), (i, url))
             if url in self._seen_urls or url in local:
                 dropped["duplicate_url"] += 1
                 continue
@@ -1178,17 +1258,24 @@ class PangaeaImagesAdapter(Adapter):
         table_order = self.options.get("order", "spread") == "table"
         entries.sort(key=lambda e: (e[1],) if table_order else (e[0], e[1]))
         order = range(len(entries)) if table_order else spread_order(len(entries))
-        used: set[str] = set()
+        video_cap = self._opt_int("max_videos_per_series", 2) or 0
+        capped = 0
         for k in order:
             _, i, url, col, flags, stamp = entries[k]
             if url in self._seen_urls:
                 continue
+            mtype = media_type_for(url)
+            if mtype == "video":
+                # one video is up to a few GB: the per-series cap applies to table rows as well (ARTofMELT tables
+                # list 15-20 videos each), not only to single-video datasets
+                if self._videos[g.series_id] >= video_cap:
+                    capped += 1
+                    continue
+                self._videos[g.series_id] += 1
             self._seen_urls.add(url)
             fn = os.path.basename(urlparse(url).path)
-            item_id = f"PANGAEA.{ds.dataset_id}/{fn}"
-            if item_id in used:
-                item_id = f"PANGAEA.{ds.dataset_id}/{fn}~{i}"
-            used.add(item_id)
+            first_i, first_url = first_row.get(fn, (i, url))
+            item_id = f"PANGAEA.{ds.dataset_id}/{fn}" if (first_i == i or first_url == url) else f"PANGAEA.{ds.dataset_id}/{fn}~{i}"
             extra = self._extra(ds, g, filename=fn, media_column=col, row_index=i, flags=flags)
             ev = ds.event_at(i)
             if ev:
@@ -1196,13 +1283,17 @@ class PangaeaImagesAdapter(Adapter):
             yield Candidate(
                 source=self.key,
                 item_id=item_id,
-                media_type=media_type_for(url),
+                media_type=mtype,
                 media_url=url,
                 origin_url=ds.landing,
                 timestamp=stamp,
                 ext=_media_ext(url) or None,
                 raw={"dataset_id": ds.dataset_id, "row_index": i},
                 extra=extra,
+            )
+        if capped:
+            self.ctx.fail(
+                f"PANGAEA.{ds.dataset_id}", "filter", f"{capped} video rows skipped: max_videos_per_series={video_cap} reached"
             )
 
     def _extra(self, ds: PanDataset, g: Group, *, filename: str, media_column: str, row_index: int | None = None, flags: list[str] | None = None) -> dict[str, Any]:
@@ -1260,14 +1351,16 @@ class PangaeaImagesAdapter(Adapter):
         d = g.depths[idx] if g is not None and idx is not None else None
         if d is not None:
             depth, depth_src = round(abs(d), 3), g.depth_col
-        elif ev is not None and ev.depth() is not None:
+        elif ev is not None and ev.depth() is not None and not ds.under_ice:
+            # ELEVATION is the seafloor depth of the event: a fair camera depth for seafloor imaging, never for an
+            # upward-looking camera under the sea ice
             depth, depth_src = ev.depth(), "Event ELEVATION"
 
         have_pos = bool(g and idx is not None and g.has_position(idx))
         if g is not None and idx is not None and "flags" not in cand.extra and g.flags[idx]:
             cand.extra["flags"] = list(g.flags[idx])
         comment = (ds.comment or "").lower()
-        constant = g is not None and ((g.n_unique == 1 and g.n_valid >= 2) or "positioning failed" in comment)
+        constant = have_pos and ("positioning failed" in comment or g.is_constant(idx))
 
         if have_pos and not constant:
             lat, lon = g.pairs[idx]
@@ -1277,18 +1370,25 @@ class PangaeaImagesAdapter(Adapter):
                     unc = UNC_AUV_M
                 elif PLATFORM_TOWED.search(ds.platform):
                     unc = UNC_OFOS_M
-                if g.ship_gps and depth is not None:
-                    unc = max(200.0, min(2000.0, 0.5 * depth))
+                if g.ship_gps:  # ship's GPS, not the camera: layback heuristic of the research note
+                    unc = max(200.0, min(2000.0, 0.5 * depth)) if depth is not None else SHIP_GPS_UNKNOWN_DEPTH_M
             run = g.run_s.get(idx, 0.0)
             if run > HELD_FIX_MIN_S:
                 unc = float(round(max(unc or 0.0, HELD_FIX_SPEED_MS * run)))
             src = f"PANGAEA {doi} data table: Latitude/Longitude (WGS84)"
             if depth_src:
                 src += f" + {depth_src}"
+            if cand.media_type == "video":
+                # one table row per video file: the fix is where the video starts, the frames cover a track
+                return Geo(lat, lon, depth, "segment", src + " (position at the video start time)", True, unc)
             return Geo(lat, lon, depth, "image", src, False, unc)
         if have_pos and constant:
             lat, lon = g.pairs[idx]
-            src = f"PANGAEA {doi} data table Latitude/Longitude, constant for whole deployment"
+            label = g.ev_labels[idx]
+            if label and len(ds.events) > 1 and "positioning failed" not in comment:
+                src = f"PANGAEA {doi} data table Latitude/Longitude, constant for event {label}"
+            else:
+                src = f"PANGAEA {doi} data table Latitude/Longitude, constant for whole deployment"
             if "positioning failed" in comment:
                 src += " (Comment: positioning failed)"
             if depth_src == "Event ELEVATION":

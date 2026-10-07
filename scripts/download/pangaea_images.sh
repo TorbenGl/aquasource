@@ -11,8 +11,11 @@
 #           an NC / ND series is tier U. Attribution = the child's PANGAEA citation + licence, stored per sample.
 # Geo:      image precision from the table columns Latitude / Longitude (WGS84, ~99 % of the seed images) with
 #           an outlier check; otherwise station precision from the Event(s) position of the dataset
-#           (geo_inferred true, uncertainty 4000 m or half the start-end distance + 500 m). Depth from
-#           "Depth water [m]" (sign normalised) or the event ELEVATION. Never invented.
+#           (geo_inferred true, uncertainty 4000 m or half the start-end distance + 500 m); a video listed in a
+#           table row is segment level. Depth from "Depth water [m]" (sign normalised) or the event ELEVATION
+#           (never for under-ice cameras). Never invented.
+# Dedupe:   exclude_overlap=true (default) skips whole series covered by other keys or copying seed images
+#           (957274, 892623, OBSEA, German Bight videos ...); at most max_videos_per_series=2 videos per series.
 # Size:     seeds ~437 k open images (~430 GB: AUV 140 GB, SO268 145 GB, PS118 65 GB, PS124 70 GB, MSM77 10 GB)
 #           plus one 3.45 GB MPEG video. ALWAYS use --budget for sampling: the default order is spread over
 #           series, children and time, so --budget N is a representative sample.
@@ -46,7 +49,7 @@ cd "$(dirname "$0")/../.."
 bounded=0
 for arg in "$@"; do
   case "$arg" in
-    --budget|--budget=*|--dry-run) bounded=1 ;;
+    --budget|--budget=*|--dry-run|-h|--help) bounded=1 ;;
   esac
 done
 if [ "$bounded" = 0 ] && [ "${PANGAEA_BULK_AUTHORISED:-}" != "1" ]; then

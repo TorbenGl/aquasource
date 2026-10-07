@@ -349,6 +349,132 @@ def test_qualified_image_columns_and_stereo_pairs(tmp_path):
     assert c["L1.png"].ext == "png"
 
 
+# Trimmed copy of https://doi.pangaea.de/10.1594/PANGAEA.961934?format=textfile (retrieved 2026-10-07 by the
+# adapter's extras dry run): header lines Citation, Event(s), License and both data rows, values unchanged.
+TABLE_961934 = (
+    "/* DATA DESCRIPTION:\n"
+    "Citation:\tAnhaus, Philipp; Schiller, Martin; Planat, Noémie; Katlein, Christian; Nicolaus, Marcel (2023): Video "
+    "screenshots from ROV survey ARTofMELT2023/1_22-6 on 2023-06-02, survey 2 [dataset]. PANGAEA, "
+    "https://doi.org/10.1594/PANGAEA.961934, \n"
+    "Event(s):\tARTofMELT2023/1_22-6 * LATITUDE: 80.089857 * LONGITUDE: 2.732341 * DATE/TIME START: 2023-06-02T09:57:00 "
+    "* DATE/TIME END: 2023-06-02T15:38:00 * CAMPAIGN: ARTofMELT2023 * BASIS: Oden * METHOD/DEVICE: Remote operated vehicle (ROV)\n"
+    f"License:\t{CC_BY_4} (URI: {CC_BY_4_URI})\n"
+    "*/\n"
+    "Date/Time\tSurvey ID\tIMAGE\n"
+    "2023-06-02\t2\tARTofMELT2023_1_22_6_20230602_2_ROV_HD_camera_video_screenshot_0001.png\n"
+    "2023-06-02\t2\tARTofMELT2023_1_22_6_20230602_2_ROV_HD_camera_video_screenshot_0002.png\n"
+)
+
+
+def test_date_only_timestamps_are_not_deck_frames(tmp_path):
+    # Date/Time "2023-06-02" (no clock time) parses to midnight, before the 09:57 event start: not a deck frame
+    a = make_adapter(tmp_path, [], datasets=["961934"])
+    write_raw(a, "pangaea_961934.tab", TABLE_961934)
+    cands = list(a.discover())
+    assert len(cands) == 2 and all("flags" not in c.extra for c in cands)
+    g = a.resolve_geo(cands[0])
+    assert (g.lat, g.lon, g.depth_m, g.geo_precision, g.geo_inferred, g.geo_uncertainty_m) == (
+        80.089857, 2.732341, None, "station", True, 4000.0)
+    assert cands[0].timestamp == "2023-06-02"
+
+
+def test_under_ice_camera_never_gets_the_seafloor_depth(tmp_path):
+    # synthetic BEAST stills: one row without depth, one table without a depth column; the event ELEVATION
+    # (-4404.6 m) is the seafloor below the floe, not the camera depth
+    rows = [("2019-11-19T09:10:00", "0.25", "U0.JPG"), ("2019-11-19T09:10:10", "", "U1.JPG")]
+    a = make_adapter(tmp_path, [], datasets=["999074", "999075"])
+    write_raw(a, "pangaea_999074.tab", synthetic_table("999074", rows, event=BEAST_EVENT, cols="Date/Time\tDepth water [m]\tIMAGE"))
+    write_raw(a, "pangaea_999075.tab", synthetic_table("999075", [(r[0], "W" + r[2][1:]) for r in rows], event=BEAST_EVENT, cols="Date/Time\tIMAGE"))
+    c = by_file(a.discover())
+    assert a.resolve_geo(c["U0.JPG"]).depth_m == 0.25
+    for name in ("U1.JPG", "W0.JPG", "W1.JPG"):
+        g = a.resolve_geo(c[name])
+        assert (g.geo_precision, g.lat, g.depth_m) == ("station", 85.8, None)
+        assert "ELEVATION" not in g.geo_source
+    # the same table on a seafloor platform keeps the event depth
+    b = make_adapter(tmp_path / "b", [], datasets=["999076"], keep_flagged=True)  # rows predate the synthetic OFOBS event
+    write_raw(b, "pangaea_999076.tab", synthetic_table("999076", [(r[0], r[2]) for r in rows], cols="Date/Time\tIMAGE"))
+    assert {b.resolve_geo(x).depth_m for x in b.discover()} == {600.0}
+
+
+def test_event_coordinates_copied_into_a_multi_event_table_are_station(tmp_path):
+    # synthetic: two events, the Latitude / Longitude columns repeat each event position (no per-image fix)
+    ev = (
+        "ST_1 * LATITUDE: -18.25 * LONGITUDE: 147.70 * DATE/TIME: 2017-01-10T00:00:00 * ELEVATION: -8.0 m * METHOD/DEVICE: Sampling by diver\n"
+        "\tST_2 * LATITUDE: -18.30 * LONGITUDE: 147.75 * DATE/TIME: 2017-01-11T00:00:00 * ELEVATION: -9.0 m * METHOD/DEVICE: Sampling by diver"
+    )
+    rows = [
+        ("ST_1", "2017-01-10T01:00:00", "-18.25", "147.70", "Q1.JPG"),
+        ("ST_1", "2017-01-10T01:00:30", "-18.25", "147.70", "Q2.JPG"),
+        ("ST_2", "2017-01-11T01:00:00", "-18.30", "147.75", "Q3.JPG"),
+        ("ST_2", "2017-01-11T01:00:30", "-18.30", "147.75", "Q4.JPG"),
+    ]
+    a = make_adapter(tmp_path, [], datasets=["999077"])
+    write_raw(a, "pangaea_999077.tab", synthetic_table("999077", rows, event=ev, cols="Event\tDate/Time\tLatitude\tLongitude\tIMAGE"))
+    c = by_file(a.discover())
+    g = a.resolve_geo(c["Q3.JPG"])
+    assert (g.lat, g.lon, g.depth_m, g.geo_precision, g.geo_inferred, g.geo_uncertainty_m) == (-18.3, 147.75, 9.0, "station", True, 4000.0)
+    assert g.geo_source.startswith("PANGAEA 10.1594/PANGAEA.999077 data table Latitude/Longitude, constant for event ST_2")
+    # the same two stations with real per-photo fixes: image precision. The stations are 7.6 km apart, so the
+    # outlier radius (3 km) must be applied per event, not around one median of the whole table
+    moving = [(e, t, f"{float(la) - k * 0.0001:.4f}", lo, n) for k, (e, t, la, lo, n) in enumerate(rows)]
+    moving += [("ST_1", "2017-01-10T01:01:00", "-18.2503", "147.70", "Q5.JPG"), ("ST_2", "2017-01-11T01:01:00", "-18.3006", "147.75", "Q6.JPG")]
+    b = make_adapter(tmp_path / "b", [], datasets=["999079"])
+    write_raw(b, "pangaea_999079.tab", synthetic_table("999079", moving, event=ev, cols="Event\tDate/Time\tLatitude\tLongitude\tIMAGE"))
+    geos = {c.extra["filename"]: b.resolve_geo(c) for c in b.discover()}
+    assert {x.geo_precision for x in geos.values()} == {"image"} and geos["Q3.JPG"].lat == -18.3002
+
+
+def test_video_rows_are_segment_and_capped_per_series(tmp_path):
+    # synthetic, after the column layout of PANGAEA.962099 (one .mpg per row), plus Latitude / Longitude
+    rows = [(f"2023-05-31T15:{m:02d}:00", f"80.26{m:02d}", "2.7951", f"V{m}.mpg") for m in range(30, 36)]
+    cols = "Date/Time\tLatitude\tLongitude\tVIDEO"
+    a = make_adapter(tmp_path, [], datasets=["999078"], keep_flagged=True)
+    write_raw(a, "pangaea_999078.tab", synthetic_table("999078", rows, event=ROV_EVENT, cols=cols))
+    cands = list(a.discover())
+    assert len(cands) == 2 and {c.media_type for c in cands} == {"video"}  # max_videos_per_series defaults to 2
+    assert any("4 video rows skipped: max_videos_per_series=2" in f["reason"] for f in failures(a))
+    g = a.resolve_geo(cands[0])
+    assert (g.geo_precision, g.geo_inferred) == ("segment", True) and "position at the video start time" in g.geo_source
+    b = make_adapter(tmp_path / "b", [], datasets=["999078"], keep_flagged=True, max_videos_per_series=5)
+    write_raw(b, "pangaea_999078.tab", synthetic_table("999078", rows, event=ROV_EVENT, cols=cols))
+    assert len(list(b.discover())) == 5
+
+
+def test_ship_gps_positions_get_the_layback_uncertainty(tmp_path):
+    # synthetic legacy OFOS table with ship's Course / Speed columns (after the layout of PANGAEA.615785)
+    cols = "Date/Time\tLatitude\tLongitude\tCourse [deg]\tSpeed [kn]\tURL raw"
+    rows = [("1999-07-21T10:00:00", "79.06", "4.18", "90", "0.5", "https://hs.pangaea.de/Images/x/a.tif"),
+            ("1999-07-21T10:00:30", "79.0601", "4.1802", "90", "0.5", "https://hs.pangaea.de/Images/x/b.tif")]
+    deep = "OFOS_1 * LATITUDE: 79.06 * LONGITUDE: 4.18 * DATE/TIME: 1999-07-21T09:00:00 * ELEVATION: -2500.0 m * METHOD/DEVICE: Ocean Floor Observation System (OFOS)"
+    nodepth = deep.replace(" * ELEVATION: -2500.0 m", "")
+    a = make_adapter(tmp_path, [], datasets=["999083", "999084"])
+    write_raw(a, "pangaea_999083.tab", synthetic_table("999083", rows, event=deep, cols=cols))
+    write_raw(a, "pangaea_999084.tab", synthetic_table("999084", rows, event=nodepth, cols=cols))
+    got = {(c.extra["dataset_id"], a.resolve_geo(c).geo_uncertainty_m) for c in a.discover()}
+    assert got == {("999083", 1250.0), ("999084", 2000.0)}  # 0.5 x 2500 m; the 2000 m cap when the depth is unknown
+
+
+def test_same_file_name_in_two_folders_keeps_stable_ids(tmp_path):
+    # synthetic: two different files with one name; the second one is a deck frame (shallow) in the default run
+    cols = "Date/Time\tLatitude\tLongitude\tDepth water [m]\tURL image"
+    rows = [
+        ("2021-02-17T01:00:00", "-74.8500", "-31.8500", "50", "https://hs.pangaea.de/Images/A/IMG_1.JPG"),
+        ("2021-02-17T01:00:20", "-74.8501", "-31.8501", "600", "https://hs.pangaea.de/Images/B/IMG_1.JPG"),
+        ("2021-02-17T01:00:40", "-74.8502", "-31.8502", "600", "https://hs.pangaea.de/Images/B/IMG_2.JPG"),
+        ("2021-02-17T01:01:00", "-74.8503", "-31.8503", "600", "https://hs.pangaea.de/Images/B/IMG_3.JPG"),
+    ]
+    ids = {}
+    for keep in (True, False):
+        a = make_adapter(tmp_path / str(keep), [], datasets=["999085"], keep_flagged=keep)
+        write_raw(a, "pangaea_999085.tab", synthetic_table("999085", rows, cols=cols))
+        ids[keep] = {c.media_url: c.item_id for c in a.discover()}
+    assert ids[True]["https://hs.pangaea.de/Images/A/IMG_1.JPG"] == "PANGAEA.999085/IMG_1.JPG"
+    assert ids[True]["https://hs.pangaea.de/Images/B/IMG_1.JPG"] == "PANGAEA.999085/IMG_1.JPG~1"
+    assert ids[False]["https://hs.pangaea.de/Images/B/IMG_1.JPG"] == "PANGAEA.999085/IMG_1.JPG~1"  # same id when row 0 is dropped
+    assert all(ids[True][u] == i for u, i in ids[False].items())
+
+
 def test_urls_are_quoted_and_http_is_upgraded_and_non_media_files_are_ignored(tmp_path):
     cols = "Date/Time\tLatitude\tLongitude\tURL image\tBinary"
     rows = [
@@ -447,14 +573,22 @@ def series_xml(sid, kids, login="unrestricted", extra=""):
 
 
 def test_series_expansion_moratorium_and_interleaving(tmp_path):
-    a = make_adapter(tmp_path, ["989684", "989683", "879298", "935896", "936140"], series=["999030", "999031", "999032"], keep_flagged=True)
+    restricted = series_xml(
+        "999032", ["936140"], login="access rights needed", extra='<md:entry key="moratoriumUntil" value="2999-01-01"/>')
+    panmd_url = "https://doi.pangaea.de/10.1594/PANGAEA.999032?format=metadata_panmd"
+    http = FakeHttp({("GET", panmd_url): lambda: Resp(200, restricted.encode())}, dry_run=True)
+    a = make_adapter(tmp_path, ["989684", "989683", "879298", "935896", "936140"], http=http,
+                     series=["999030", "999031", "999032"], keep_flagged=True)
     write_raw(a, "pangaea_999030.panmd.xml", series_xml("999030", ["989684", "989683"]))
     write_raw(a, "pangaea_999031.panmd.xml", series_xml("999031", ["879298", "935896"]))
-    write_raw(a, "pangaea_999032.panmd.xml", series_xml(
-        "999032", ["936140"], login="access rights needed", extra='<md:entry key="moratoriumUntil" value="2999-01-01"/>'))
+    write_raw(a, "pangaea_999032.panmd.xml", restricted)
     cands = list(a.discover())
     assert {c.extra["dataset_id"] for c in cands} == {"989684", "989683", "879298", "935896"}  # the moratorium series is skipped
     assert any(f["item_id"] == "PANGAEA.999032" and "moratorium until 2999-01-01" in f["reason"] for f in failures(a))
+    # the restricted record is re-read once per run (not from the cache), the open ones are not
+    assert [c[1] for c in http.calls] == [panmd_url]
+    list(a.discover())
+    assert len(http.calls) == 1
     # round robin over series, then over children: the first four candidates come from four different children
     first = cands[:4]
     assert {c.extra["series"] for c in first} == {"999030", "999031"} and len({c.extra["dataset_id"] for c in first}) == 4
@@ -553,6 +687,18 @@ def test_textfile_redirect_is_not_followed_and_401_is_a_skip(tmp_path):
     assert (a.ctx.layout.raw / "pangaea_999061.tab").read_text() == ""
 
 
+def test_textfile_answer_with_a_media_body_is_not_read(tmp_path):
+    class MediaResp(Resp):
+        def iter_content(self, n):
+            raise AssertionError("the media body must not be read as metadata")
+
+    url = "https://doi.pangaea.de/10.1594/PANGAEA.999063?format=textfile"
+    http = FakeHttp({("GET", url): MediaResp(200, b"", {"Content-Type": "video/mpeg", "Content-Length": "3454525444"})}, dry_run=True)
+    a = make_adapter(tmp_path, [], http=http, datasets=["999063"])
+    assert a._table_text("999063") == ""  # treated like the 303 of a dataset without data matrix
+    assert (a.ctx.layout.raw / "pangaea_999063.tab").read_text() == ""
+
+
 def test_oversized_table_is_skipped(tmp_path):
     base = "https://doi.pangaea.de/10.1594/PANGAEA.999062?format=textfile"
     http = FakeHttp({("GET", base): Resp(200, b"x", {"Content-Length": str(40_000_000)})}, dry_run=True)
@@ -581,7 +727,34 @@ def test_es_discovery_groups_children_by_parent(tmp_path):
     groups = a._groups()
     assert [(g.series_id, g.children) for g in groups] == [("100000", ["100001", "100002"]), ("200001", ["200001"])]
     assert a.estimate()["es_discovery_datasets"] == 3
-    assert make_adapter(tmp_path / "m", [], discovery=True, series=[], datasets=[], discovery_max=1) is not None
+    m = make_adapter(tmp_path / "m", [], discovery=True, series=[], datasets=[], discovery_max=1)
+    write_raw(m, "es_discovery_p000.json", json.dumps(ES_PAGE))
+    assert [(g.series_id, g.children) for g in m._groups()] == [("100000", ["100001"])]
+
+
+def test_excluded_series_also_excludes_its_children(tmp_path):
+    # synthetic ES answer: two children of 957274 (processed copies of seed 935856) and one of an open series
+    page = {"hits": {"total": 3, "hits": [
+        {"_id": "957259", "sort": [957259], "_source": {"parentIdDataSet": "957274"}},
+        {"_id": "957262", "sort": [957262], "_source": {"parentIdDataSet": "957274"}},
+        {"_id": "999080", "sort": [999080], "_source": {"parentIdDataSet": "999081"}},
+    ]}}
+    rows = [("2021-02-17T01:00:00", "-74.85", "-31.85", "600", "E0.JPG"), ("2021-02-17T01:00:20", "-74.86", "-31.86", "600", "E1.JPG")]
+    a = make_adapter(tmp_path, [], discovery=True, series=[], datasets=["999082"])
+    write_raw(a, "es_discovery_p000.json", json.dumps(page))
+    write_raw(a, "pangaea_999080.tab", synthetic_table("999080", rows))
+    # a child reached directly (datasets=) whose citation names the excluded series as its parent
+    write_raw(a, "pangaea_999082.tab", synthetic_table("999082", rows, parent="957274"))
+    cands = list(a.discover())  # NoNet: the 957274 children are never even requested
+    assert {c.extra["dataset_id"] for c in cands} == {"999080"}
+    reasons = [f for f in failures(a) if f["stage"] == "discover"]
+    assert any(f["item_id"] == "PANGAEA.957274" and "excluded series: processed copy" in f["reason"] for f in reasons)
+    assert any(f["item_id"] == "PANGAEA.999082" and "parent series PANGAEA.957274" in f["reason"] for f in reasons)
+    # exclude_overlap=false lets them through again
+    b = make_adapter(tmp_path / "b", [], discovery=True, series=[], datasets=["999082"], exclude_overlap=False)
+    write_raw(b, "es_discovery_p000.json", json.dumps({"hits": {"total": 0, "hits": []}}))
+    write_raw(b, "pangaea_999082.tab", synthetic_table("999082", rows, parent="957274"))
+    assert len(list(b.discover())) == 2
 
 
 # ------------------------------------------------------------------ tape staging
@@ -705,6 +878,14 @@ def test_warm_up_heads_only_upcoming_selectable_images_after_tape_was_seen(tmp_p
     http.heads.clear()
     a.resolve_media(first)
     assert http.heads == []  # each file is warmed once
+
+
+def test_a_new_discover_does_not_replay_the_previous_look_ahead(tmp_path):
+    a = make_adapter(tmp_path, ["989684"], http=TapeHttp([]), dry_run=False, keep_flagged=True, stage_batch=2)
+    first = next(iter(a.discover()))  # a budget-limited run stops here with two candidates still buffered
+    assert len(a._lookahead) == 2
+    again = list(a.discover())
+    assert again[0].item_id == first.item_id and len(again) == len({c.item_id for c in again}) == 5
 
 
 # ------------------------------------------------------------------ end to end through the runner
