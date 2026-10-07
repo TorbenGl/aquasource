@@ -1,0 +1,22 @@
+/* DATA DESCRIPTION:
+Citation:	Purser, Autun; Hehemann, Laura; Boehringer, Lilian; Werner, Ellen; Wenzhöfer, Frank (2021): Seabed photographs taken along OFOBS profile PS124_26-7 during POLARSTERN cruise PS124 [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.936140, 
+	In: Purser, A et al. (2021): Ocean Floor Observation and Bathymetry System (OFOBS) seafloor images of the Weddell Sea, Antarctica collected during the PS124 Polarstern expedition [dataset publication series]. PANGAEA, https://doi.org/10.1594/PANGAEA.936205
+Keyword(s):	Antarctica; Continental shelf; Continental Slope; Marine Ecology; Sponges; Weddell Sea
+Related to:	Hellmer, Hartmut H; Holtappels, Moritz (2021): The Expedition PS124 of the Research Vessel POLARSTERN to the southern Weddell Sea in 2021. Berichte zur Polar- und Meeresforschung = Reports on Polar and Marine Research, 755, 237 pp, https://doi.org/10.48433/BzPM_0755_2021
+Coverage:	MEDIAN LATITUDE: -74.738971 * MEDIAN LONGITUDE: -31.882302 * SOUTH-BOUND LATITUDE: -74.868889 * WEST-BOUND LONGITUDE: -31.931273 * NORTH-BOUND LATITUDE: -48.363172 * EAST-BOUND LONGITUDE: -30.598941
+	DATE/TIME START: 2021-02-17T00:08:50 * DATE/TIME END: 2021-02-17T03:46:24
+	MINIMUM DEPTH, water: 274 m * MAXIMUM DEPTH, water: 650 m
+Event(s):	PS124_26-7 * LATITUDE START: -74.849880 * LONGITUDE START: -31.841620 * LATITUDE END: -74.847080 * LONGITUDE END: -31.952940 * DATE/TIME START: 2021-02-16T23:46:36 * DATE/TIME END: 2021-02-17T03:59:54 * ELEVATION START: -633.5 m * ELEVATION END: -612.3 m * O2A REGISTRY URI: https://registry.o2a-data.de/items/1529 * LOCATION: Weddell Sea * CAMPAIGN: PS124 (GPF 19-2_039, COSMUS) * BASIS: Polarstern (URI: https://doi.org/10.17815/jlsrf-3-163) * METHOD/DEVICE: Ocean Floor Observation and Bathymetry System (OFOBS) * COMMENT: Responsible: A. Purser
+Change history:	2025-03-28T09:04:05 - Dataset Titel corrected (OFOBS instead of OFOS)
+License:	Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)
+Status:	Curation Level: Basic curation (URI: https://wiki.pangaea.de/wiki/Curation_levels)
+Size:	730 data points
+Files:	All files referred to in data matrix can be downloaded in one go as ZIP <https://download.pangaea.de/dataset/936140/allfiles.zip> or TAR <https://download.pangaea.de/dataset/936140/allfiles.tar> (PANGAEA user account required). To download single files, use the filename from data matrix appended to "https://download.pangaea.de/dataset/936140/files/".
+*/
+Date/Time	Latitude	Longitude	Depth water [m]	IMAGE
+2021-02-17T03:37:06	-74.84855483	-31.93127283	612	TIMER_2021_02_17_at_03_37_06_IMG_0706.JPG
+2021-02-17T00:09:01	-74.86888883	-30.59894050	380	HOTKEY_2021_02_17_at_00_09_01_IMG_0005.JPG
+2021-02-17T00:08:50				TIMER_2021_02_17_at_00_08_50_IMG_0004.JPG
+2021-02-17T00:29:22	-74.84796933	-31.84839767	503	TIMER_2021_02_17_at_00_29_22_IMG_0071.JPG
+2021-02-17T00:30:03	-48.36317233	-31.84839767	649	TIMER_2021_02_17_at_00_30_03_IMG_0074.JPG
+2021-02-17T00:31:03	-74.84792617	-31.85133917	649	TIMER_2021_02_17_at_00_31_03_IMG_0077.JPG
