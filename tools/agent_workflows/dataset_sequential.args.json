@@ -70,7 +70,7 @@
             "key": "noaa_ncrmp",
             "ticket_id": "3f17ce19-8bfb-8101-a4f9-d7be6b750dce",
             "row_id": "3f17ce19-8bfb-8159-9af7-d2fde9ba4c10",
-            "have_note": false
+            "have_note": true
         },
         {
             "key": "squidle_imos",
