@@ -10,10 +10,13 @@ Still images only, no video.
 Licence, tier A. The six 2024-2025 accessions (0317534, 0317535, 0317752, 0317753, 0317785, 0317786) carry an
 explicit CC0 1.0 dedication in their NCEI record (ISO XML ``otherConstraints``, record level). All older ones,
 the 2023 accessions included, state no licence: they are NOAA (US federal) works with ``accessLevel: public``
-and a citation request only. Their tier A rests on the US-government-work status, read at collection level
-(InPort 71813 / 71814: ``data-access-constraints`` "None", citation request). Attribution is the "Cite as"
-line of each accession's record plus the ESD acknowledgement. An NC / ND / research-only term in a record would
-make it tier X; nothing like it exists today.
+and a citation request only. Their tier A rests on the US-government-work status, read at collection level from
+the InPort XML (71813 climate / 71814 StRS / 59193 bleaching 2019, ``access-information``: ``data-access-constraints``
+"None", a citation request, the ESD "Data Sharing Recommendations"). An NC / ND / research-only term in the record or
+in the collection makes it tier X, access constraints other than "None" or a contradiction U; nothing like it exists
+today. Nothing read at either level: U. Attribution is the "Cite as" text of each accession's record verbatim (with
+the parent collection and its DOI; only the "[indicate subset used]" / "Accessed [date]" placeholders are dropped)
+plus the ESD acknowledgement.
 
 Geo, ``station`` precision, ``geo_inferred`` true, ``geo_uncertainty_m`` 50. Every accession ships a site-info
 CSV (``SITE`` [+ ``OCC_SITEID``], ``DATE_``, ``LATITUDE``, ``LONGITUDE``, WGS 84): the boat's handheld GPS
@@ -22,14 +25,16 @@ position over the divers' buoy, one per site visit, applied to every frame. The 
 across years and permanent sites were renamed, e.g. JOH-07 -> OCC-JOH-004). Depth is not in the image
 accessions: it is joined from NCEI's benthic-cover tables (0317416 fixed sites, 0317464 StRS) as
 mean(MIN_DEPTH, MAX_DEPTH) x 0.3048 (the tables are in feet), ``depth_m`` stays empty where a visit has none
-(StRS Hawaii 2013, Marianas 2014, unannotated images). Nothing is ever invented: a site code missing from the CSV
-falls back to the cover table, else the sample has ``geo_precision`` none (and is dropped by the runner).
+(the cover tables have no 2013-2014 rows at all, nor rows for 0276273, 0270550 and the NWHI half of 0240600: about a
+fifth of all visits). Nothing is ever invented: a site code missing from the CSV
+falls back to the cover table, else the sample has ``geo_precision`` none (and is dropped by the runner). So does a
+position whose LATITUDE and LONGITUDE share the same decimals (KUR-50 of 0159172: 28.37653, -178.37653, a copy error).
 
 How it works
     * The accession table (path, year, region, kind, counts) is built in: it is the verified list of the
       research note (InPort 71813 climate + 71814 StRS + 59193 bleaching). ``discover`` reads only listings and
       CSVs, cached under metadata/raw/ (``listing/<acc>/...``, ``siteinfo/<acc>/...``, ``iso/<acc>.xml``,
-      ``cover/<table>.csv``), so a re-run does not hit NCEI again. Item ids are ``<accession>/<file name>``
+      ``inport/<n>.xml``, ``cover/<table>.csv``), so a re-run does not hit NCEI again. Item ids are ``<accession>/<file name>``
       (e.g. ``0317534/OCC-FFS-001_2024_02.JPG``), stable across runs.
     * Listings: ``.../<arc>/<acc>/<ver>/data/0-data/`` is walked depth first (one request per directory, about
       1 s each); the ``DataDocumentation`` folders are skipped. The big flat folders (13-20 k files, 2-3 MB of
@@ -49,8 +54,10 @@ How it works
       follow a van der Corput order (centre, quarters, ...) with the first frame of each transect last (transect
       starts are marked by photographing fingers). Any prefix of the stream covers all regions, both kinds, many years and the cruise tracks.
     * Frames numbered 0 (the slate) are dropped; numbers above 30 are kept (0159155 has 17 legitimate frames
-      31-38). Names that do not parse become one-frame visits with geo none. Duplicate names inside one
-      accession are listed once.
+      31-38). 0268773 also holds 1,422 oblique site / habitat photos (``SITE_2015_SITE_A_NN.JPG``, 285 visits): they
+      belong to their site visit (same station position) and come after its photo-quadrats
+      (``extra.image_kind`` photoquadrat | site_photo). Names that do not parse (4 ``IMG_39xx.JPG`` in 0268773) become
+      one-frame visits with geo none. Duplicate names inside one accession are listed once.
     * Not done here: slate / hand detectors, EXIF handling (frames carry ``extra.exif_note``: apply the
       ``Orientation`` tag, ``DateTimeOriginal`` is wrong on some cameras and is ignored; the survey date comes
       from the site-info CSV), black / on-deck frame filters. Frame extraction is not needed (images).
@@ -71,7 +78,8 @@ Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     order             ``spread`` (default, see above) or ``table`` (accession by accession, visits by site code).
     climate_share     share of the samples of a region that comes from climate accessions (default 0.25).
     depth             ``cover`` (default: join depth from the 5 cover tables, read once, about 545 MB streamed,
-                      reduced to a ~0.5 MB table per file in metadata/raw/cover/) or ``off`` (``depth_m`` empty).
+                      reduced to a ~0.5 MB table per file in metadata/raw/cover/) or ``off`` (``depth_m`` empty, and no
+                      coordinate fallback either: the 17 visits whose code is missing from the site-info CSV get geo none).
     refresh_metadata  core option: re-download cached metadata.
 """
 
@@ -106,6 +114,9 @@ ARCHIVE = f"{NCEI}/data/oceans/archive"
 LANDING = NCEI + "/archive/accession/{acc}"
 ISO_URL = NCEI + "/access/metadata/landing-page/bin/iso?id=gov.noaa.nodc:{acc}&view=xml"
 INPORT = "https://www.fisheries.noaa.gov/inport/item/{n}"
+INPORT_XML = INPORT + "/inport-xml"
+# InPort access-information fields that can carry a licence or a restriction (collection level)
+COLLECTION_FIELDS = ("data-license-type", "data-license", "data-access-constraints", "data-use-constraints", "data-access-policy")
 CC0_URL = "https://creativecommons.org/publicdomain/zero/1.0/"
 ACK = (
     "This work makes use of data products provided by the Ecosystem Sciences Division (ESD), Pacific Islands Fisheries "
@@ -134,10 +145,13 @@ DEFAULT_FRAMES_PER_VISIT = 3
 DEFAULT_CLIMATE_SHARE = 0.25
 
 # Image names: SITE_YEAR_R_NN.JPG (R = REPLICATE letter), SITE_YEAR_NN.JPG (climate 2019+), SITE_YEAR__NN.JPG (empty
-# replicate, 0176286), SITE_YEAR_NN_original.JPG (the unprocessed twin of 30 images of 0270550).
+# replicate, 0176286), SITE_YEAR_NN_original.JPG (the unprocessed twin of 30 images of 0270550) and SITE_YEAR_SITE_R_NN.JPG
+# (0268773: 1,422 oblique site / habitat photos of 285 site visits next to their photo-quadrats, e.g. HAW-1773_2015_SITE_A_01.JPG).
 NAME_RE = re.compile(
-    r"^(?P<site>.+?)_(?P<year>\d{4})_(?:(?P<rep>[A-Za-z]?)_)?(?P<photo>\d{1,3})(?P<variant>_original)?\.jpe?g$", re.IGNORECASE
+    r"^(?P<site>.+?)_(?P<year>\d{4})_(?:(?P<sitephoto>SITE)_)?(?:(?P<rep>[A-Za-z]?)_)?(?P<photo>\d{1,3})(?P<variant>_original)?\.jpe?g$",
+    re.IGNORECASE,
 )
+QUADRAT, SITE_PHOTO = "photoquadrat", "site_photo"
 
 
 @dataclass(frozen=True)
@@ -238,7 +252,8 @@ MONTHS = {m: i for i, m in enumerate(("JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
 
 # --------------------------------------------------------------------------------------------- pure helpers
 def parse_name(name: str) -> dict[str, Any] | None:
-    """``{site, year, rep, photo, variant}`` of an image file name, or None. ``site`` is upper case."""
+    """``{site, year, rep, photo, variant, kind}`` of an image file name, or None. ``site`` is upper case; ``kind`` is
+    ``photoquadrat`` or ``site_photo`` (the ``_SITE_`` habitat photos of 0268773)."""
     m = NAME_RE.match(name.strip())
     if not m:
         return None
@@ -248,6 +263,7 @@ def parse_name(name: str) -> dict[str, Any] | None:
         "rep": (m["rep"] or "").upper(),
         "photo": int(m["photo"]),
         "variant": "original" if m["variant"] else "",
+        "kind": SITE_PHOTO if m["sitephoto"] else QUADRAT,
     }
 
 
@@ -416,7 +432,7 @@ class SiteIndex:
 
 def parse_site_info(text: str, filename: str) -> list[SiteRow]:
     """Rows of a site-info CSV (BOM, quoting and CRLF vary; rows without a site code are skipped)."""
-    reader = csv.reader(io.StringIO(text.lstrip("﻿"), newline=""))
+    reader = csv.reader(io.StringIO(text.lstrip("\ufeff"), newline=""))
     header = next(reader, None)
     if not header:
         return []
@@ -444,6 +460,16 @@ def parse_site_info(text: str, filename: str) -> list[SiteRow]:
 
 def in_pacific_box(lat: float, lon: float) -> bool:
     return BOX[0] <= lat <= BOX[1] and any(lo <= lon <= hi for lo, hi in LON_RANGES)
+
+
+def same_decimals(lat: float, lon: float) -> bool:
+    """LATITUDE and LONGITUDE with the same 4+ decimal digits are a copy error, not a position.
+
+    One of the 7,321 site-info rows: KUR-50 in Site_Info_HAWAII_2013.csv (0159172), 28.37653, -178.37653 (chance: ~1e-5).
+    """
+    fl = f"{abs(lat):.6f}".split(".")[1].rstrip("0")
+    fo = f"{abs(lon):.6f}".split(".")[1].rstrip("0")
+    return len(fl) >= 4 and fl == fo
 
 
 # --------------------------------------------------------------------------------------- cover tables (depth)
@@ -546,6 +572,7 @@ class _Frame:
     rep: str
     photo: int | None
     variant: str = ""
+    kind: str = QUADRAT
 
 
 @dataclass
@@ -568,31 +595,41 @@ def _frame_of(e: Entry) -> _Frame:
     p = parse_name(e.name)
     return _Frame(
         e.name, e.url, e.size, p["site"] if p else None, p["year"] if p else None, p["rep"] if p else "", p["photo"] if p else None,
-        p["variant"] if p else "",
+        p["variant"] if p else "", p["kind"] if p else QUADRAT,
     )
 
 
+def frame_sort_key(f: _Frame) -> tuple:
+    """Photo-quadrats by replicate and number, then the site photos (0268773) by replicate and number."""
+    return (f.kind == SITE_PHOTO, f.rep, f.photo if f.photo is not None else -1, f.name)
+
+
 def pick_indices(frames: list[_Frame]) -> list[int]:
-    """Pick order of the frames of one visit (sorted by replicate and number): ``pick_order`` with the first frame of every
-    transect last, because transect starts are marked by photographing fingers (SOP NMFS-PIFSC-71) and QC may have missed one."""
-    edge = {0} | {i for i in range(1, len(frames)) if frames[i].rep != frames[i - 1].rep}
-    order = pick_order(len(frames))
-    return [i for i in order if i not in edge] + [i for i in order if i in edge]
+    """Pick order of the frames of one visit (sorted by ``frame_sort_key``): ``pick_order`` over the photo-quadrats with the
+    first frame of every transect last, because transect starts are marked by photographing fingers (SOP NMFS-PIFSC-71) and
+    QC may have missed one; the oblique site photos of a visit (0268773) come after all its quadrats."""
+    quads = [i for i, f in enumerate(frames) if f.kind != SITE_PHOTO]
+    sites = [i for i, f in enumerate(frames) if f.kind == SITE_PHOTO]
+    edge = {0} | {k for k in range(1, len(quads)) if frames[quads[k]].rep != frames[quads[k - 1]].rep}
+    order = pick_order(len(quads))
+    return (
+        [quads[k] for k in order if k not in edge]
+        + [quads[k] for k in order if k in edge]
+        + [sites[k] for k in pick_order(len(sites))]
+    )
 
 
 def drop_variants(frames: list[_Frame]) -> list[_Frame]:
     """Frames without the slate (photo 0) and without ``_original`` twins of an image that is listed as well."""
-    plain = {(f.site, f.year, f.rep, f.photo) for f in frames if not f.variant}
-    return [f for f in frames if f.photo != 0 and not (f.variant and (f.site, f.year, f.rep, f.photo) in plain)]
+    plain = {(f.site, f.year, f.kind, f.rep, f.photo) for f in frames if not f.variant}
+    return [f for f in frames if f.photo != 0 and not (f.variant and (f.site, f.year, f.kind, f.rep, f.photo) in plain)]
 
 
 # ----------------------------------------------------------------------------------------------- licence
 def parse_iso_constraints(xml_text: str) -> list[str]:
     """``useLimitation`` / ``otherConstraints`` texts of an NCEI ISO 19115-2 record (document order, deduplicated)."""
-    if "<!ENTITY" in xml_text or len(xml_text) > 8_000_000:
-        raise ValueError("refusing an XML document with entities or over 8 MB")
     gmd = "http://www.isotc211.org/2005/gmd"
-    root = ET.fromstring(xml_text)
+    root = _parse_xml(xml_text)
     out: list[str] = []
     for tag in ("useLimitation", "otherConstraints"):
         for el in root.iter(f"{{{gmd}}}{tag}"):
@@ -602,13 +639,32 @@ def parse_iso_constraints(xml_text: str) -> list[str]:
     return out
 
 
-def short_citation(cite: str, acc: str) -> str:
-    """The accession's own citation from a "Cite as:" line, up to its landing URL (no "In ... [indicate subset]" tail)."""
-    text = re.sub(r"(?i)^cite as:\s*", "", cite).strip()
-    m = re.match(rf"^(.*?/archive/accession/{re.escape(acc)})\.?", text)
-    if m:
-        return m[1] + "."
-    return re.sub(r"\s*Accessed \[date\]\.?\s*$", "", text)
+def provider_citation(cite: str) -> str:
+    """The citation an NCEI record asks for ("Cite as: ..."), verbatim, without its fill-in placeholders.
+
+    NCEI appends the parent collection (with its DOI) after "In ...", plus the template fields "[indicate subset used]" and
+    "Accessed [date]"; only those two placeholders are dropped (the subset is this accession, the access date is the run's).
+    """
+    text = re.sub(r"(?i)^\s*cite as:\s*", "", cite)
+    text = re.sub(r"\s*\[indicate subset used\]\.?", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*Accessed \[date\]\.?\s*$", "", text, flags=re.IGNORECASE)
+    return " ".join(text.split())
+
+
+def _parse_xml(xml_text: str) -> ET.Element:
+    """Parse provider XML (untrusted): no entity declarations, at most 8 MB."""
+    if "<!ENTITY" in xml_text or len(xml_text) > 8_000_000:
+        raise ValueError("refusing an XML document with entities or over 8 MB")
+    return ET.fromstring(xml_text)
+
+
+def parse_inport_access(xml_text: str) -> dict[str, str]:
+    """The ``access-information`` fields of an InPort XML record (data-license-type, data-access-constraints, ...)."""
+    root = _parse_xml(xml_text)
+    for el in root.iter():
+        if el.tag.rsplit("}", 1)[-1] == "access-information":
+            return {c.tag.rsplit("}", 1)[-1]: " ".join("".join(c.itertext()).split()) for c in el}
+    return {}
 
 
 # ----------------------------------------------------------------------------------------------- adapter
@@ -637,6 +693,7 @@ class NoaaNcrmpAdapter(Adapter):
         self._index: dict[str, SiteIndex] = {}
         self._plans: dict[str, list[_Visit]] = {}
         self._licences: dict[str, Licence] = {}
+        self._inport: dict[str, dict[str, str] | None] = {}
         self._covers: dict[str, dict[str, CoverRec] | None] = {}
         self._bad_urls: set[str] = set()
 
@@ -885,22 +942,22 @@ class NoaaNcrmpAdapter(Adapter):
                 v.frames.extend(self._folder_frames(acc, d, seen))
             v.frames = drop_variants(v.frames)
             v.dirs = []
-        v.frames.sort(key=lambda f: (f.rep, f.photo if f.photo is not None else -1, f.name))
+        v.frames.sort(key=frame_sort_key)
         return v.frames
 
     def _groups(self, accs: list[Acc]) -> list[tuple[float, list[Acc]]]:
         """Sampling groups ``(weight, accessions)``: one per region and kind.
 
         Every region gets the same weight; inside a region ``climate_share`` goes to the climate accessions and the
-        rest to the StRS ones (a region with one kind gets it all). Inside a group the accessions are listed in a spread
-        order (oldest, newest, middle, ...) and taken in turn, so any prefix has the right mix of regions and kinds and
+        rest to the StRS ones (a region with one kind gets it all). Inside a group the accessions are sorted by survey date and
+        listed in a spread order (oldest, newest, middle, ...) and taken in turn, so any prefix has the right mix of regions and kinds and
         reaches different survey years instead of the oldest accession first.
         """
         areas = [a for a in AREAS if any(x.area == a for x in accs)]
         share = self._climate_share()
         out: list[tuple[float, list[Acc]]] = []
         for area in areas:
-            present = {k: v for k in ("climate", "strs") if (v := [x for x in accs if x.area == area and x.kind == k])}
+            present = {k: v for k in ("climate", "strs") if (v := sorted((x for x in accs if x.area == area and x.kind == k), key=lambda x: (x.year, x.first, x.acc)))}
             total = sum(share if k == "climate" else 1 - share for k in present)
             for k, members in present.items():
                 w = (share if k == "climate" else 1 - share) / total / len(areas)
@@ -953,6 +1010,7 @@ class NoaaNcrmpAdapter(Adapter):
             "site_code": f.site,
             "replicate": f.rep or None,
             "photo_id": f.photo,
+            "image_kind": f.kind if f.site else None,  # photoquadrat (downward, ~1 m2) | site_photo (oblique habitat photo)
             "survey_date": v.date,
             "exif_note": "apply the EXIF Orientation tag; DateTimeOriginal is wrong on some cameras (use survey_date)",
         }
@@ -983,13 +1041,28 @@ class NoaaNcrmpAdapter(Adapter):
             self.ctx.fail(acc.acc, "licence_record", f"ISO record not read, collection-level licence used: {exc}")
             return None
 
+    def _collection(self, inport: str) -> dict[str, str] | None:
+        """``access-information`` of the InPort collection record (71813 / 71814 / 59193), or None when it cannot be read."""
+        if inport in self._inport:
+            return self._inport[inport]
+        fields: dict[str, str] | None = None
+        try:
+            fields = parse_inport_access(self.ctx.cached_text(INPORT_XML.format(n=inport), f"inport/{inport}.xml", timeout=120))
+            if not fields:
+                raise ValueError("no access-information element")
+        except (HttpError, OSError, ValueError, ET.ParseError) as exc:
+            self.ctx.fail(f"inport:{inport}", "licence_collection", f"InPort {inport} not read: {exc}")
+            fields = None
+        self._inport[inport] = fields
+        return fields
+
     def _licence(self, acc: Acc) -> Licence:
         if acc.acc in self._licences:
             return self._licences[acc.acc]
         texts = self._record(acc)
         cite = next((t for t in texts or [] if t.lower().startswith("cite as:")), None)
         if cite:
-            citation = short_citation(cite, acc.acc)
+            citation = provider_citation(cite)
         else:
             citation = (
                 f"Ecosystem Sciences Division, Pacific Islands Fisheries Science Center. National Coral Reef Monitoring Program: "
@@ -997,12 +1070,18 @@ class NoaaNcrmpAdapter(Adapter):
                 f"(NCEI Accession {acc.acc}). NOAA National Centers for Environmental Information. {acc.landing}"
             )
         attribution = f"{citation} {ACK}"
+        collection = self._collection(acc.inport)
+        page = INPORT.format(n=acc.inport)
+        coll = {k: v for k in COLLECTION_FIELDS if (v := (collection or {}).get(k, ""))}
+        coll_bad = next((v for v in coll.values() if classify(v) == "X"), None)
         # Tiers of every constraint text of the record: a CC0 statement gives A, any NC / ND / research-only term X.
         record_tiers = [classify(t) for t in texts or [] if not t.lower().startswith("cite as:")]
         known = [t for t in record_tiers if t != "U"]
         if "X" in known:
             bad = next(t for t in texts or [] if classify(t) == "X")
             lic = make_licence(f"excluded term in the NCEI record: {bad[:160]}", level="record", url=acc.landing, attribution=attribution, tier="X")
+        elif coll_bad:  # an NC / ND / research-only term anywhere in the collection record excludes every accession of it
+            lic = make_licence(f"excluded term in InPort {acc.inport}: {coll_bad[:160]}", level="collection", url=page, attribution=attribution, tier="X")
         elif known:
             statement = " ".join(t for t in texts or [] if classify(t) != "U")
             url = acc.landing
@@ -1014,12 +1093,32 @@ class NoaaNcrmpAdapter(Adapter):
                 name = statement[:200]
             lic = make_licence(name, level="record", url=url, attribution=attribution, tier=combine(*known))
         else:
-            # No licence field in the record (accessLevel: public + citation request only): NOAA PIFSC data are US
-            # federal government works (17 U.S.C. 105); the collection record (InPort) states "data-access-constraints: None".
-            name = "US government work (NOAA PIFSC), no licence stated; collection record: data-access-constraints None, citation requested"
-            lic = make_licence(name, level="collection", url=INPORT.format(n=acc.inport), attribution=attribution, tier=classify(name))
+            lic = self._government_work(acc, collection, coll, texts is not None, attribution)
         self._licences[acc.acc] = lic
         return lic
+
+    def _government_work(self, acc: Acc, collection: dict[str, str] | None, coll: dict[str, str], record_read: bool, attribution: str) -> Licence:
+        """No licence in the NCEI record (accessLevel: public + a citation request): NOAA PIFSC data are US federal government
+        works (17 U.S.C. 105). Read at collection level: the InPort record must say ``data-access-constraints`` None and
+        carry no licence of its own (none does today); anything else is held as U, never upgraded."""
+        page = INPORT.format(n=acc.inport)
+        if collection is None:
+            if not record_read:
+                return make_licence(f"not read: neither the NCEI record of {acc.acc} nor InPort {acc.inport} could be read",
+                                    level="unknown", url=acc.landing, attribution=attribution, tier="U")  # fmt: skip
+            name = f"US government work (NOAA PIFSC), no licence stated; NCEI record: accessLevel public, citation request only (InPort {acc.inport} not read)"
+            return make_licence(name, level="record", url=acc.landing, attribution=attribution, tier=classify(name))
+        known = [t for t in (classify(v) for v in coll.values()) if t != "U"]
+        if known:  # an explicit licence at collection level
+            statement = " ".join(v for v in coll.values() if classify(v) != "U")
+            return make_licence(f"InPort {acc.inport}: {statement[:200]}", level="collection", url=page, attribution=attribution, tier=combine(*known))
+        access = coll.get("data-access-constraints", "")
+        if access.strip().rstrip(".").lower() != "none":
+            return make_licence(f"InPort {acc.inport} data-access-constraints {access[:160]!r} (expected None): held for review",
+                                level="collection", url=page, attribution=attribution, tier="U")  # fmt: skip
+        use = re.split(r"(?<=\.)\s", coll.get("data-use-constraints", ""), maxsplit=1)[0]
+        name = f"US government work (NOAA PIFSC), no licence stated; InPort {acc.inport}: data-access-constraints None" + (f", data-use-constraints {use!r}" if use else "")
+        return make_licence(name, level="collection", url=page, attribution=attribution, tier=classify(name))
 
     # --------------------------------------------------------------------- geo
     def _cover(self, table: str) -> dict[str, CoverRec] | None:
@@ -1049,7 +1148,8 @@ class NoaaNcrmpAdapter(Adapter):
         try:
             if resp.status_code >= 400:
                 raise HttpError(url, resp.status_code, "cover table not available")
-            text, _n = reduce_cover(line.decode("utf-8", errors="replace") for line in resp.iter_lines())
+            lines = resp.iter_lines(chunk_size=1 << 16)
+            text, _n = reduce_cover(line.decode("utf-8", errors="replace") for line in lines)
         finally:
             resp.close()
         return text
@@ -1077,6 +1177,8 @@ class NoaaNcrmpAdapter(Adapter):
 
         hits = self._siteinfo(acc).find(site, year)
         usable = [(r, c) for r, c in hits if r.lat is not None and r.lon is not None]
+        suspect = [(r, c) for r, c in usable if same_decimals(r.lat, r.lon)]
+        usable = [x for x in usable if x not in suspect]
         if usable:
             coords = {(r.lat, r.lon) for r, _ in usable}
             if len(coords) > 1:
@@ -1093,14 +1195,22 @@ class NoaaNcrmpAdapter(Adapter):
                 f"joined on {col} = {site}{depth_note}"
             )
             return Geo(lat, lon, depth, "station", source, True, STATION_UNCERTAINTY_M)
-        if crec is not None and crec.lat is not None and crec.lon is not None and in_pacific_box(crec.lat, crec.lon):
-            why = "has no valid LATITUDE/LONGITUDE in the site-info CSV" if hits else "is not in the site-info CSV"
+        if suspect:
+            r = suspect[0][0]
+            why_csv = f"has the copy-error position ({r.lat}, {r.lon}) (same decimals in LATITUDE and LONGITUDE) in"
+        else:
+            why_csv = "has no valid LATITUDE/LONGITUDE in" if hits else "is not in"
+        if (
+            crec is not None and crec.lat is not None and crec.lon is not None
+            and in_pacific_box(crec.lat, crec.lon) and not same_decimals(crec.lat, crec.lon)
+        ):  # fmt: skip
+            why = f"{why_csv} the site-info CSV"
             source = (
                 f"NCEI {cacc} {cfile} LATITUDE/LONGITUDE via IMAGE_NAME site visit {site}_{year} "
                 f"(site code {why} of {acc.acc}){depth_note}"
             )
             return Geo(round(crec.lat, 6), round(crec.lon, 6), depth, "station", source, True, STATION_UNCERTAINTY_M)
-        why = "has no valid LATITUDE/LONGITUDE in" if hits else "not in"
+        why = why_csv if hits else "not in"
         return Geo.none(geo_source=f"site code {site} {why} the site-info CSV of {acc.acc}; no row in the cover table", depth_m=depth)
 
     # ------------------------------------------------------------------- media

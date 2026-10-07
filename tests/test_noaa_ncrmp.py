@@ -8,9 +8,11 @@ What is real and what is synthetic
     * Real, unmodified: the three site-info CSVs, ``listing_0317534_excerpt.html`` (the image folder of 0317534) and
       ``cover_fixed_excerpt.csv`` of the fixture folder.
     * Real text, re-wrapped: the ``0-data/`` root listings (names, dates and sizes of the NCEI rows retrieved
-      2026-10-07), the ``otherConstraints`` texts of the ISO records of 0317534 and 0159155 (inside a minimal ISO XML
-      shell), the image rows of 0159155 / 0240600 / 0270550 and the site-info rows of 0176287 / 0270550 (header and
-      rows as served, CRLF kept). Cases marked "synthetic" are built by hand to hit an edge case.
+      2026-10-07), the ``useLimitation`` / ``otherConstraints`` texts of the ISO records of 0317534, 0159155, 0176287 and
+      0270550 (inside a minimal ISO XML shell), the ``access-information`` fields of the InPort records 71813, 71814 and
+      59193 (inside a minimal InPort XML shell; the long "Data Sharing Recommendations" text is cut after its first
+      paragraphs), the image rows of 0159155 / 0240600 / 0270550 / 0268773 and the site-info rows of 0176287 / 0270550 /
+      0268773 (header and rows as served, CRLF kept). Cases marked "synthetic" are built by hand to hit an edge case.
 """
 
 import csv
@@ -69,6 +71,64 @@ CC0_TEXT = "This dataset has been dedicated to the public domain under the Creat
 SPDX = "SPDX License: Creative Commons Zero v1.0 Universal (CC0-1.0)"
 ISO_0317534 = [ACCESS, CITE_0317534, DISTRIBUTION, USE_LIABILITY, CC0_TEXT, SPDX]
 ISO_0159155 = [ACCESS, CITE_0159155, DISTRIBUTION, USE_LIABILITY]
+CITE_0176287 = (
+    "Cite as: Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2018). National Coral Reef Monitoring "
+    "Program: Benthic images collected from stratified random sites (StRS) across Jarvis Island in the Pacific Remote Island "
+    "Areas from 2016-05-16 to 2016-05-22 (NCEI Accession 0176287). https://www.ncei.noaa.gov/archive/accession/0176287. In NOAA "
+    "Pacific Islands Fisheries Science Center, Ecosystem Sciences Division (2018). National Coral Reef Monitoring Program: "
+    "Benthic cover derived from analysis of images collected during stratified random surveys (StRS) across the Pacific Remote "
+    "Island Areas. [indicate subset used]. NOAA National Centers for Environmental Information. Dataset. "
+    "https://doi.org/10.7289/v5154fbh. Accessed [date]."
+)
+CITE_0270550 = (
+    "Cite as: Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2022). Benthic Images from Stratified "
+    "Random Site (StRS) Surveys in the Main Hawaiian Islands from 2019-10-08 to 2019-11-14 During the 2019 Bleaching Event "
+    "(NCEI Accession 0270550). [indicate subset used]. NOAA National Centers for Environmental Information. Dataset. "
+    "https://www.ncei.noaa.gov/archive/accession/0270550. Accessed [date]."
+)
+
+# InPort collection records, access-information as served (https://www.fisheries.noaa.gov/inport/item/<n>/inport-xml, 2026-10-07)
+ESD_POLICY = (
+    "NOAA Coral Reef Ecosystem Sciences Division (ESD) Data Sharing Recommendations, version 9.0 updated August 12, 2015:\n\n"
+    "The ESD welcomes the opportunity to collaborate on research issues contributing to the scientific basis for better management "
+    "of marine ecosystems. The ESD has a very diverse set of field activities that generates large volumes of data using an array "
+    "of data collection protocols.\n\nThe following recommendations are for your consideration as you use this data:\n\n"
+    "1) Data analyses should take all field exigencies into account. The most effective way to do this would be active "
+    "collaboration with ESD principal investigators."
+)
+INPORT_71813 = {
+    "security-class": "Unclassified",
+    "data-access-policy": ESD_POLICY,
+    "data-access-procedure": "Data can be accessed online via the NOAA National Centers for Environmental Information (NCEI) Ocean Archive.",
+    "data-access-constraints": "None",
+    "data-use-constraints": (
+        "Please cite PIFSC Ecosystem Sciences Division (ESD) when using the data.\n\nSuggested citation:\n\nEcosystem Sciences "
+        "Division, Pacific Islands Fisheries Science Center, 2025: National Coral Reef Monitoring Program: Benthic Images Collected "
+        "During Photoquadrat Surveys at Climate Stations across the US Pacific since 2010, https://www.fisheries.noaa.gov/inport/item/36144."
+    ),
+    "metadata-access-constraints": "None",
+}
+INPORT_71814 = {
+    "data-license-type": "Custom",
+    **{k: v for k, v in INPORT_71813.items() if k != "data-use-constraints"},
+    "data-use-constraints": (
+        "Please cite PIFSC Ecosystem Sciences Division (ESD) when using the data.\n\nExample:\n\nEcosystem Sciences Division; "
+        "Pacific Islands Fisheries Science Center (2025). National Coral Reef Monitoring Program: Benthic Images from Stratified Random "
+        "Sites (StRS) across the US Pacific since 2010. NOAA's National Center for Environmental Information, "
+        "https://www.fisheries.noaa.gov/inport/item/36153"
+    ),
+}
+INPORT_59193 = {
+    "data-access-policy": ESD_POLICY.replace("NOAA Coral Reef Ecosystem Sciences", "NOAA Ecosystem Sciences").replace("The ESD", "ESD"),
+    "data-access-constraints": "None",
+    "data-use-constraints": (
+        "Please cite NOAA Ecosystem Sciences Division (ESD) when using the data.\n\nExample:\n\nEcosystem Sciences Division; Pacific "
+        "Islands Fisheries Science Center (2022). Benthic Images from Stratified Random Site (StRS) Surveys in the Main Hawaiian Islands "
+        "During the 2019 Bleaching Event. NOAA's National Center for Environmental Information, https://www.fisheries.noaa.gov/inport/item/59193"
+    ),
+}
+INPORT = {"71813": INPORT_71813, "71814": INPORT_71814, "59193": INPORT_59193}
+USE_71813 = "'Please cite PIFSC Ecosystem Sciences Division (ESD) when using the data.'"
 
 SRC_2024 = "NCEI 0317534 NCRMP_CLIMATE_SITEINFO_HAWAII_2024.csv LATITUDE/LONGITUDE (handheld GPS over the dive buoy, WGS 84), joined on SITE = {code}"
 DEPTH_FIXED = "; depth: NCEI 0317416 NCRMP_BENTHIC_COVER_FIXED_PACIFIC_2012-2025.csv MIN_DEPTH/MAX_DEPTH (feet, mean x 0.3048) via IMAGE_NAME, DEPTH_SOURCE {src}"
@@ -153,6 +213,18 @@ def seed_iso(a, acc, constraints):
     path.write_text(iso_xml(constraints), encoding="utf-8")
 
 
+def inport_xml(fields):
+    """A minimal InPort XML shell (root ``inport-metadata``, no namespace, as served) around real access-information fields."""
+    items = "".join(f"<{k}>{escape(v)}</{k}>" for k, v in fields.items())
+    return f'<?xml version="1.0" encoding="UTF-8"?><inport-metadata version="1.11"><item-identification/><access-information>{items}</access-information></inport-metadata>'
+
+
+def seed_inport(a, n, fields=None):
+    path = a.ctx.layout.raw / "inport" / f"{n}.xml"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(inport_xml(INPORT[n] if fields is None else fields), encoding="utf-8")
+
+
 def seed_cover(a, table="fixed", source=FIX / "cover_fixed_excerpt.csv"):
     with open(source, newline="", encoding="utf-8") as fh:
         text, _n = nc.reduce_cover(fh)
@@ -174,6 +246,7 @@ def seed_2024(a):
     seed_listing(a, "0317534", "NCRMP_FIXED_IMAGES_HAWAII_2024/", _FIXTURE_LISTING)
     shutil.copyfile(FIX / "site_info_climate_hawaii_2024.csv", _target(a, "0317534", "NCRMP_CLIMATE_SITEINFO_HAWAII_2024.csv"))
     seed_iso(a, "0317534", ISO_0317534)
+    seed_inport(a, "71813")
 
 
 def _target(a, acc, name):
@@ -198,6 +271,7 @@ def seed_2015(a, frames=4):
     seed_listing(a, "0159155", "Climate_Images_PRIAs_2015/", listing(*imgs))
     shutil.copyfile(FIX / "site_info_climate_pria_2015.csv", _target(a, "0159155", "Site_Info_PRIAs_2015.csv"))
     seed_iso(a, "0159155", ISO_0159155)
+    seed_inport(a, "71813")
 
 
 def seed_2019_nwhi(a):
@@ -239,11 +313,13 @@ def test_parse_listing_directories_spaces_and_sort_links():
 @pytest.mark.parametrize(
     "name, expected",
     [
-        ("OCC-FFS-001_2024_02.JPG", {"site": "OCC-FFS-001", "year": 2024, "rep": "", "photo": 2, "variant": ""}),
-        ("BAK-11_2015_A_08.JPG", {"site": "BAK-11", "year": 2015, "rep": "A", "photo": 8, "variant": ""}),
-        ("SAI-1022_2017__01.JPG", {"site": "SAI-1022", "year": 2017, "rep": "", "photo": 1, "variant": ""}),  # empty replicate (0176286)
-        ("kin-16_2015_a_31.jpg", {"site": "KIN-16", "year": 2015, "rep": "A", "photo": 31, "variant": ""}),  # case varies, frames above 30 exist
-        ("OAH-B3259_2019_01_original.JPG", {"site": "OAH-B3259", "year": 2019, "rep": "", "photo": 1, "variant": "original"}),
+        ("OCC-FFS-001_2024_02.JPG", {"site": "OCC-FFS-001", "year": 2024, "rep": "", "photo": 2, "variant": "", "kind": "photoquadrat"}),
+        ("BAK-11_2015_A_08.JPG", {"site": "BAK-11", "year": 2015, "rep": "A", "photo": 8, "variant": "", "kind": "photoquadrat"}),
+        ("SAI-1022_2017__01.JPG", {"site": "SAI-1022", "year": 2017, "rep": "", "photo": 1, "variant": "", "kind": "photoquadrat"}),  # empty replicate (0176286)
+        ("kin-16_2015_a_31.jpg", {"site": "KIN-16", "year": 2015, "rep": "A", "photo": 31, "variant": "", "kind": "photoquadrat"}),  # case varies, frames above 30 exist
+        ("OAH-B3259_2019_01_original.JPG", {"site": "OAH-B3259", "year": 2019, "rep": "", "photo": 1, "variant": "original", "kind": "photoquadrat"}),
+        ("HAW-1773_2015_SITE_A_01.JPG", {"site": "HAW-1773", "year": 2015, "rep": "A", "photo": 1, "variant": "", "kind": "site_photo"}),  # 0268773 site photo
+        ("IMG_3939.JPG", None),  # 0268773: 4 stray camera names without a site code
         ("README.txt", None),
         ("notes.jpg", None),
     ],
@@ -374,8 +450,11 @@ def test_licence_cc0_record_level_with_the_providers_citation(tmp_path):
     assert lic.attribution == (
         "Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2026). National Coral Reef Monitoring Program: "
         "Benthic Images Collected from Climate Stations across the Hawaiian Archipelago from 2024-05-29 to 2024-08-27 "
-        f"(NCEI Accession 0317534). https://www.ncei.noaa.gov/archive/accession/0317534. {ACK}"
-    )  # the "In NOAA ... [indicate subset used] ... Accessed [date]" template tail is not copied into every sample
+        "(NCEI Accession 0317534). https://www.ncei.noaa.gov/archive/accession/0317534. In NOAA Pacific Islands Fisheries Science "
+        "Center, Ecosystem Sciences Division (2018). National Coral Reef Monitoring Program: Benthic cover derived from analysis of "
+        "images collected from climate stations across the Hawaiian Archipelago. NOAA National Centers for Environmental "
+        f"Information. Dataset. https://doi.org/10.7289/v5f47mff. {ACK}"
+    )  # the provider's "Cite as" verbatim, parent collection and DOI included; only the two fill-in placeholders are dropped
 
 
 def test_licence_older_accession_is_us_government_work_at_collection_level(tmp_path):
@@ -383,9 +462,11 @@ def test_licence_older_accession_is_us_government_work_at_collection_level(tmp_p
     seed_2015(a)
     lic = a.resolve_licence(next(iter(a.discover())))
     assert (lic.tier, lic.level, lic.url) == ("A", "collection", "https://www.fisheries.noaa.gov/inport/item/71813")
-    assert lic.name.startswith("US government work (NOAA PIFSC), no licence stated")
+    assert lic.name == f"US government work (NOAA PIFSC), no licence stated; InPort 71813: data-access-constraints None, data-use-constraints {USE_71813}"
     assert lic.attribution.startswith("Coral Reef Ecosystem Program; Pacific Islands Fisheries Science Center (2017). National Coral Reef Monitoring Program:")
-    assert lic.attribution.endswith(f"(NCEI Accession 0159155). https://www.ncei.noaa.gov/archive/accession/0159155. {ACK}")
+    assert "(NCEI Accession 0159155). https://www.ncei.noaa.gov/archive/accession/0159155. In NOAA Pacific Islands" in lic.attribution
+    assert lic.attribution.endswith(f"NOAA National Centers for Environmental Information. Dataset. https://doi.org/10.7289/v54m92v0. {ACK}")
+    assert "[indicate subset used]" not in lic.attribution and "Accessed [date]" not in lic.attribution
 
 
 def test_licence_without_the_iso_record_falls_back_to_the_collection_and_says_so(tmp_path):
@@ -396,6 +477,50 @@ def test_licence_without_the_iso_record_falls_back_to_the_collection_and_says_so
     assert (lic.tier, lic.level) == ("A", "collection")  # never CC0 without having read it
     assert "(NCEI Accession 0317534)" in lic.attribution and lic.attribution.endswith(ACK)
     assert [f["stage"] for f in failures(a)] == ["licence_record"]
+
+
+def test_licence_without_the_inport_record_rests_on_the_ncei_record(tmp_path):
+    """InPort unreachable: the CC0 record is unaffected; an older accession stays US government work, read at record level."""
+    a = make_adapter(tmp_path, http=Down(dry_run=True), accessions="0317534,0159155", depth="off")
+    seed_2024(a)
+    seed_2015(a)
+    (a.ctx.layout.raw / "inport" / "71813.xml").unlink()
+    cands = by_name(a.discover())
+    cc0, old = a.resolve_licence(cands["OCC-FFS-001_2024_02.JPG"]), a.resolve_licence(cands["BAK-11_2015_A_02.JPG"])
+    assert (cc0.tier, cc0.level) == ("A", "record") and cc0.name.startswith("CC0-1.0")
+    assert (old.tier, old.level, old.url) == ("A", "record", LANDING + "0159155") and "InPort 71813 not read" in old.name
+    assert [f["stage"] for f in failures(a)] == ["licence_collection"]  # recorded once for the collection
+
+
+def test_licence_that_was_not_read_at_any_level_is_unknown(tmp_path):
+    a = make_adapter(tmp_path, http=Down(dry_run=True), accessions="0159155", depth="off")
+    seed_2015(a)
+    (a.ctx.layout.raw / "iso" / "0159155.xml").unlink()
+    (a.ctx.layout.raw / "inport" / "71813.xml").unlink()
+    lic = a.resolve_licence(next(iter(a.discover())))
+    assert (lic.tier, lic.level) == ("U", "unknown")  # nothing read: never assumed
+    assert sorted(f["stage"] for f in failures(a)) == ["licence_collection", "licence_record"]
+
+
+@pytest.mark.parametrize(
+    "field, value, tier",
+    [
+        ("data-use-constraints", "Please cite PIFSC ESD when using the data. Not for commercial use.", "X"),
+        ("data-license-type", "Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0)", "X"),
+        ("data-access-constraints", "Data available to research partners on request", "U"),
+    ],
+)
+def test_a_restriction_in_the_inport_collection_record_is_never_upgraded(tmp_path, field, value, tier):
+    """Synthetic: an NC term in InPort excludes even the CC0 accessions of that collection; other access constraints are held as U."""
+    a = make_adapter(tmp_path, accessions="0317534,0159155", depth="off")
+    seed_2024(a)
+    seed_2015(a)
+    seed_inport(a, "71813", {**INPORT_71813, field: value})
+    cands = by_name(a.discover())
+    old = a.resolve_licence(cands["BAK-11_2015_A_02.JPG"])
+    assert (old.tier, old.level, old.url) == (tier, "collection", "https://www.fisheries.noaa.gov/inport/item/71813")
+    cc0 = a.resolve_licence(cands["OCC-FFS-001_2024_02.JPG"])
+    assert cc0.tier == ("X" if tier == "X" else "A")  # the record's own CC0 stays the most specific answer unless an exclusion exists
 
 
 @pytest.mark.parametrize(
@@ -423,11 +548,26 @@ def test_contradicting_licence_statements_are_held_as_unknown(tmp_path):
     assert a.resolve_licence(next(iter(a.discover()))).tier == "U"
 
 
-def test_iso_parser_refuses_entities_and_returns_texts_in_order():
+def test_iso_and_inport_parsers_refuse_entities_and_return_the_texts():
     assert nc.parse_iso_constraints(iso_xml([ACCESS, CITE_0159155]))[:2] == [ACCESS, CITE_0159155]
     with pytest.raises(ValueError):
         nc.parse_iso_constraints('<!DOCTYPE x [<!ENTITY a "b">]><x/>')
-    assert nc.short_citation(CITE_0159155, "0159155").endswith("(NCEI Accession 0159155). https://www.ncei.noaa.gov/archive/accession/0159155.")
+    with pytest.raises(ValueError):
+        nc.parse_inport_access('<!DOCTYPE x [<!ENTITY a "b">]><x/>')
+    fields = nc.parse_inport_access(inport_xml(INPORT_71814))
+    assert fields["data-license-type"] == "Custom" and fields["data-access-constraints"] == "None"
+    assert fields["data-use-constraints"].startswith("Please cite PIFSC Ecosystem Sciences Division (ESD) when using the data. Example:")
+
+
+def test_provider_citation_keeps_the_cite_as_text_without_the_placeholders():
+    assert nc.provider_citation(CITE_0270550) == (  # the real 0270550 record: no parent collection, the URL after "Dataset."
+        "Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2022). Benthic Images from Stratified Random Site "
+        "(StRS) Surveys in the Main Hawaiian Islands from 2019-10-08 to 2019-11-14 During the 2019 Bleaching Event (NCEI Accession "
+        "0270550). NOAA National Centers for Environmental Information. Dataset. https://www.ncei.noaa.gov/archive/accession/0270550."
+    )
+    assert nc.provider_citation(CITE_0176287).endswith(
+        "across the Pacific Remote Island Areas. NOAA National Centers for Environmental Information. Dataset. https://doi.org/10.7289/v5154fbh."
+    )
 
 
 # ------------------------------------------------------------------------------------------------ resolve_geo
@@ -517,7 +657,7 @@ def test_cover_table_is_the_coordinate_fallback_when_the_code_is_not_in_the_csv(
 def test_missing_code_of_the_2019_bleaching_accession_is_real_data(tmp_path):
     """0270550: OAH-B3096 (12 images) has no row in ESD_SiteInfo_MHI_BLEA_2019.csv (127 rows for 128 image site codes)."""
     a = make_adapter(tmp_path, accessions="0270550", depth="off")
-    seed_listing(a, "0270550", "", listing(entry("ESD_SiteInfo_DataDictionary.csv", "1.0K"), entry("ESD_SiteInfo_MHI_BLEA_2019.csv", "9.0K"), entry("MHI_PQ_Bleaching_2019/")))
+    seed_listing(a, "0270550", "", listing(entry("ESD_SiteInfo_DataDictionary.csv", "287 ", "2022-08-24 00:21"), entry("ESD_SiteInfo_MHI_BLEA_2019.csv", "6.5K", "2022-08-24 00:21"), entry("MHI_PQ_Bleaching_2019/", date="2022-11-30 22:13")))
     seed_listing(
         a, "0270550", "MHI_PQ_Bleaching_2019/",
         listing(
@@ -526,7 +666,8 @@ def test_missing_code_of_the_2019_bleaching_accession_is_real_data(tmp_path):
         ),
     )  # fmt: skip
     seed_csv(a, "0270550", "ESD_SiteInfo_MHI_BLEA_2019.csv", '"SITE","DATE_","LATITUDE","LONGITUDE"\r\n"HAW-B4311",18-OCT-19 00.00.00,19.59218,-155.97185\r\n"HAW-B4313",18-OCT-19 00.00.00,19.31344,-155.88832\r\n')
-    seed_iso(a, "0270550", [ACCESS, "Cite as: Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2022). Benthic Images from Stratified Random Site (StRS) Surveys in the Main Hawaiian Islands from 2019-10-08 to 2019-11-14 During the 2019 Bleaching Event (NCEI Accession 0270550). https://www.ncei.noaa.gov/archive/accession/0270550. Accessed [date]."])
+    seed_iso(a, "0270550", [ACCESS, DISTRIBUTION, CITE_0270550, USE_LIABILITY])
+    seed_inport(a, "59193")
     cands = by_name(a.discover())
     ok = a.resolve_geo(cands["HAW-B4311_2019_01.JPG"])
     assert (ok.lat, ok.lon, ok.geo_precision) == (19.59218, -155.97185, "station")
@@ -535,7 +676,30 @@ def test_missing_code_of_the_2019_bleaching_accession_is_real_data(tmp_path):
     assert (miss.lat, miss.lon, miss.geo_precision, miss.geo_inferred) == (None, None, "none", False)
     assert "OAH-B3096" in miss.geo_source and "0270550" in miss.geo_source
     lic = a.resolve_licence(cands["OAH-B3096_2019_01.JPG"])
-    assert lic.url == "https://www.fisheries.noaa.gov/inport/item/59193" and "0270550" in lic.attribution  # the bleaching set has its own InPort record
+    assert lic.url == "https://www.fisheries.noaa.gov/inport/item/59193" and (lic.tier, lic.level) == ("A", "collection")  # its own InPort record
+    assert lic.attribution == nc.provider_citation(CITE_0270550) + " " + ACK and "[indicate subset used]" not in lic.attribution
+
+
+def test_a_copy_error_position_with_the_same_decimals_is_not_used(tmp_path):
+    """Real rows of Site_Info_HAWAII_2013.csv (0159172): KUR-50 has 28.37653, -178.37653 (the latitude decimals copied into the
+    longitude; no cover row for 2013), KUR-51 next to it is a normal position."""
+    a = make_adapter(tmp_path, accessions="0159172", depth="off")
+    seed_listing(a, "0159172", "", listing(entry("Climate_Images_HAWAII_2013/", date="2017-03-30 18:41"), entry("DataDocumentation/", date="2017-03-30 17:17"), entry("Site_Info_HAWAII_2013.csv", "2.9K", "2017-03-30 17:20")))
+    seed_listing(
+        a, "0159172", "Climate_Images_HAWAII_2013/",
+        listing(entry("KUR-50_2013_A_01.JPG", "3.1M", "2015-03-03 01:46"), entry("KUR-50_2013_A_02.JPG", "3.1M", "2015-03-03 01:47"),
+                entry("KUR-51_2013_A_01.JPG", "3.3M", "2015-03-03 01:48"), entry("KUR-51_2013_A_02.JPG", "3.3M", "2015-03-03 01:48")),
+    )  # fmt: skip
+    seed_csv(a, "0159172", "Site_Info_HAWAII_2013.csv", '"SITE","DATE_","LATITUDE","LONGITUDE"\r\n"KUR-50",12-JUL-13,28.37653,-178.37653\r\n"KUR-51",12-JUL-13,28.40908,-178.37808\r\n')
+    cands = by_name(a.discover())
+    bad, ok = a.resolve_geo(cands["KUR-50_2013_A_01.JPG"]), a.resolve_geo(cands["KUR-51_2013_A_01.JPG"])
+    assert (bad.lat, bad.lon, bad.geo_precision, bad.geo_inferred) == (None, None, "none", False)
+    assert bad.geo_source == (
+        "site code KUR-50 has the copy-error position (28.37653, -178.37653) (same decimals in LATITUDE and LONGITUDE) in the "
+        "site-info CSV of 0159172; no row in the cover table"
+    )
+    assert (ok.lat, ok.lon, ok.geo_precision) == (28.40908, -178.37808, "station")
+    assert nc.same_decimals(28.37653, -178.37653) and not nc.same_decimals(28.40908, -178.37808) and not nc.same_decimals(1.5, -170.5)
 
 
 def test_ambiguous_site_code_is_not_guessed(tmp_path):
@@ -593,7 +757,7 @@ class FakeStream:
         self.status_code = status
         self._lines = Path(path).read_bytes().splitlines()
 
-    def iter_lines(self):
+    def iter_lines(self, chunk_size=512):
         return iter(self._lines)
 
     def close(self):
@@ -667,6 +831,61 @@ def test_slate_frames_and_original_twins_are_dropped(tmp_path):
     assert sorted(by_name(a.discover())) == ["BAK-11_2015_A_01.JPG", "BAK-11_2015_A_02_original.JPG", "BAK-11_2015_A_31.JPG"]  # >30 is kept, a duplicate row once
 
 
+RFS_CSV = '"SITE","DATE_","LATITUDE","LONGITUDE"\r\n"HAW-1773","20-JUN-15",19.799082,-156.022947\r\n"HAW-1779","16-JUN-15",19.575632,-155.970582\r\n'
+
+
+def seed_2015_rfs(a):
+    """Accession 0268773 (StRS, MHI reef-fish cruise 2015): real root and image rows (HAW-1773: quadrats, SITE photos, a stray IMG_ file)."""
+    seed_listing(
+        a, "0268773", "",
+        listing(
+            entry("0MLTL4-ISO-19115-2.xml", " 21K", "2022-11-04 21:45"), entry("DataDocumentation/", date="2022-11-08 17:52"),
+            entry("ESD_PQ_site_info_DataDictionary_2022.csv", "510 ", "2022-11-04 21:40"), entry("MHI_RFS_PQ_images_2015/", date="2022-11-09 17:46"),
+            entry("MHI_RFS_PQ_siteinfo_2015.csv", " 12K", "2022-11-04 21:40"),
+        ),
+    )  # fmt: skip
+    rows = [("HAW-1773_2015_A_01.JPG", "3.6M"), ("HAW-1773_2015_A_02.JPG", "4.3M"), ("HAW-1773_2015_A_03.JPG", "4.1M"), ("HAW-1773_2015_A_04.JPG", "3.7M"),
+            ("HAW-1773_2015_SITE_A_01.JPG", "2.5M"), ("HAW-1773_2015_SITE_A_02.JPG", "2.2M"), ("HAW-1773_2015_SITE_A_03.JPG", "2.2M"),
+            ("HAW-1773_2015_SITE_A_04.JPG", "1.9M")]  # fmt: skip
+    seed_listing(
+        a, "0268773", "MHI_RFS_PQ_images_2015/",
+        listing(*[entry(n, sz, "2022-11-08 18:10") for n, sz in rows], entry("IMG_3939.JPG", "1.4M", "2022-11-08 19:46")),
+    )
+    seed_csv(a, "0268773", "MHI_RFS_PQ_siteinfo_2015.csv", RFS_CSV)
+    # the HAW-1773_2015 row of the reduced StRS Hawaii cover table (NCEI 0317464 NCRMP_BENTHIC_COVER_STRS_HAWAII_2015-2024.csv, 310 point rows)
+    path = a.ctx.layout.raw / "cover" / "hawaii.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(",".join(nc.COVER_FIELDS) + "\r\nHAW-1773_2015,HAW-1773,7571,19.799082,-156.022947,35.8,36.1,fish,310\r\n", encoding="utf-8")
+
+
+def test_site_photos_of_0268773_belong_to_their_visit_after_the_quadrats(tmp_path):
+    """0268773 holds 1,422 oblique habitat photos named SITE_2015_SITE_A_NN.JPG next to the quadrats of 285 visits: they used to
+    become one-frame visits with geo none (and crowd out real visits in round 0); now they are frames of the same station, last."""
+    a = make_adapter(tmp_path, accessions="0268773", frames_per_visit="all")
+    seed_2015_rfs(a)
+    visits = a._visits(nc.ACC_BY_ID["0268773"])
+    assert sorted(v.site for v in visits) == ["HAW-1773", "IMG_3939.JPG"]  # one real visit + the stray file
+    cands = [c for c in a.discover() if c.extra["site_code"] == "HAW-1773"]
+    names = [c.item_id.split("/")[1] for c in cands]
+    assert sorted(names[:4]) == [f"HAW-1773_2015_A_0{n}.JPG" for n in (1, 2, 3, 4)] and names[3] == "HAW-1773_2015_A_01.JPG"  # quadrats first, transect start last
+    assert sorted(names[4:]) == [f"HAW-1773_2015_SITE_A_0{n}.JPG" for n in (1, 2, 3, 4)]
+    assert [c.extra["image_kind"] for c in cands] == ["photoquadrat"] * 4 + ["site_photo"] * 4
+    site = by_name(cands)["HAW-1773_2015_SITE_A_02.JPG"]
+    g = a.resolve_geo(site)
+    assert (g.lat, g.lon, g.geo_precision, g.geo_inferred, g.geo_uncertainty_m) == (19.799082, -156.022947, "station", True, 50.0)
+    assert g.depth_m == 11.0  # mean(35.8, 36.1) ft = 10.96 m from the StRS Hawaii cover table
+    assert g.geo_source == (
+        "NCEI 0268773 MHI_RFS_PQ_siteinfo_2015.csv LATITUDE/LONGITUDE (handheld GPS over the dive buoy, WGS 84), joined on SITE = HAW-1773; "
+        "depth: NCEI 0317464 NCRMP_BENTHIC_COVER_STRS_HAWAII_2015-2024.csv MIN_DEPTH/MAX_DEPTH (feet, mean x 0.3048) via IMAGE_NAME, DEPTH_SOURCE fish"
+    )
+    assert (site.timestamp, site.extra["station_id"], site.extra["replicate"], site.extra["photo_id"]) == ("2015-06-20", "0268773/HAW-1773", "A", 2)
+    stray = by_name(a.discover())["IMG_3939.JPG"]
+    assert a.resolve_geo(stray).geo_precision == "none" and stray.extra["image_kind"] is None
+    k3 = make_adapter(tmp_path / "k3", accessions="0268773", frames_per_visit=3)
+    seed_2015_rfs(k3)
+    assert all("_SITE_" not in c.item_id for c in k3.discover())  # the default 3 frames per visit are quadrats
+
+
 def test_a_name_that_does_not_parse_is_a_one_frame_visit_with_geo_none(tmp_path):
     a = make_adapter(tmp_path, accessions="0159155", depth="off", frames_per_visit="all")
     seed_2015(a, frames=1)
@@ -698,6 +917,8 @@ def test_groups_give_every_region_the_same_share_and_climate_a_quarter(tmp_path)
         assert climate == [pytest.approx(0.0625)] and [w for w, m in mine if m[0].kind == "strs"] == [pytest.approx(0.1875)]  # 1 : 3
     hawaii_climate = next(m for _, m in groups if m[0].area == "hawaii" and m[0].kind == "climate")
     assert [x.year for x in hawaii_climate] == [2013, 2024, 2016, 2019]  # spread order: oldest, newest, then the middle
+    hawaii_strs = next(m for _, m in groups if m[0].area == "hawaii" and m[0].kind == "strs")
+    assert [x.acc for x in hawaii_strs][:3] == ["0159144", "0317535", "0164293"]  # by survey date: 2013, 2024, 2016 (0270550 sits last in the table)
     only = make_adapter(tmp_path / "s", kind="strs", climate_share=0.5)
     assert [round(w, 9) for w, _ in only._groups(only.selected_accessions())] == [0.25] * 4  # one kind present: it gets the whole share of its region
 
@@ -735,7 +956,7 @@ JAR_CSV = (  # real header and rows of Site_Info_PRIAs_2016.csv (0176287), CRLF 
 
 def seed_jarvis(a):
     """Accession 0176287 as NCEI serves it: the raw cruise tree (folder names verified live 2026-10-07); JAR-850 under BENTHIC, JAR-738 and JAR-736 under FISH."""
-    seed_listing(a, "0176287", "", listing(entry("Cruise/"), entry("FCMT29-ISO-19115-2.xml", "21K"), entry("Site_Info_PRIAs_2016.csv", "1.6K")))
+    seed_listing(a, "0176287", "", listing(entry("Cruise/", date="2018-09-25 13:46"), entry("FCMT29-ISO-19115-2.xml", " 19K", "2018-09-13 02:15"), entry("Site_Info_PRIAs_2016.csv", "2.5K", "2018-09-13 02:01")))
     chain = ["Cruise/", "CruiseData/", "SE1602_Jarvis/", "SE1602_Jarvis/", "Optical/", "JAR/", "REA/"]
     for i, child in enumerate(chain[1:], 1):  # every level below the root lists its single child
         seed_listing(a, "0176287", "".join(chain[:i]), listing(entry(child)))
@@ -743,7 +964,8 @@ def seed_jarvis(a):
     seed_listing(a, "0176287", NESTED + "BENTHIC/", listing(entry("JAR-850/")))
     seed_listing(a, "0176287", NESTED + "FISH/", listing(entry("JAR-736/"), entry("JAR-738/")))
     seed_csv(a, "0176287", "Site_Info_PRIAs_2016.csv", JAR_CSV)
-    seed_iso(a, "0176287", [ACCESS, "Cite as: Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2018). National Coral Reef Monitoring Program: Benthic images collected from stratified random sites (StRS) across Jarvis Island in the Pacific Remote Island Areas (NCEI Accession 0176287). https://www.ncei.noaa.gov/archive/accession/0176287. Accessed [date]."])
+    seed_iso(a, "0176287", [ACCESS, DISTRIBUTION, CITE_0176287, USE_LIABILITY])
+    seed_inport(a, "71814")
 
 
 def seed_jarvis_sites(a):
@@ -786,7 +1008,9 @@ def test_cruise_tree_frames_geo_and_ids(tmp_path):
     assert g.geo_source.startswith("NCEI 0176287 Site_Info_PRIAs_2016.csv LATITUDE/LONGITUDE") and g.geo_source.endswith("joined on SITE = JAR-850")
     # one frame per visit first: the two stations come before any second frame of either
     assert len({x.extra["station_id"] for x in cands[:2]}) == 2
-    assert a.resolve_licence(c).attribution.startswith("Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2018).")
+    lic = a.resolve_licence(c)
+    assert lic.attribution.startswith("Ecosystem Sciences Division, Pacific Islands Fisheries Science Center (2018).")
+    assert (lic.tier, lic.level, lic.url) == ("A", "collection", "https://www.fisheries.noaa.gov/inport/item/71814")  # StRS collection, data-license-type Custom
 
 
 def test_listing_that_cannot_be_read_is_recorded_and_skipped(tmp_path):
