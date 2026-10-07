@@ -22,7 +22,10 @@ How it works
       Kongsberg / C-Technics camera files (AVI, MPG, ASF, 0.03-0.3 GB), ``gopro`` for MP4
       (1080p, 1.3-2.2 GB). ``.LRV`` (GoPro proxy) and ``.THM`` (thumbnail) are never listed.
       A station video and its GoPro clip share ``extra.station_id`` (so they go to the same
-      split); ``Spots_01-1/-2/-3`` and ``He436_012-1/-2`` are parts of one station.
+      split); ``Spots_01-1/-2/-3`` and ``He436_012-1/-2`` are parts of one station. Outside
+      907386 the id comes from the station video of the row, not from each file name: HE501
+      names six AVIs with another area than their MP4 (``HE501_Hydro5_042.avi`` next to
+      ``HE501_Hydro4_042.MP4`` in one row).
     * resolve_geo follows the "resolve_geo recipe" of the research note. Columns are read by
       name (907386 has Longitude before Latitude). Heincke rows: ``Latitude`` / ``Longitude``,
       depth ``Bathy depth [m]`` (positive down; empty in He436_012-1/-2), uncertainty 200 m
@@ -34,15 +37,17 @@ How it works
       the row they are listed in: PANGAEA.907386 lists ``HE415_Greifer_AG1_006_HD.*`` in row
       AG1_005, 2.1 km from the real station (the MP4 ``mvhd`` time equals row AG1_006). Such a
       file carries ``extra.row_remapped``; a GoPro file with no row of its own has no position.
-    * QC against the DSHIP "Video camera" events of the cruise (``qc=true``, default): the event
-      whose start - 5 min <= row Date/Time <= end + 5 min is looked up; with ``d`` = the smaller
-      distance from the table position to the event start / end, ``d > 300 m`` keeps the table
-      coordinate, sets ``geo_uncertainty_m = round(d + 200, -1)`` and writes the disagreement
-      into ``geo_source`` and ``extra`` (5 known longitude typos in the seed tables, 0.5-4.3 km,
-      e.g. He436_029 3,226 m off; two in HE400, 3.7 and 18.5 km). No event, no change: the
-      HE478, HE501, HE502 and HE505 times do not fall into any DSHIP video event, so those rows
-      keep 200 m. HE505 (907340) times are not acquisition times
-      (13 min for stations up to 30 km apart): its ``timestamp`` is left empty.
+    * QC against the DSHIP video events of the cruise (``qc=true``, default): device "Video
+      camera" (HE400 to HE474) or "Ocean Floor Observation System" (the same drift-video sled as
+      logged from HE478 on). The event whose start - 5 min <= row Date/Time <= end + 5 min is
+      looked up; with ``d`` = the smaller distance from the table position to the event start /
+      end, ``d > 300 m`` keeps the table coordinate, sets ``geo_uncertainty_m = round(d + 200, -1)``
+      and writes the disagreement into ``geo_source`` and ``extra`` (5 known longitude typos in
+      the seed tables, 0.5-4.3 km, e.g. He436_029 3,226 m off; two latitude typos in HE400, 3.7
+      and 18.5 km; three longitude typos in HE478, 0.5, 1.1 and 10.4 km). No event, no change
+      (200 m). The HE502 event list covers only 1 of its 3 rows; HE505 (907340) times are not
+      acquisition times (13 min for stations up to 30 km apart): its ``timestamp`` is left empty
+      and it is not QC-checked.
     * Licence: the ``License:`` line of the record header is cross-checked with the JSON-LD
       ``license`` and ``conditionsOfAccess`` (``licence_check=true``, default). A contradiction
       makes the dataset tier U, a restricted record is skipped. Attribution is the record's
@@ -71,7 +76,7 @@ Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     siblings        false limits the default list to 907386, 909999 and 831731 (default true).
     cruises         only these groups, e.g. ``["HE436","Helgoland2011"]`` (group = cruise from the
                     ``Event`` column / header, ``Helgoland2011`` for 831731, ``PANGAEA.<id>`` else).
-    media           ``station`` (default: AVI / MPG / ASF, 419 files, about 16 GB projected), ``gopro``
+    media           ``station`` (default: AVI / MPG / ASF, 419 files, about 40 GB projected), ``gopro``
                     (MP4 only, 260 clips of 1.3-2.2 GB, about 450 GB; the three seed tables 170 GB)
                     or ``all``.
     order           ``spread`` (default) or ``table`` (table and column order).
@@ -102,8 +107,8 @@ from typing import Any, Iterable, Iterator, Sequence
 from urllib.parse import urlparse
 
 from ..core.geo import depth_from, haversine_m, parse_time, to_float
-from ..core.http import HttpError
-from ..core.licence import classify, make_licence, most_specific
+from ..core.http import RETRY_STATUS, HttpError
+from ..core.licence import classify, combine, make_licence, most_specific
 from ..core.schema import Candidate, Geo, Licence
 from ..providers import pangaea
 from .base import Adapter, MediaRef, guess_ext, register
@@ -126,6 +131,9 @@ HEINCKE_UNCERTAINTY_M = 200.0
 TRANSECT_FALLBACK_LENGTH_M = 440.0  # twice the longest Helgoland transect, used when the end position is missing
 BOX = (53.0, 56.5, 3.0, 9.0)  # lat_min, lat_max, lon_min, lon_max: German Bight and Dogger Bank sanity box
 QC_WINDOW_S = 300.0
+# DSHIP device names of the drift-video deployments ("Ocean Floor Observation System" from HE478 on;
+# HE501 matches 63 of 63 rows with a median distance of 0 m).
+QC_DEVICES = {"video camera", "ocean floor observation system"}
 QC_THRESHOLD_M = 300.0
 TRIM_S = 60
 
@@ -133,9 +141,13 @@ SKIP_EXT = {"lrv", "thm"}  # GoPro low-res proxy and thumbnail
 GOPRO_EXT = {"mp4"}
 STATION_EXT = {"avi", "mpg", "mpeg", "asf", "mov", "mkv", "wmv", "m4v", "mts"}
 MEDIA_HOSTS = {"hs.pangaea.de"}
-# Projected sizes (research/german_bight.md, HEAD measurements) for estimate().
-MEAN_BYTES = {"avi": 32e6, "mp4": 1.72e9}
+# Projected sizes for estimate() (research/german_bight.md): AVI and MP4 from HEAD measurements, MPG
+# from the exact Helgoland MPEG-2 sizes (3,100,876 kB / 13 files). HE400 MPG and the ASF files were
+# never probed (a HEAD recalls tape files), so their totals are a projection.
+MEAN_BYTES = {"avi": 32e6, "mp4": 1.72e9, "mpg": 3_100_876 * 1024 / 13}
 DEFAULT_BYTES = 32e6
+# GoPro clocks checked against the ship log (mvhd creation_time) only in these tables.
+CET_CLOCK_IDS = {"907386", "909999"}
 
 MEDIA_MODES = ("station", "gopro", "all")
 ORDERS = ("spread", "table")
@@ -216,6 +228,23 @@ def _file_tokens(stem: str) -> str:
     return "_".join(parts)
 
 
+def _stem(url: str) -> str:
+    return os.path.splitext(os.path.basename(urlparse(url).path))[0]
+
+
+def _split_part(token: str, col: str, cruise: str | None) -> tuple[int | None, str]:
+    """(part, token without the part marker): a ``(part N)`` column, else a ``-N`` suffix of a Heincke file name."""
+    m = re.search(r"part\s*(\d+)", col, re.IGNORECASE)
+    if m:
+        part = int(m.group(1))
+        return part, token.removesuffix(f"_{part}")
+    if cruise:
+        m = re.search(r"-(\d{1,2})$", token)
+        if m:
+            return int(m.group(1)), token[: m.start()]
+    return None, token
+
+
 def _looks_like_html(path: Path) -> bool:
     try:
         with open(path, "rb") as fh:
@@ -237,7 +266,7 @@ class GermanBightAdapter(Adapter):
     media_types = ("video",)
     env_vars: tuple[str, ...] = ()
     manual_steps = (
-        "None for the default media=station (about 16 GB; the tape recall is automatic, rerun later for files in "
+        "None for the default media=station (about 40 GB projected; the tape recall is automatic, rerun later for files in "
         "metadata/failures.jsonl). A GoPro harvest (media=gopro|all, about 450 GB) is beyond sampled use: PANGAEA ToU "
         "section 5.5 lets PANGAEA throttle bulk downloads, so ask first (https://www.pangaea.de/contact/)."
     )
@@ -383,6 +412,16 @@ class GermanBightAdapter(Adapter):
             if ds_id in TOKEN_MAPPED and "Content" in t.columns:
                 token_rows = {re.sub(r"^Profile\s+", "", r.get("Content", "")).strip(): i for i, r in enumerate(t.rows)}
             for i, row in enumerate(t.rows):
+                # Station of a listing row = its station video (AVI / MPG / ASF), so that the GoPro clip of
+                # the row gets the same id even where the two file names disagree (HE501 Hydro4 / Hydro5).
+                anchor = None
+                if token_rows is None:
+                    cruise = self._cruise(t, row)
+                    for c in cols:
+                        url = row.get(c, "")
+                        if url.startswith("http") and _role(os.path.splitext(urlparse(url).path)[1].lstrip(".").lower()) == "station":
+                            anchor = _split_part(_file_tokens(_stem(url)), c, cruise)[1]
+                            break
                 for c in cols:
                     url = row.get(c, "")
                     if not url.startswith("http") or url in seen:
@@ -393,13 +432,12 @@ class GermanBightAdapter(Adapter):
                     if role is None:
                         continue
                     seen.add(url)
-                    units.append(self._unit(ds_id, t, i, row, c, url, ext, role, token_rows))
+                    units.append(self._unit(ds_id, t, i, row, c, url, ext, role, token_rows, anchor))
         self._units = units
         return units
 
-    def _unit(self, ds_id, t, i, row, col, url, ext, role, token_rows) -> _Unit:
-        stem = os.path.splitext(os.path.basename(urlparse(url).path))[0]
-        token = _file_tokens(stem)
+    def _unit(self, ds_id, t, i, row, col, url, ext, role, token_rows, anchor=None) -> _Unit:
+        token = _file_tokens(_stem(url))
         use_i, use_row, matched = i, row, True
         if token_rows is not None:
             j = token_rows.get(token)
@@ -409,19 +447,7 @@ class GermanBightAdapter(Adapter):
                 use_i, use_row = j, t.rows[j]
         cruise = self._cruise(t, use_row)
         group = cruise or GROUP_LABELS.get(ds_id) or f"PANGAEA.{ds_id}"
-        # part: "(part N)" column, else a "-N" suffix of a Heincke file name.
-        part: int | None = None
-        rest = token
-        m = re.search(r"part\s*(\d+)", col, re.I)
-        if m:
-            part = int(m.group(1))
-            if rest.endswith(f"_{part}"):
-                rest = rest[: -len(f"_{part}")]
-        elif cruise:
-            m = re.search(r"-(\d{1,2})$", rest)
-            if m:
-                part = int(m.group(1))
-                rest = rest[: m.start()]
+        part, rest = _split_part(token, col, cruise)
         if token_rows is not None:
             words = rest.split("_")
             area = words[1] if words[0].lower() == "greifer" and len(words) > 2 else words[0]
@@ -434,7 +460,7 @@ class GermanBightAdapter(Adapter):
             cruise=cruise,
             role=role,
             part=part,
-            station=f"{cruise or group}/{rest.lower()}",
+            station=f"{cruise or group}/{(anchor or rest).lower()}",
             area=area,
             url=url,
             ext=ext,
@@ -511,7 +537,7 @@ class GermanBightAdapter(Adapter):
         if u.listing_index != u.row_index:
             extra["row_remapped"] = True
             extra["listing_row_index"] = u.listing_index
-        if u.role == "gopro":
+        if u.role == "gopro" and u.ds_id in CET_CLOCK_IDS:
             extra["camera_clock"] = "CET (UTC+1)"
         size_kb = to_float(u.row.get("File size [kByte]"))
         if size_kb:
@@ -549,6 +575,7 @@ class GermanBightAdapter(Adapter):
             "gopro_videos": sum(1 for u in units if u.role == "gopro"),
             "tables": len({u.ds_id for u in units}),
             "approx_gb": round(total / 1e9, 1),
+            "unmeasured_size_files": sum(1 for u in units if not to_float(u.row.get("File size [kByte]")) and u.ext not in ("avi", "mp4")),
         }
 
     # ----------------------------------------------------------------- licence
@@ -561,21 +588,26 @@ class GermanBightAdapter(Adapter):
         t = self.table(ds_id)
         # No file-level licence exists (the media are served with content-disposition only) and the
         # collection (831732) agrees with the record, so the record header is the most specific level.
-        level, text = most_specific(("file", None), ("record", t.licence_text), ("collection", None))
+        level, _text = most_specific(("file", None), ("record", t.licence_text), ("collection", None))
         name, url = t.licence_name, t.licence_url
         doc = self._record_json(ds_id)
         j_url = self._jsonld_licence(doc) if doc else None
         if not (name or url) and j_url:  # header silent, the record JSON-LD states the licence (still record level)
             name, url, level = j_url, j_url, "record"
-        tier = classify(name or url)
+        # Header name and URI must agree and the JSON-LD may only confirm them. core combine(): any NC/ND
+        # term (X) wins, two different known tiers make the record U. An unreadable header stays U even
+        # when the JSON-LD says CC BY (never upgraded), but an NC/ND JSON-LD still makes it X.
+        tier = combine(*(classify(x) for x in (name, url) if x))
         if j_url:
             j_tier = classify(j_url)
             if j_tier != "U" and tier != "U" and j_tier != tier:
                 name = f"conflict: header {name!r} vs JSON-LD {j_url!r}"
-                tier = "U"
+            if tier != "U" or j_tier == "X":
+                tier = combine(tier, j_tier)
         m = re.search(r"licenses/by/(\d\.\d)", url or j_url or "")
         short = f"CC BY {m.group(1)}" if m else (name or "")
-        attribution = f"{re.sub(r'[\s,;.]+$', '', t.citation)}. {short}".strip()
+        citation = re.sub(r"[\s,;.]+$", "", t.citation)  # outside the f-string: requires-python is >= 3.10
+        attribution = f"{citation}. {short}".strip()
         lic = make_licence(
             name,
             level=level,
@@ -663,7 +695,7 @@ class GermanBightAdapter(Adapter):
                 self.ctx.fail(cruise, "qc_events", f"DSHIP event list not read, no position QC: {exc}")
                 text = ""
             for r in pangaea.parse_textfile(text).rows:
-                if (r.get("Method/Device") or "").strip().lower() != "video camera":
+                if (r.get("Method/Device") or "").strip().lower() not in QC_DEVICES:
                     continue
                 t0 = parse_time(r.get("Date/Time"))
                 lat, lon = to_float(r.get("Latitude")), to_float(r.get("Longitude"))
@@ -728,11 +760,17 @@ class GermanBightAdapter(Adapter):
             return
         todo: list[Candidate] = []
         for c in [cand, *self._lookahead]:
-            if len(todo) > n:
+            if len(todo) >= n:
                 break
             if c.media_url in self._warmed or urlparse(c.media_url).netloc not in MEDIA_HOSTS:
                 continue
+            # Every HEAD recalls a tape file: only for files the runner will fetch (selected tier, usable
+            # geo, not already on disk from an earlier run).
             if c.raw.get("row_matched") is False or self.resolve_licence(c).tier not in self.ctx.config.selected_tiers:
+                continue
+            if self.ctx.layout.media_path(c.sample_id, c.media_type, c.ext).exists():
+                continue
+            if self.ctx.config.require_geo and self.resolve_geo(c).geo_precision == "none":
                 continue
             todo.append(c)
         for c in todo:
@@ -759,7 +797,7 @@ class GermanBightAdapter(Adapter):
         while True:
             if staged:
                 status, online, retry = self._head_state(ref.url)
-                if status is not None and status >= 400 and status != 503:
+                if status is not None and status >= 400 and status not in RETRY_STATUS:
                     raise HttpError(ref.url, status, "HEAD failed while waiting for tape staging")
                 if not online:
                     if time.monotonic() >= deadline:

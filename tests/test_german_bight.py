@@ -197,6 +197,7 @@ def test_909999_rows_files_and_licence(tmp_path):
     assert lic.attribution == CIT_909999
     # AVI and GoPro share the station id; the parts -1/-2 of one station share it too
     assert c.extra["station_id"] == cands["HE436_GOPRO_001.MP4"].extra["station_id"] == "HE436/001"
+    assert cands["HE436_GOPRO_001.MP4"].extra["camera_clock"] == "CET (UTC+1)"  # mvhd time vs ship log, research
     assert cands["He436_012-1.avi"].extra["station_id"] == "HE436/012" and cands["He436_012-1.avi"].extra["part"] == 1
 
 
@@ -352,13 +353,29 @@ HE502_ROWS = [
 HE505_ROWS = [
     ["Profile 01_Hydro3", "7.095352", "54.767765", "2018-03-14T18:10:49", "27.9", f"{BASE}/HE505/HE505_001_Hydro3.MP4", f"{BASE}/HE505/HE505_001_Hydro3.asf"],
 ]
+HE501_ROW_42 = [  # the AVI is named with another area (Hydro5) than the MP4 and the row (Hydro4)
+    "Profile 42_Hydro4", "7.03932", "55.17289", "2017-11-24T20:23:31", "30.2", f"{BASE}/HE501/HE501_Hydro4_042.MP4", f"{BASE}/HE501/HE501_Hydro5_042.avi",
+]  # fmt: skip
+HE478_COLS = ["Latitude", "Longitude", "Date/Time", "Bathy depth [m]", "URL file (avi)", "URL file (MP4)"]
+HE478_ROWS = [
+    ["55.72200", "4.04333", "2017-03-14T03:36:00", "36.9", f"{BASE}/HE478/HE478_Dogger_035.avi", f"{BASE}/HE478/HE478_Dogger_035.MP4"],
+    ["55.65567", "3.95767", "2017-03-14T04:20:00", "36.4", f"{BASE}/HE478/HE478_Dogger_036.avi", f"{BASE}/HE478/HE478_Dogger_036.MP4"],
+]
+# Verbatim lines of the live DSHIP event list of HE478 (www.pangaea.de/ddi/HE478.tab, retrieved 2026-10-07): from HE478 on
+# the drift-video sled is logged as "Ocean Floor Observation System", not "Video camera".
+HE478_EVENTS = (
+    "Event label\tMethod/Device\tDate/Time\tLatitude\tLongitude\tElevation\tDate/Time end\tLatitude end\tLongitude end\tElevation end\tComment\n"
+    "HE478/46-1\tGrab\t2017-03-14T03:26:00\t55.72255\t3.87752\t-36.2\t\t\t\t\t\n"
+    "HE478/46-2\tOcean Floor Observation System\t2017-03-14T03:34:00\t55.72217\t3.87747\t-36.8\t2017-03-14T03:40:00\t55.72192\t3.87713\t-36.6\t\n"
+    "HE478/47-1\tOcean Floor Observation System\t2017-03-14T04:19:00\t55.65567\t3.95758\t-36.3\t2017-03-14T04:30:00\t55.65540\t3.95755\t-36.3\t\n"
+)
 HE400_ROWS = [["HE400_001", "54.96568", "7.00867", "2013-05-17T10:35:19", "32.4", f"{BASE}/HE400/Station_001.mpg"]]
 HE474_ROWS = [["55.78117", "3.9375", "2016-10-18T18:57:00", "44.5", f"{BASE}/HE474/HE474_01_Dogger.avi", f"{BASE}/HE474/HE474_01_GOPRO_Dogger.MP4"]]
 
 
 def sibling_adapter(tmp_path, **options):
     a = make_adapter(tmp_path, (), dataset_ids=["907338", "907337", "907340", "907382", "910009"], **options)
-    seed(a, "907338", table_text("907338", ["Content", "Longitude", "Latitude", "Date/Time", "Bathy depth [m]", "URL movie", "URL file"], HE501_ROWS, event_campaign="HE501"))
+    seed(a, "907338", table_text("907338", ["Content", "Longitude", "Latitude", "Date/Time", "Bathy depth [m]", "URL movie", "URL file"], [*HE501_ROWS, HE501_ROW_42], event_campaign="HE501"))
     seed(
         a, "907337",
         table_text("907337", ["Content", "Longitude", "Latitude", "Date/Time", "Bathy depth [m]", "URL movie (part 1)", "URL movie (part 2)", "URL movie (part 3)", "URL file (asf file)"], HE502_ROWS, event_campaign="HE502"),
@@ -382,6 +399,33 @@ def test_siblings_role_comes_from_the_extension_not_the_column(tmp_path):
     dogger = a.resolve_geo(cands["HE474_01_Dogger.avi"])
     assert (dogger.lat, dogger.lon) == (55.78117, 3.9375)  # Dogger Bank is inside the sanity box
     assert a.resolve_licence(cands["HE501_Hydro1_001.avi"]).attribution.endswith("PANGAEA.907338. CC BY 4.0")
+    assert "camera_clock" not in cands["HE501_Hydro1_001.MP4"].extra  # the CET clock was only verified for 907386 / 909999
+
+
+def test_station_id_comes_from_the_station_video_of_the_row(tmp_path):
+    """HE501 row 42 links HE501_Hydro4_042.MP4 and HE501_Hydro5_042.avi: both views of one station, one split."""
+    cands = by_file(sibling_adapter(tmp_path, media="all").discover())
+    mp4, avi = cands["HE501_Hydro4_042.MP4"], cands["HE501_Hydro5_042.avi"]
+    assert mp4.extra["station_id"] == avi.extra["station_id"] == "HE501/hydro5_042"
+    assert mp4.extra["row_index"] == avi.extra["row_index"] == 2
+    assert len({c.extra["station_id"] for c in cands.values() if c.extra["pangaea_id"] == "907338"}) == 3
+
+
+def test_qc_uses_the_ofos_events_of_later_cruises(tmp_path):
+    a = make_adapter(tmp_path, (), dataset_ids=["910939"], qc=True)
+    seed(a, "910939", table_text("910939", HE478_COLS, HE478_ROWS, event_campaign="HE478"))
+    (a.ctx.layout.raw / "dship_events_HE478.tab").write_text(HE478_EVENTS, encoding="utf-8")
+    cands = by_file(a.discover())
+    typo = cands["HE478_Dogger_035.avi"]
+    g = a.resolve_geo(typo)
+    assert (g.lat, g.lon, g.depth_m) == (55.722, 4.04333, 36.9)  # the table value is kept; the ship log has 3.87747 E
+    assert typo.extra["qc_event"] == "HE478/46-2" and typo.extra["qc_distance_m"] == 10387
+    assert g.geo_uncertainty_m == 10590.0  # round(10387 + 200, -1)
+    assert g.geo_source.endswith("; QC: table position differs by 10387 m from DSHIP event HE478/46-2")
+    ok = cands["HE478_Dogger_036.avi"]
+    g2 = a.resolve_geo(ok)
+    assert ok.extra["qc_event"] == "HE478/47-1" and ok.extra["qc_distance_m"] == 6 and "qc_flag" not in ok.extra
+    assert g2.geo_uncertainty_m == 200.0 and "QC" not in g2.geo_source
 
 
 def test_siblings_asf_and_gopro_parts(tmp_path):
@@ -422,13 +466,31 @@ def test_licence_cross_check_with_jsonld_agrees(tmp_path):
     assert failures(a) == []
 
 
-def test_licence_contradiction_between_header_and_jsonld_is_tier_u(tmp_path):
+@pytest.mark.parametrize(
+    "jsonld_licence, tier",
+    [
+        ("https://creativecommons.org/licenses/by-nc/4.0/", "X"),  # any NC / ND term wins (core combine), never A/B/C
+        ("https://creativecommons.org/licenses/by-sa/4.0/", "U"),  # two different known tiers: unresolved
+    ],
+)
+def test_licence_contradiction_between_header_and_jsonld(tmp_path, jsonld_licence, tier):
+    """Synthetic: the JSON-LD licence of the real 909999 record is replaced."""
     a = make_adapter(tmp_path, ("909999",), jsonld=True)
     doc = json.loads(JSONLD_909999.read_text(encoding="utf-8"))
-    doc["license"] = "https://creativecommons.org/licenses/by-nc/4.0/"
+    doc["license"] = jsonld_licence
     (a.ctx.layout.raw / "pangaea_909999.jsonld").write_text(json.dumps(doc), encoding="utf-8")
     lic = a.resolve_licence(next(iter(a.discover())))
-    assert lic.tier == "U" and "conflict" in lic.name
+    assert lic.tier == tier and "conflict" in lic.name
+
+
+def test_header_licence_name_and_uri_must_agree(tmp_path):
+    """Synthetic: a CC BY name with a CC BY-NC URI in the header is excluded, not tier B."""
+    a = make_adapter(tmp_path, ("909999",))
+    text = TABS["909999"].read_text(encoding="utf-8").replace(
+        "(URI: https://creativecommons.org/licenses/by/4.0/)", "(URI: https://creativecommons.org/licenses/by-nc/4.0/)"
+    )
+    seed(a, "909999", text)
+    assert a.resolve_licence(next(iter(a.discover()))).tier == "X"
 
 
 def test_nc_header_licence_is_never_upgraded(tmp_path):
@@ -503,6 +565,7 @@ def test_item_ids_are_stable_across_runs(tmp_path):
 def test_estimate_reports_provider_totals(tmp_path):
     est = make_adapter(tmp_path).estimate()
     assert est["videos"] == 11 and est["station_videos"] == 11 and est["gopro_videos"] == 0 and est["tables"] == 3
+    assert est["unmeasured_size_files"] == 0  # AVI (HEAD mean) and Helgoland MPG (File size column) only
     est_all = make_adapter(tmp_path / "x", media="all").estimate()
     assert est_all["gopro_videos"] == 2 + 3  # MP4: 2 in 907386, 3 in 909999 (He436_014 has none)
     assert est_all["approx_gb"] > est["approx_gb"] * 10
@@ -616,6 +679,24 @@ def test_fetch_media_does_not_retry_a_real_error(tmp_path, monkeypatch, no_sleep
     with pytest.raises(HttpError) as exc:
         a.fetch_media(cand, MediaRef(url=cand.media_url), dest)
     assert exc.value.status == 404 and no_sleep == []
+
+
+def test_tape_warmup_heads_only_files_that_will_be_fetched(tmp_path):
+    """Every HEAD recalls a tape file: skip files already on disk and rows the runner drops for lack of geo."""
+    a = make_adapter(tmp_path, ("909999",), dry_run=False, http=NoNet(dry_run=False), events=True, qc_reject_m=1000)
+    it = iter(a.discover())
+    first = next(it)  # the other three candidates wait in the look-ahead buffer
+    every = [first, *a._lookahead]
+    assert len(every) == 4
+    done = next(c for c in every if c.item_id.endswith("He436_014.avi"))
+    path = a.ctx.layout.media_path(done.sample_id, done.media_type, done.ext)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"RIFF")
+    headed = []
+    a._head_state = lambda url: headed.append(url.rsplit("/", 1)[1]) or (200, True, 0.0)
+    a._staging_seen = True
+    a.resolve_media(first)
+    assert sorted(headed) == ["He436_001.avi", "He436_012-1.avi"]  # not 014 (on disk), not 029 (rejected by qc_reject_m)
 
 
 def test_resolve_media_does_not_touch_the_network_before_staging_was_seen(tmp_path):

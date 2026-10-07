@@ -6,18 +6,19 @@
 #             PANGAEA.909999  R/V Heincke HE436, Nov 2014             (45 AVI + 44 GoPro MP4)
 #             PANGAEA.831731  Helgoland transects, Jun 2011           (13 MPEG-2)
 #           plus six sibling cruise tables of the same authors and format (siblings=true, default):
-#             907382 HE400 (114 MPG), 910009 HE474, 910939 HE478 (Dogger Bank), 907338 HE501,
+#             907382 HE400 (114 MPG), 910009 HE474, 910939 HE478 (Dogger Bank and inner German Bight), 907338 HE501,
 #             907337 HE502 (3 stations, ASF + MP4 parts), 907340 HE505 (ASF + MP4)
 # Licence:  CC BY 4.0 (CC BY 3.0 for PANGAEA.831731), tier B, read at record level from the table header
 #           "License:" line and cross-checked with the record JSON-LD. The attribution stored with every
 #           sample is the record's "Citation:" line plus the licence. Not the CC BY-NC-ND of the CSR 2019 paper.
 # Geo:      station precision, geo_inferred=true: one ship-GPS position per video (columns Latitude/Longitude,
 #           depth "Bathy depth [m]"), applied to every frame. geo_uncertainty_m is 200 m for the Heincke tables
-#           (inflated to distance + 200 m where the position disagrees with the DSHIP event log by > 300 m: 5 known
-#           longitude typos in the seed tables, 2 in HE400) and half the transect length + 30 m for Helgoland.
+#           (inflated to distance + 200 m where the position disagrees with the DSHIP video / OFOS event log by > 300 m:
+#           5 known typos in the seed tables, 2 in HE400, 3 in HE478) and half the transect length + 30 m for Helgoland.
 #           GoPro clips are mapped to their table row by file name (PANGAEA.907386 lists one clip in the wrong row).
 # Size:     default media=station: 145 seed videos (AVI median 22 MB, mean 32 MB; Helgoland MPG 110-469 MB) and 419
-#           with the siblings, about 16 GB projected (see the "provider total" line of --dry-run). GoPro MP4
+#           with the siblings, about 40 GB projected (the 114 HE400 MPG and 29 ASF were never probed; MPG is projected
+#           at the Helgoland mean of 245 MB; see "estimate" in metadata/runs/dry-run.json). GoPro MP4
 #           (--opt media=gopro|all) are 1.3-2.2 GB each: 99 seed clips = ~170 GB, 260 clips = ~450 GB with the
 #           siblings. Plan for the station videos only unless the budget is in bytes.
 #
