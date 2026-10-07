@@ -62,7 +62,7 @@ All image accessions (counts and sizes come from the NCEI directory listings on 
 | StRS | 2016 | Hawaiʻi | 0164293 | arc0111/0164293/1.1 | 19,667 | 93.2 | 2016-07-13…09-27 | Site_Info_HAWAII_2016.csv |
 | StRS | 2016 | PRIA (Jarvis) | 0176287 | arc0125/0176287/1.1 | 1,751 | 7.9 | 2016-05-16…05-22 | Site_Info_PRIAs_2016.csv |
 | StRS | 2017 | Marianas | 0176286 | arc0190/0176286/1.1 | ≈15,200 (est.) | 104.2 (manifest) | 2017-05-03…06-21 | Site_Info_MARIAN_2017.csv |
-| StRS | 2017 | PRIA (Wake, Baker, Howland, Jarvis) | 0176288 | arc0190/0176288/1.1 | ≈5,500 (est.) | 38.4 (manifest) | 2017-04-02…04-23 | Site_Info_PRIAs_2017.csv |
+| StRS | 2017 | PRIA (Wake, Baker, Howland, Jarvis) | 0176288 | arc0190/0176288/1.1 | ≈5,400 (est.) | 38.4 (manifest) | 2017-04-02…04-23 | Site_Info_PRIAs_2017.csv |
 | StRS | 2018 | American Samoa | 0187563 | arc0180/0187563/1.1 | 7,008 | 76.4 | 2018-06-19…07-18 | Site_Info_SAMOA_2018.csv |
 | StRS | 2018 | PRIA | 0187564 | arc0180/0187564/1.1 | 7,964 | 74.8 | 2018-06-08…08-11 | Site_Info_PRIAs_2018.csv |
 | StRS | 2019 | MHI | 0211063 | arc0157/0211063/1.1 | 14,445 | 122.4 | 2019-04-21…10-31 | Site_Info_HAWAII_2019.csv |
@@ -79,7 +79,7 @@ Notes on the table:
 - InPort 71814 gives "ESD_NCRMP_BENTHIC_IMAGES_STRS_2024_HAWAII" the link 0217940. That is wrong: 0217940 is the 2019 Hawaiʻi StRS *cover* table (`MV_BIA_CNET_ANALYSIS_DATA_HAWAII_2019.csv`, 33 MB). The 2024 Hawaiʻi StRS images are **0317535**.
 - InPort 71814 also lists 0157633, which is the documentation accession (PDF SOPs), not images.
 - 0176287: all 1,751 images sit under `Cruise/CruiseData/SE1602_Jarvis/SE1602_Jarvis/Optical/JAR/REA/{BENTHIC,FISH}/<SITE>/PHOTO_QUADS/[A|B/]` (59 of the 60 sites in the CSV; `JAR-736` has no images). The verifier's full recursive listing (188 directory requests) matches the manifest byte count exactly (7.87 GB).
-- 0176286 and 0176288 were not fully listed (nested trees, about 1,600 and 570 directories, frequent TLS resets). Their manifests (`arc0190/0176286/0176286.1.1.xml`, `arc0190/0176288/0176288.1.1.xml`) give 16,846 entries / 104,152,398,325 B and 6,096 entries / 38,399,617,458 B. Subtracting about 3 directories per site (calibrated on 0176287) and the metadata files gives ≈15,200 and ≈5,500 images (±2 %). The download script lists them exactly.
+- 0176286 and 0176288 were not fully listed (nested trees, about 1,600 and 570 directories, frequent TLS resets). Their manifests (`arc0190/0176286/0176286.1.1.xml`, `arc0190/0176288/0176288.1.1.xml`) give 16,846 entries / 104,152,398,325 B and 6,096 entries / 38,399,617,458 B. Subtracting about 3 directories per site (calibrated on 0176287) and the metadata files gives about 15,250 and 5,500 images; dividing the bytes by the mean image size (6.86 MB over the 12,851 0176286 files of the research agent's partial listing, 7.22 MB over the first 301 0176288 files of the verifier's listing) gives about 15,200 and 5,300. So ≈15,200 (15,100–15,300) and ≈5,400 (5,300–5,500). The download script lists them exactly.
 
 ## Licence
 - Tier: **A** (US federal government work; CC0 1.0 on the 2024–2025 accessions; no contradicting source).
@@ -106,7 +106,7 @@ Notes on the table:
 ## Media
 - Types, counts, formats, resolution, total size, time range (full history for observatories)
   - Still images only: JPEG `.JPG`, plus a few lowercase `.jpg` in older sets. No video.
-  - Totals: climate **20,068 images / 167.6 GB** (17 accessions). StRS about **0.197 M images / 1.41 TB** (21 accessions; 176,597 counted + ≈20,700 estimated for 0176286/0176288). Grand total about 0.22 M images, about 1.57 TB (sum of the manifest byte counts, which include the few-MB metadata files).
+  - Totals: climate **20,068 images / 167.6 GB** (17 accessions). StRS about **0.197 M images / 1.41 TB** (21 accessions; 176,597 counted + ≈20,600 estimated for 0176286/0176288). Grand total about 0.22 M images, about 1.57 TB (sum of the manifest byte counts, which include the few-MB metadata files).
   - Time range: survey years 2013–2019 and 2022–2025. There are no surveys in 2020–2021 (COVID).
   - The 2010–2012 RAMP images exist at PIFSC: the cover tables contain `IMAGE_NAME`s such as `JOH-07_2012_A_27.JPG` and `TUT-21_2012_A_28.JPG`. They are **not** in any NCEI image accession found (see Open questions).
   - Cameras, from EXIF read with 64 KB Range requests:
@@ -227,7 +227,7 @@ None are required. Optional:
 5. Sample 1–3 frames per site visit, balanced across regions and years.
 
 ## Open questions / risks
-- The image counts of 0176286 and 0176288 (2017 StRS, nested cruise trees) are estimates from their archive manifests (≈15,200 and ≈5,500); sizes are exact. 0270550 is counted (3,811) and shares no site code with 0211063.
+- The image counts of 0176286 and 0176288 (2017 StRS, nested cruise trees) are estimates from their archive manifests (≈15,200 and ≈5,400); sizes are exact. 0270550 is counted (3,811) and shares no site code with 0211063.
 - The 2010–2012 photo-quadrats (RAMP era, InPort says "since 2010") are not in any NCEI image accession found. The cover CSVs reference them (e.g. `JOH-07_2012_A_27.JPG`, `TUT-21_2012_A_28.JPG`), so they exist at PIFSC.
 - No climate images were archived for Hawaiʻi 2016 beyond 656 frames, nor for Samoa/Marianas in some years. Gaps follow the survey rotation; this is not an error.
 - Licence on pre-2024 accessions (2013–2023) is implicit (US-government work, no licence field). Some collectors were cooperative-institute or state partners (e.g. PMNM 2015 NWHI, 0276273). NCEI marks all as public and the recent ones CC0, so tier A is reasonable. A verifier may want explicit confirmation.
@@ -259,7 +259,7 @@ Independent re-check against primary sources (requests made 2026-10-07 UTC with 
 - CC0 applies to the six **2024–2025** accessions only, not to 2023: 0289892 and 0289907 have no licence field. Tier unchanged (A).
 - **38** accessions (17 climate + 21 StRS), not 39 (18 climate).
 - 0176287: **1,751** images / 7.87 GB from a complete recursive listing, not 1,482 / 6.7 GB (the earlier listing missed sites under the doubled `SE1602_Jarvis/SE1602_Jarvis/` folder).
-- 0176286 and 0176288 filled in from the manifest headers (104.2 GB and 38.4 GB exact; ≈15,200 and ≈5,500 images estimated).
+- 0176286 and 0176288 filled in from the manifest headers (104.2 GB and 38.4 GB exact; ≈15,200 and ≈5,400 images estimated). A full listing was started but stopped: at about 3 s per directory request (TLS resets) it would take over 2 hours.
 - Totals now about 0.22 M images and 1.57 TB (was 0.20 M / 1.45 TB); about 7,300 site visits (was 6,500).
 - Filters: do not drop photo numbers > 30 (0159155 has 17 legitimate frames numbered 31–38). The letter in `SITE_YYYY_R_NN` is the cover CSV's `REPLICATE`, not always a transect.
 - Enumeration: the geoportal query with `size=500` returns a 15.4 MB JSON and mostly InPort collection records, so it cannot list accessions; use the InPort XMLs (71813, 71814, 59193) and the manifest header trick. The InPort 71813 suggested citation points to the withdrawn record 36144; cite the NCEI accession instead.
