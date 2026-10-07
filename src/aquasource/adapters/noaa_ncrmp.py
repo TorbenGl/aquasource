@@ -42,12 +42,12 @@ How it works
       correlated 1 m2 frames each). Budget-friendly order (``order=spread``, default): round 0 takes ONE
       frame of every visit, round 1 a second frame, and so on up to ``frames_per_visit`` (default 3; so every
       sample of a budget below ~7,300 has a distinct station). Within a round: weighted round robin over the
-      accessions (equal weight per region = Hawaii / Marianas / Samoa / PRIA, within a region ``climate_share``
-      0.25 for the climate accessions and the rest for StRS, equal inside a group, so every survey year
-      appears), inside an accession the visits are sorted by survey date and taken in a spread order (first,
-      last, middle, ...), inside a visit the frames follow a van der Corput order (centre, quarters, ...) that
-      avoids the first and last frames (slate, transect marker). Any prefix of the stream covers all regions,
-      years and the cruise tracks.
+      8 groups region x kind (equal weight per region = Hawaii / Marianas / Samoa / PRIA; inside a region
+      ``climate_share`` 0.25 for the climate accessions and the rest for StRS), inside a group the accessions
+      (= survey years) in turn in a spread order (oldest, newest, middle, ...), inside an accession the visits
+      sorted by survey date and taken in a spread order (first, last, middle, ...), inside a visit the frames
+      follow a van der Corput order (centre, quarters, ...) with the first frame of each transect last (transect
+      starts are marked by photographing fingers). Any prefix of the stream covers all regions, both kinds, many years and the cruise tracks.
     * Frames numbered 0 (the slate) are dropped; numbers above 30 are kept (0159155 has 17 legitimate frames
       31-38). Names that do not parse become one-frame visits with geo none. Duplicate names inside one
       accession are listed once.
@@ -83,6 +83,7 @@ import io
 import logging
 import re
 import xml.etree.ElementTree as ET
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import date
 from functools import lru_cache
@@ -341,11 +342,20 @@ def pick_order(n: int) -> tuple[int, ...]:
 
 
 def spread_order(n: int) -> list[int]:
-    """0..n-1 in a spread order (first, last, middle, quarters, ...): any prefix is evenly spaced."""
+    """0..n-1 as first, last, then repeated midpoints: any prefix covers both ends and is evenly spaced."""
     if n <= 2:
         return list(range(n))
-    bits = (n - 1).bit_length()
-    return sorted(range(n), key=lambda i: int(format(i, f"0{bits}b")[::-1], 2))
+    out = [0, n - 1]
+    queue = deque([(0, n - 1)])
+    while queue:
+        lo, hi = queue.popleft()
+        mid = (lo + hi) // 2
+        if mid in (lo, hi):
+            continue
+        out.append(mid)
+        queue.append((lo, mid))
+        queue.append((mid, hi))
+    return out
 
 
 def interleave(streams: list[tuple[float, Iterator[Any]]]) -> Iterator[Any]:
@@ -557,6 +567,14 @@ def _frame_of(e: Entry) -> _Frame:
     )
 
 
+def pick_indices(frames: list[_Frame]) -> list[int]:
+    """Pick order of the frames of one visit (sorted by replicate and number): ``pick_order`` with the first frame of every
+    transect last, because transect starts are marked by photographing fingers (SOP NMFS-PIFSC-71) and QC may have missed one."""
+    edge = {0} | {i for i in range(1, len(frames)) if frames[i].rep != frames[i - 1].rep}
+    order = pick_order(len(frames))
+    return [i for i in order if i not in edge] + [i for i in order if i in edge]
+
+
 def drop_variants(frames: list[_Frame]) -> list[_Frame]:
     """Frames without the slate (photo 0) and without ``_original`` twins of an image that is listed as well."""
     plain = {(f.site, f.year, f.rep, f.photo) for f in frames if not f.variant}
@@ -602,7 +620,7 @@ class NoaaNcrmpAdapter(Adapter):
     media_types = ("image",)
     env_vars: tuple[str, ...] = ()
     manual_steps = (
-        "None. Anonymous HTTPS, no token. The default frames_per_visit=3 takes about 22 k images (about 200 GB); "
+        "None. Anonymous HTTPS, no token. The default frames_per_visit=3 takes about 22 k images (about 160 GB); "
         "frames_per_visit=all is the whole archive: about 0.22 M images, 1.57 TB. Optional: ask PIFSC ESD (InPort 71813 "
         "steward) for the 2010-2012 RAMP photo-quadrats, which exist but are not at NCEI."
     )
@@ -613,7 +631,6 @@ class NoaaNcrmpAdapter(Adapter):
         self._scans: dict[str, _Scan | None] = {}
         self._index: dict[str, SiteIndex] = {}
         self._plans: dict[str, list[_Visit]] = {}
-        self._orders: dict[str, list[int]] = {}
         self._licences: dict[str, Licence] = {}
         self._covers: dict[str, dict[str, CoverRec] | None] = {}
         self._bad_urls: set[str] = set()
@@ -866,19 +883,23 @@ class NoaaNcrmpAdapter(Adapter):
         v.frames.sort(key=lambda f: (f.rep, f.photo if f.photo is not None else -1, f.name))
         return v.frames
 
-    def _weights(self, accs: list[Acc]) -> dict[str, float]:
-        """Equal share per region; inside a region ``climate_share`` for the climate accessions, the rest for StRS."""
-        areas = sorted({a.area for a in accs})
+    def _groups(self, accs: list[Acc]) -> list[tuple[float, list[Acc]]]:
+        """Sampling groups ``(weight, accessions)``: one per region and kind.
+
+        Every region gets the same weight; inside a region ``climate_share`` goes to the climate accessions and the
+        rest to the StRS ones (a region with one kind gets it all). Inside a group the accessions are listed in a spread
+        order (oldest, newest, middle, ...) and taken in turn, so any prefix has the right mix of regions and kinds and
+        reaches different survey years instead of the oldest accession first.
+        """
+        areas = [a for a in AREAS if any(x.area == a for x in accs)]
         share = self._climate_share()
-        out: dict[str, float] = {}
+        out: list[tuple[float, list[Acc]]] = []
         for area in areas:
-            groups = {k: [a for a in accs if a.area == area and a.kind == k] for k in ("climate", "strs")}
-            present = {k: v for k, v in groups.items() if v}
+            present = {k: v for k in ("climate", "strs") if (v := [x for x in accs if x.area == area and x.kind == k])}
             total = sum(share if k == "climate" else 1 - share for k in present)
             for k, members in present.items():
-                s = (share if k == "climate" else 1 - share) / total
-                for a in members:
-                    out[a.acc] = s / len(members) / len(areas)
+                w = (share if k == "climate" else 1 - share) / total / len(areas)
+                out.append((w, [members[i] for i in spread_order(len(members))]))
         return out
 
     # ---------------------------------------------------------------- discover
@@ -890,15 +911,16 @@ class NoaaNcrmpAdapter(Adapter):
                 visits = sorted(self._visits(a), key=lambda v: v.site)
                 for v in visits:
                     frames = self._frames(a, v)
-                    picks = pick_order(len(frames))[: len(frames) if k is None else k]
+                    picks = pick_indices(frames)[: len(frames) if k is None else k]
                     for i in sorted(picks):
                         yield self._candidate(a, v, frames[i])
             return
-        weights = self._weights(accs)
+        groups = self._groups(accs)
         r = 0
         while k is None or r < k:
             got = False
-            for cand in interleave([(weights[a.acc], self._round(a, r)) for a in accs]):
+            streams = [(w, interleave([(1.0, self._round(a, r)) for a in members])) for w, members in groups]
+            for cand in interleave(streams):
                 got = True
                 yield cand
             if not got:
@@ -910,7 +932,7 @@ class NoaaNcrmpAdapter(Adapter):
         for v in self._visits(acc):
             frames = self._frames(acc, v)
             if r < len(frames):
-                yield self._candidate(acc, v, frames[pick_order(len(frames))[r]])
+                yield self._candidate(acc, v, frames[pick_indices(frames)[r]])
 
     def _candidate(self, acc: Acc, v: _Visit, f: _Frame) -> Candidate:
         ext = (f.name.rsplit(".", 1)[-1] if "." in f.name else "jpg").lower()

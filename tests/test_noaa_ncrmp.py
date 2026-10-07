@@ -284,7 +284,18 @@ def test_pick_order_and_spread_order_are_permutations_with_even_prefixes():
     assert nc.pick_order(30)[:4] == (15, 7, 22, 3)  # the centre, the quarters: never the first or the last frame first
     for n in (2, 3, 17, 30, 38, 100):
         assert sorted(nc.pick_order(n)) == list(range(n)) and sorted(nc.spread_order(n)) == list(range(n))
-    assert nc.spread_order(5) == [0, 4, 2, 1, 3]
+    assert nc.spread_order(5) == [0, 4, 2, 1, 3] and nc.spread_order(4) == [0, 3, 1, 2] and nc.spread_order(3) == [0, 2, 1]  # both ends first
+
+
+def test_first_frame_of_every_transect_is_picked_last():
+    """Two transects of 15 frames: the centre of 30 is B_01 (a transect start), so it is deferred; 8th and 23rd come first."""
+    frames = [nc._Frame(f"S_2015_{r}_{n:02d}.JPG", "u", None, "S", 2015, r, n) for r in "AB" for n in range(1, 16)]
+    order = nc.pick_indices(frames)
+    assert sorted(order) == list(range(30)) and order[:3] == [7, 22, 3]
+    assert order[-2:] == [15, 0] and frames[order[0]].name == "S_2015_A_08.JPG" and frames[order[1]].name == "S_2015_B_08.JPG"
+    one = [nc._Frame(f"S_2019_{n:02d}.JPG", "u", None, "S", 2019, "", n) for n in range(1, 31)]
+    assert nc.pick_indices(one)[:2] == [15, 7] and nc.pick_indices(one)[-1] == 0  # no replicate letter: only the very first frame is deferred
+    assert nc.pick_indices([]) == []
 
 
 def test_interleave_is_a_weighted_round_robin():
@@ -675,16 +686,27 @@ def test_date_window_and_filters(tmp_path):
     assert [x.acc for x in make_adapter(tmp_path / "j", **{"to": "2013-12-31"}).selected_accessions()] == ["0159172", "0159144"]
 
 
-def test_weights_give_every_region_the_same_share_and_climate_a_quarter(tmp_path):
+def test_groups_give_every_region_the_same_share_and_climate_a_quarter(tmp_path):
     a = make_adapter(tmp_path)
-    w = a._weights(a.selected_accessions())
-    assert round(sum(w.values()), 9) == 1.0
+    groups = a._groups(a.selected_accessions())
+    assert len(groups) == 8 and round(sum(w for w, _ in groups), 9) == 1.0
     for area in nc.AREAS:
-        accs = [x for x in nc.ACCESSIONS if x.area == area]
-        assert round(sum(w[x.acc] for x in accs), 9) == 0.25
-        assert round(sum(w[x.acc] for x in accs if x.kind == "climate"), 9) == round(0.25 * 0.25, 9)
-    only = make_adapter(tmp_path / "s", kind="strs", climate_share=0.5)._weights([x for x in nc.ACCESSIONS if x.kind == "strs"])
-    assert round(sum(only.values()), 9) == 1.0  # one kind present: it gets the whole share of its region
+        mine = [(w, m) for w, m in groups if m[0].area == area]
+        assert round(sum(w for w, _ in mine), 9) == 0.25  # every region the same share
+        climate = [w for w, m in mine if m[0].kind == "climate"]
+        assert climate == [pytest.approx(0.0625)] and [w for w, m in mine if m[0].kind == "strs"] == [pytest.approx(0.1875)]  # 1 : 3
+    hawaii_climate = next(m for _, m in groups if m[0].area == "hawaii" and m[0].kind == "climate")
+    assert [x.year for x in hawaii_climate] == [2013, 2024, 2016, 2019]  # spread order: oldest, newest, then the middle
+    only = make_adapter(tmp_path / "s", kind="strs", climate_share=0.5)
+    assert [round(w, 9) for w, _ in only._groups(only.selected_accessions())] == [0.25] * 4  # one kind present: it gets the whole share of its region
+
+
+def test_a_small_budget_keeps_the_climate_to_strs_mix(tmp_path):
+    """Per-accession weights would give the 17 small climate accessions their first turn too late for a prefix of 30."""
+    a = make_adapter(tmp_path)
+    streams = [(w, iter([m[0].kind] * 100)) for w, m in a._groups(a.selected_accessions())]
+    first = list(nc.interleave(streams))[:32]
+    assert first.count("climate") == 8 and first.count("strs") == 24
 
 
 def test_budget_prefix_spreads_over_accessions_before_going_deeper(tmp_path):

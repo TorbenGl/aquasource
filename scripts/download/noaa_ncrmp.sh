@@ -22,7 +22,7 @@
 #           and climate 2013-2014, 0276273 and 0270550.
 # Size:     whole archive: about 0.22 M images (20,068 climate + about 197 k StRS), about 1.57 TB (3-16 MB per image; Canon
 #           PowerShot S100 4000x3000 in 2013-2015, G9 X / G7 X 5472x3648 later). The default takes 3 frames per site visit
-#           (about 7,300 visits): about 22 k images, about 155 GB. Use --budget N for less: the order is spread over regions,
+#           (about 7,300 visits): about 22 k images, about 160 GB. Use --budget N for less: the order is spread over regions,
 #           years and cruise tracks, one frame per visit first (distinct stations for N < 7,300). --opt frames_per_visit=all
 #           is everything.
 #
