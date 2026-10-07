@@ -170,6 +170,11 @@ AUV_MAX_ALTITUDE_M = 12.0
 
 PLATFORM_AUV = re.compile(r"autonomous underwater vehicle|\bAUV\b", re.I)
 PLATFORM_TOWED = re.compile(r"OFOS|OFOBS|Ocean Floor Observation|\bROV\b|remote", re.I)
+# Deck / descent rules are for towed cameras and AUVs. Under-ice ROV stills (BEAST, 0-20 m below the ice) and diver
+# transects have no "descent", and ROV depth changes with the terrain, so the depth rule is limited further.
+PLATFORM_NO_DECK_RULES = re.compile(r"BEAST|diver", re.I)
+PLATFORM_NO_DEPTH_RULE = re.compile(r"\bROV\b|remote|BEAST|diver", re.I)
+DEPTH_RULE_MIN_GAP_M = 10.0  # also needs this many metres above the median: shallow reefs vary by more than 10 %
 
 # Flags that make a row a candidate for dropping (unless keep_flagged).
 DROP_FLAGS = frozenset(
@@ -479,6 +484,10 @@ class TableGeo:
     event_col: str | None = None
     pairs: list[tuple[float, float] | None] = field(default_factory=list)  # valid lat/lon per row
     times: list[float | None] = field(default_factory=list)
+    # compact per-row values, so that the full table rows can be freed once the candidates are listed
+    depths: list[float | None] = field(default_factory=list)  # "Depth water [m]" as served
+    uncs: list[float | None] = field(default_factory=list)  # "Coord unc [m]"
+    ev_labels: list[str] = field(default_factory=list)  # "Event" column
     outliers: set[int] = field(default_factory=set)
     n_valid: int = 0
     n_unique: int = 0
@@ -525,8 +534,11 @@ class PanDataset:
     def platform(self) -> str:
         return "; ".join(e.method for e in self.events if e.method)
 
-    def event_for(self, row: dict[str, str]) -> Event | None:
-        return _event_of(row, self.events, self.geo.event_col if self.geo else None)
+    def event_at(self, idx: int | None) -> Event | None:
+        """Event of table row ``idx`` (its ``Event`` column), else the only / first event."""
+        if self.geo is not None and idx is not None:
+            return _event_by_label(self.events, self.geo.ev_labels[idx])
+        return self.events[0] if self.events else None
 
 
 def analyse_table(
@@ -561,6 +573,9 @@ def analyse_table(
         )
         g.pairs.append((lat, lon) if ok else None)
         g.times.append(parse_time(row.get(g.time_col)) if g.time_col and row.get(g.time_col) else None)
+        g.depths.append(num(row.get(g.depth_col)) if g.depth_col else None)
+        g.uncs.append(num(row.get(g.unc_col)) if g.unc_col else None)
+        g.ev_labels.append((row.get(g.event_col) or "").strip() if g.event_col else "")
     valid = [i for i, p in enumerate(g.pairs) if p is not None]
     g.n_valid = len(valid)
     g.n_unique = len({g.pairs[i] for i in valid})
@@ -603,19 +618,21 @@ def analyse_table(
         k = j + 1
 
     # 4) per-row flags
-    depths = [abs(d) for d in (num(r.get(g.depth_col)) for r in rows) if d is not None and d != 0] if g.depth_col else []
+    depths = [abs(d) for d in g.depths if d is not None and d != 0]
     if len(depths) >= 3:
         g.median_depth = statistics.median(depths)
     vis_col = _col(cols, "Ground vis")
     alt_col = _col(cols, "Distance [m]")
     auv = bool(PLATFORM_AUV.search(platform))
+    deck_rules = not PLATFORM_NO_DECK_RULES.search(platform)
+    depth_rule = not PLATFORM_NO_DEPTH_RULE.search(platform)
     for i, row in enumerate(rows):
         fl: list[str] = []
         if i in g.outliers:
             fl.append("position_outlier")
-        if not g.has_position(i):
+        if deck_rules and not g.has_position(i):
             t = g.times[i]
-            ev = _event_of(row, events, g.event_col)
+            ev = _event_by_label(events, g.ev_labels[i])
             ev_t = parse_time(ev.dt) if ev and ev.dt else None
             if ev is None and events:
                 times = [parse_time(e.dt) for e in events if e.dt]
@@ -624,8 +641,15 @@ def analyse_table(
                 fl.append("pre_event_no_position")
             if t is not None and g.first_fix_t is not None and t < g.first_fix_t:
                 fl.append("pre_first_fix_no_position")
-        d = num(row.get(g.depth_col)) if g.depth_col else None
-        if depth_filter and g.median_depth and d is not None and abs(d) < depth_filter * g.median_depth:
+        d = g.depths[i]
+        if (
+            depth_rule
+            and depth_filter
+            and g.median_depth
+            and d is not None
+            and abs(d) < depth_filter * g.median_depth
+            and g.median_depth - abs(d) > DEPTH_RULE_MIN_GAP_M
+        ):
             fl.append("shallow_depth")
         if vis_col and num(row.get(vis_col)) == 0:
             fl.append("ground_vis_0")
@@ -635,13 +659,16 @@ def analyse_table(
                 fl.append("altitude_high")
         if g.run_s.get(i, 0.0) > HELD_FIX_MIN_S:
             fl.append("held_fix")
-        g.flags.append(fl)
+        g.flags.append(fl or _NO_FLAGS)
     assert len(g.flags) == n
     return g
 
 
-def _event_of(row: dict[str, str], events: list[Event], event_col: str | None) -> Event | None:
-    label = (row.get(event_col, "") if event_col else "").strip()
+_NO_FLAGS: list[str] = []  # shared, never mutated (callers copy)
+
+
+def _event_by_label(events: list[Event], label: str) -> Event | None:
+    label = (label or "").strip()
     if label:
         for ev in events:
             if label in (ev.label, ev.base_label()):
@@ -690,7 +717,7 @@ class PangaeaImagesAdapter(Adapter):
         self._seen_urls: set[str] = set()
         self._videos: Counter = Counter()
         self._lookahead: deque[Candidate] = deque()
-        self._warmed: set[str] = set()
+        self._warmed: dict[str, bool] = {}  # url -> already on disk when the warm-up HEAD asked
         self._staging_seen = False
         self.excluded = self._excluded_ids()
 
@@ -1007,6 +1034,7 @@ class PangaeaImagesAdapter(Adapter):
         self._claimed.clear()
         self._seen_urls.clear()
         self._videos.clear()
+        self._datasets.clear()  # tables are freed after listing: reload from the metadata cache
         stream = self._stream()
         n = self._opt_int("stage_batch", 20) or 0
         if self.ctx.dry_run or n <= 0:
@@ -1073,7 +1101,7 @@ class PangaeaImagesAdapter(Adapter):
             origin_url=ds.landing,
             timestamp=ev.dt if ev else None,
             ext=_media_ext(url) or None,
-            raw={"dataset_id": ds.dataset_id, "row": {}},
+            raw={"dataset_id": ds.dataset_id},
             extra=self._extra(ds, g, filename=fn, media_column="staticURL"),
         )
 
@@ -1085,7 +1113,9 @@ class PangaeaImagesAdapter(Adapter):
         for kind, names in (("url", URL_COLUMNS), ("file", FILE_COLUMNS), ("raw", RAW_COLUMNS)):
             for n in names:
                 for c in cols:
-                    if c == n or (kind != "file" and c.startswith(n)):
+                    # "IMAGE (left camera (LC))" is a file column, "IMAGE (Size) [Bytes] ..." is not
+                    qualified = kind == "file" and c.startswith(n + " (") and "[" not in c
+                    if c == n or qualified or (kind != "file" and c.startswith(n)):
                         if (c, kind) not in out:
                             out.append((c, kind))
         return out
@@ -1115,7 +1145,7 @@ class PangaeaImagesAdapter(Adapter):
             cols = [c for c in cols if c[1] == "raw"] + [c for c in cols if c[1] != "raw"]
         keep_flagged = _flag(self.options.get("keep_flagged"), False)
         drop_sw = _flag(self.options.get("drop_sw_files"), False)
-        entries: list[tuple[float, int, str, str, list[str]]] = []
+        entries: list[tuple[float, int, str, str, list[str], str | None]] = []
         dropped: Counter = Counter()
         local: set[str] = set()
         for i, row in enumerate(t.rows):
@@ -1136,20 +1166,21 @@ class PangaeaImagesAdapter(Adapter):
                 continue
             local.add(url)
             tt = geo.times[i]
-            entries.append((tt if tt is not None else math.inf, i, url, col, flags))
+            stamp = (row.get(geo.time_col) or None) if geo.time_col else None
+            entries.append((tt if tt is not None else math.inf, i, url, col, flags, stamp))
         if dropped:
             self.ctx.fail(
                 f"PANGAEA.{ds.dataset_id}",
                 "filter",
                 f"dropped {sum(dropped.values())} flags on rows of {len(t.rows)}: {dict(dropped)}",
             )
-        entries.sort(key=lambda e: (e[0], e[1]))
-        order = range(len(entries)) if self.options.get("order", "spread") == "table" else spread_order(len(entries))
-        if self.options.get("order", "spread") == "table":
-            entries.sort(key=lambda e: e[1])
+        ds.table = None  # the per-row values that resolve_geo needs live in ds.geo: free the rows
+        table_order = self.options.get("order", "spread") == "table"
+        entries.sort(key=lambda e: (e[1],) if table_order else (e[0], e[1]))
+        order = range(len(entries)) if table_order else spread_order(len(entries))
         used: set[str] = set()
         for k in order:
-            _, i, url, col, flags = entries[k]
+            _, i, url, col, flags, stamp = entries[k]
             if url in self._seen_urls:
                 continue
             self._seen_urls.add(url)
@@ -1158,9 +1189,8 @@ class PangaeaImagesAdapter(Adapter):
             if item_id in used:
                 item_id = f"PANGAEA.{ds.dataset_id}/{fn}~{i}"
             used.add(item_id)
-            row = t.rows[i]
             extra = self._extra(ds, g, filename=fn, media_column=col, row_index=i, flags=flags)
-            ev = ds.event_for(row)
+            ev = ds.event_at(i)
             if ev:
                 extra["event"] = ev.base_label()
             yield Candidate(
@@ -1169,9 +1199,9 @@ class PangaeaImagesAdapter(Adapter):
                 media_type=media_type_for(url),
                 media_url=url,
                 origin_url=ds.landing,
-                timestamp=row.get(geo.time_col) if geo.time_col and row.get(geo.time_col) else None,
+                timestamp=stamp,
                 ext=_media_ext(url) or None,
-                raw={"dataset_id": ds.dataset_id, "row": row},
+                raw={"dataset_id": ds.dataset_id, "row_index": i},
                 extra=extra,
             )
 
@@ -1220,15 +1250,14 @@ class PangaeaImagesAdapter(Adapter):
     # ----------------------------------------------------------------- geo
     def resolve_geo(self, cand: Candidate) -> Geo:
         ds = self._dataset(cand)
-        row: dict[str, str] = cand.raw.get("row") or {}
         idx = cand.extra.get("row_index")
         g = ds.geo
         doi = ds.doi
 
         # depth: the row first (sign normalised), else the event ELEVATION
-        ev = ds.event_for(row) if row else (ds.events[0] if ds.events else None)
+        ev = ds.event_at(idx)
         depth, depth_src = None, ""
-        d = num(row.get(g.depth_col)) if g and g.depth_col else None
+        d = g.depths[idx] if g is not None and idx is not None else None
         if d is not None:
             depth, depth_src = round(abs(d), 3), g.depth_col
         elif ev is not None and ev.depth() is not None:
@@ -1242,7 +1271,7 @@ class PangaeaImagesAdapter(Adapter):
 
         if have_pos and not constant:
             lat, lon = g.pairs[idx]
-            unc = num(row.get(g.unc_col)) if g.unc_col else None
+            unc = g.uncs[idx]
             if unc is None:
                 if PLATFORM_AUV.search(ds.platform):
                     unc = UNC_AUV_M
@@ -1348,37 +1377,59 @@ class PangaeaImagesAdapter(Adapter):
                 continue
             todo.append(c)
         for c in todo:
-            self._warmed.add(c.media_url)
-            try:
-                with self._no_retries():
-                    self.http.request("HEAD", c.media_url, kind="media").close()
-            except Exception as exc:  # warming is best effort
-                log.debug("warm-up HEAD failed for %s: %s", c.media_url, exc)
+            self._warmed[c.media_url] = self._head_state(c.media_url)[0]
 
     def resolve_media(self, cand: Candidate) -> MediaRef:
         self._warm(cand)
         return MediaRef(url=cand.media_url, ext=cand.ext or guess_ext(cand.media_url, cand.media_type))
 
+    def _head_state(self, url: str) -> tuple[bool, float]:
+        """(file is on disk, seconds the server asks us to wait). One HEAD, no retries; it also triggers a tape recall."""
+        try:
+            with self._no_retries():
+                resp = self.http.request("HEAD", url, kind="media")
+            try:
+                ctype = (resp.headers.get("Content-Type") or "").lower()
+                retry = float(resp.headers.get("Retry-After") or 0)
+                return resp.status_code == 200 and not ctype.startswith("text/html"), retry
+            finally:
+                resp.close()
+        except (HttpError, ValueError):
+            return False, 0.0
+
     def fetch_media(self, cand: Candidate, ref: MediaRef, dest: Path) -> tuple[int, str]:
-        """Download with tape-staging handling: 503 or an HTML page means "loading from tape"."""
+        """Download with tape-staging handling.
+
+        HTTP 503 (``Retry-After``) or an HTML page means "loading from tape" (minutes). The file is then
+        polled with HEAD every max(Retry-After, 15) s and fetched once it answers 200 with a non-HTML type;
+        an HTML body is never kept. A file that a warm-up HEAD already asked for is polled before the first GET.
+        """
         deadline = time.monotonic() + float(self.options.get("stage_timeout_s") or 900)
-        poll = 15.0
+        staged = self._warmed.get(ref.url) is False
+        wait = 15.0
         while True:
+            if staged:
+                ready, retry = self._head_state(ref.url)
+                if not ready:
+                    if time.monotonic() >= deadline:
+                        raise HttpError(ref.url, 503, "still on tape after stage_timeout_s")
+                    time.sleep(max(15.0, retry))
+                    continue
             try:
                 nbytes, sha = self.http.download(ref.url, dest, expected_bytes=ref.expected_bytes, headers=ref.headers or None)
             except HttpError as exc:
                 if exc.status != 503 or time.monotonic() >= deadline:
                     raise
-                self._staging_seen = True
-                log.info("%s is on tape (HTTP 503); waiting %.0fs", ref.url, poll)
-                time.sleep(poll)
+                self._staging_seen = staged = True
+                log.info("%s is on tape (HTTP 503); polling every %.0fs", ref.url, wait)
+                time.sleep(wait)
                 continue
             if _looks_like_html(dest):
                 dest.unlink(missing_ok=True)
-                self._staging_seen = True
+                self._staging_seen = staged = True
                 if time.monotonic() >= deadline:
                     raise HttpError(ref.url, 503, "HTML page (tape staging) instead of media")
-                log.info("%s returned an HTML page (tape staging); waiting %.0fs", ref.url, poll)
-                time.sleep(poll)
+                log.info("%s returned an HTML page (tape staging); polling every %.0fs", ref.url, wait)
+                time.sleep(wait)
                 continue
             return nbytes, sha

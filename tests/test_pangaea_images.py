@@ -306,6 +306,72 @@ def test_speed_spike_inside_the_radius_is_rejected(tmp_path):
     assert a.resolve_geo(c["S3.JPG"]).geo_precision == "image"
 
 
+# ------------------------------------------------------------------ platform rules, media columns, memory
+BEAST_EVENT = (
+    "BEAST_1 * LATITUDE: 85.8 * LONGITUDE: 120.7 * DATE/TIME: 2019-11-19T09:07:00 * ELEVATION: -4404.6 m "
+    "* METHOD/DEVICE: Remotely operated sensor platform BEAST (BEAST)"
+)
+ROV_EVENT = BEAST_EVENT.replace("Remotely operated sensor platform BEAST (BEAST)", "Remote operated vehicle (ROV)")
+
+
+def test_under_ice_rov_has_no_deck_or_depth_rules(tmp_path):
+    # synthetic: BEAST stills 0-20 m below the ice, no coordinate columns, some before the event time
+    rows = [(f"2019-11-19T08:{m:02d}:00", d, f"S{m}.JPG") for m, d in zip(range(40, 58, 2), ("1", "6", "20", "2", "8", "12", "3", "15", "5"))]
+    cols = "Date/Time\tDepth water [m]\tIMAGE"
+    a = make_adapter(tmp_path, [], datasets=["999070", "999071"])
+    write_raw(a, "pangaea_999070.tab", synthetic_table("999070", rows, event=BEAST_EVENT, cols=cols))
+    write_raw(a, "pangaea_999071.tab", synthetic_table("999071", rows, event=ROV_EVENT, cols=cols))
+    by_ds = {}
+    for c in a.discover():
+        by_ds.setdefault(c.extra["dataset_id"], []).append(c)
+    assert len(by_ds["999070"]) == 9  # BEAST: nothing is dropped
+    g = a.resolve_geo(by_ds["999070"][0])
+    assert (g.geo_precision, g.lat, g.lon, g.geo_uncertainty_m) == ("station", 85.8, 120.7, 4000.0)
+    assert g.depth_m in (1.0, 6.0, 20.0, 2.0, 8.0, 12.0, 3.0, 15.0, 5.0)  # the Depth water column, not the 4,404 m seafloor
+    # ROV: no depth rule (terrain), but rows without position before the event time are still deck frames
+    assert "999071" not in by_ds  # every row (08:40-08:56) is before the 09:07 event and has no position
+
+
+def test_qualified_image_columns_and_stereo_pairs(tmp_path):
+    # synthetic, after the column names of PANGAEA.921370 (left / right camera, size columns are not media)
+    cols = "Date/Time\tLatitude\tLongitude\tIMAGE (left camera (LC))\tIMAGE (right camera (RM))\tIMAGE (Size) [Bytes] (left camera (LC))"
+    rows = [
+        ("2016-09-30T20:50:00", "86.7283", "61.6245", "L1.png", "", "896 kBytes"),
+        ("2016-09-30T21:39:59", "86.7081", "61.3382", "", "R2.png", ""),
+        ("2016-09-30T21:40:09", "86.7080", "61.3380", "", "", "1 kBytes"),
+    ]
+    a = make_adapter(tmp_path, [], datasets=["999072"], keep_flagged=True)
+    write_raw(a, "pangaea_999072.tab", synthetic_table("999072", rows, cols=cols))
+    c = by_file(a.discover())
+    assert set(c) == {"L1.png", "R2.png"}  # the third row has no media file
+    assert c["L1.png"].extra["media_column"] == "IMAGE (left camera (LC))" and c["L1.png"].media_type == "image"
+    assert c["R2.png"].extra["media_column"] == "IMAGE (right camera (RM))"
+    assert c["L1.png"].ext == "png"
+
+
+def test_urls_are_quoted_and_http_is_upgraded_and_non_media_files_are_ignored(tmp_path):
+    cols = "Date/Time\tLatitude\tLongitude\tURL image\tBinary"
+    rows = [
+        ("2016-09-30T20:50:00", "86.7283", "61.6245", "http://hs.pangaea.de/Images/a b.jpg", ""),
+        ("2016-09-30T20:51:00", "86.7284", "61.6246", "", "side scan.xtf"),
+        ("2016-09-30T20:52:00", "86.7285", "61.6247", "", "with space.JPG"),
+        ("2016-09-30T20:53:00", "86.7286", "61.6248", "", "../evil.JPG"),
+    ]
+    a = make_adapter(tmp_path, [], datasets=["999073"], keep_flagged=True)
+    write_raw(a, "pangaea_999073.tab", synthetic_table("999073", rows, cols=cols))
+    urls = sorted(c.media_url for c in a.discover())
+    assert urls == [f"{DL}/999073/files/with%20space.JPG", "https://hs.pangaea.de/Images/a b.jpg"]  # .xtf and ../ are not media
+
+
+def test_tables_are_freed_after_listing_and_discover_can_run_twice(tmp_path):
+    a = make_adapter(tmp_path, ["989684"], keep_flagged=True)
+    first = list(a.discover())
+    assert a._datasets["989684"].table is None  # only the compact per-row arrays are kept
+    again = list(a.discover())
+    assert [c.item_id for c in again] == [c.item_id for c in first]
+    assert a.resolve_geo(again[2]).lat == 78.616649
+
+
 # ------------------------------------------------------------------ HE153 ROV video (no data matrix)
 def test_rov_video_from_panmd_static_url(tmp_path):
     a = make_adapter(tmp_path, [], video=True)
@@ -520,11 +586,12 @@ def test_es_discovery_groups_children_by_parent(tmp_path):
 
 # ------------------------------------------------------------------ tape staging
 class TapeHttp(Http):
-    """download() answers 503 (tape) or an HTML page for the first calls, then the JPEG."""
+    """download() answers 503 (tape) or an HTML page for the first calls, then the JPEG; HEAD follows head_script."""
 
-    def __init__(self, script):
+    def __init__(self, script, head_script=()):
         super().__init__(min_interval_s=0)
-        self.script, self.downloads, self.heads = list(script), 0, []
+        self.script, self.head_script = list(script), list(head_script)
+        self.downloads, self.heads = 0, []
 
     def download(self, url, dest, **kw):
         self.downloads += 1
@@ -537,36 +604,91 @@ class TapeHttp(Http):
 
     def request(self, method, url, *, kind="metadata", **kwargs):
         self.heads.append((method, url, kind, self.max_retries))
-        return Resp(503, b"", {"Retry-After": "2"})
+        step = self.head_script.pop(0) if self.head_script else "200"
+        if step == "503":
+            return Resp(503, b"", {"Retry-After": "2", "Content-Type": "text/html"})
+        if step == "html200":
+            return Resp(200, b"", {"Content-Type": "text/html"})
+        return Resp(200, b"", {"Content-Type": "image/jpeg"})
 
 
-def test_fetch_media_waits_for_tape_and_never_keeps_html(tmp_path, monkeypatch):
+def test_fetch_media_polls_with_head_until_the_tape_recall_is_done(tmp_path, monkeypatch):
     sleeps = []
     monkeypatch.setattr(pi.time, "sleep", lambda s: sleeps.append(s))
-    http = TapeHttp(["503", "html", "503"])
+    http = TapeHttp(["503", "html"], head_script=["503", "html200", "200", "200"])
     a = make_adapter(tmp_path, ["989684"], http=http, dry_run=False)
-    c = list(a.discover())[0]
+    c = next(iter(a.discover()))
     dest = tmp_path / "out" / "f.jpg"
-    n, sha = a.fetch_media(c, a.resolve_media(c), dest)
-    assert http.downloads == 4 and sleeps == [15.0, 15.0, 15.0]
-    assert dest.read_bytes().startswith(b"\xff\xd8") and n == len(dest.read_bytes())
+    n, _sha = a.fetch_media(c, a.resolve_media(c), dest)
+    # GET 503 -> HEAD 503 -> HEAD text/html -> HEAD 200 -> GET returns an HTML page (dropped) -> HEAD 200 -> GET ok
+    assert http.downloads == 3 and len(http.heads) == 4
+    assert sleeps == [15.0, 15.0, 15.0, 15.0]
+    assert all(h[0] == "HEAD" and h[2] == "media" and h[3] == 0 for h in http.heads)  # HEAD polls do not retry
+    assert http.max_retries == 5  # restored
+    assert dest.read_bytes().startswith(b"\xff\xd8") and n == len(dest.read_bytes())  # the HTML body was never kept
     assert a._staging_seen is True
+
+
+def test_fetch_media_without_tape_is_one_plain_get(tmp_path):
+    http = TapeHttp([])
+    a = make_adapter(tmp_path, ["989684"], http=http, dry_run=False)
+    c = next(iter(a.discover()))
+    a.fetch_media(c, a.resolve_media(c), tmp_path / "f.jpg")
+    assert http.downloads == 1 and http.heads == []
 
 
 def test_fetch_media_gives_up_after_the_timeout(tmp_path, monkeypatch):
     clock = iter(range(0, 10000, 400))
     monkeypatch.setattr(pi.time, "monotonic", lambda: next(clock))
     monkeypatch.setattr(pi.time, "sleep", lambda s: None)
-    http = TapeHttp(["503"] * 20)
+    http = TapeHttp(["503"] * 20, head_script=["503"] * 20)
     a = make_adapter(tmp_path, ["989684"], http=http, dry_run=False, stage_timeout_s=900)
-    c = list(a.discover())[0]
+    c = next(iter(a.discover()))
     with pytest.raises(HttpError) as exc:
         a.fetch_media(c, MediaRef(c.media_url), tmp_path / "x.jpg")
-    assert exc.value.status == 503 and 1 < http.downloads < 6
+    assert exc.value.status == 503 and "still on tape" in str(exc.value) and http.downloads == 1
+
+
+def test_non_503_errors_are_not_retried(tmp_path, monkeypatch):
+    monkeypatch.setattr(pi.time, "sleep", lambda s: pytest.fail("must not wait for a 404"))
+
+    class Gone(TapeHttp):
+        def download(self, url, dest, **kw):
+            raise HttpError(url, 404, "download failed")
+
+    a = make_adapter(tmp_path, ["989684"], http=Gone([]), dry_run=False)
+    c = next(iter(a.discover()))
+    with pytest.raises(HttpError) as exc:
+        a.fetch_media(c, MediaRef(c.media_url), tmp_path / "x.jpg")
+    assert exc.value.status == 404
+
+
+def test_head_poll_goes_through_the_real_http_client_without_retries(tmp_path):
+    import requests
+
+    class Session(requests.Session):
+        def __init__(self):
+            super().__init__()
+            self.calls = []
+
+        def request(self, method, url, **kw):
+            self.calls.append((method, url))
+            r = requests.Response()
+            r.status_code = 503
+            r._content, r._content_consumed = b"", True
+            r.headers["Retry-After"] = "30"
+            r.headers["Content-Type"] = "text/html"
+            return r
+
+    sess = Session()
+    a = make_adapter(tmp_path, ["989684"], http=Http(min_interval_s=0, session=sess), dry_run=False)
+    assert a._head_state("https://hs.pangaea.de/x.jpg") == (False, 30.0)
+    assert sess.calls == [("HEAD", "https://hs.pangaea.de/x.jpg")]  # one request: a 503 is not retried or slept on
+    assert a.http.max_retries == 5
 
 
 def test_warm_up_heads_only_upcoming_selectable_images_after_tape_was_seen(tmp_path):
-    http = TapeHttp([])
+    http = TapeHttp([], head_script=["503", "200", "200", "200"])
     a = make_adapter(tmp_path, ["989684"], http=http, dry_run=False, keep_flagged=True, stage_batch=3)
     stream = a.discover()
     first = next(stream)
@@ -579,6 +701,7 @@ def test_warm_up_heads_only_upcoming_selectable_images_after_tape_was_seen(tmp_p
     assert urls == [first.media_url] + [c.media_url for c in a._lookahead]
     assert all(h[0] == "HEAD" and h[2] == "media" and h[3] == 0 for h in http.heads)  # no retry storm while warming
     assert http.max_retries == 5  # restored
+    assert a._warmed[first.media_url] is False and all(a._warmed[u] for u in urls[1:])  # first one is still on tape
     http.heads.clear()
     a.resolve_media(first)
     assert http.heads == []  # each file is warmed once
