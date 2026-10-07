@@ -72,7 +72,7 @@ All image accessions (counts and sizes come from the NCEI directory listings on 
 | StRS | 2024 | Hawaiʻi | 0317535 | arc0247/0317535/1.1 | 13,165 | 151.9 | 2024-05-13…08-27 | NCRMP_STRS_SITEINFO_HAWAII_2024.csv |
 | StRS | 2025 | PRIA (Wake) | 0317753 | arc0247/0317753/1.1 | 1,051 | 12.0 | 2025-04-03…04-08 | NCRMP_STRS_SITEINFO_PRIA_2025.csv |
 | StRS | 2025 | Marianas | 0317785 | arc0248/0317785/1.1 | 11,796 | 148.5 | 2025-04-23…06-27 | NCRMP_STRS_SITEINFO_MARIAN_2025.csv |
-| StRS | 2019 | MHI bleaching event (InPort 59193) | 0270550 | (listing in progress) | | | 2019-10-08…11-14 | |
+| StRS | 2019 | MHI bleaching event (InPort 59193) | 0270550 | arc0209/0270550/1.1 | 3,811 | 34.1 | 2019-10-08…11-14 | ESD_SiteInfo_MHI_BLEA_2019.csv |
 
 Notes on the table:
 - InPort 71813 lists the PRIA 2023 climate accession only as "accession#". It is **0289907**.
@@ -126,7 +126,7 @@ Notes on the table:
   - Apply the EXIF `Orientation` tag. Value 6 occurs (2015, 2018) and some 2024 files are stored portrait (3648×5472).
   - Ignore EXIF `DateTimeOriginal`. It is wrong on some cameras: `1980:01:01` in 2022, and 2013-05-10 for a site surveyed on 2013-09-05. EXIF has a GPS IFD with no coordinates.
   - Overlaps:
-    - (a) The 2019 bleaching-event StRS images (0270550, 2019-10/11) and the 2019 StRS set (0211063, ends 2019-10-31) may share files. Dedup on filename + byte size.
+    - (a) The 2019 bleaching-event StRS images (0270550, 2019-10/11, site codes like `HAW-B4311`) and the 2019 StRS set (0211063) share **no** site codes (127 vs 485 sites checked), so there are no duplicates. Still dedup on filename + byte size as a guard.
     - (b) The same photos were annotated in CoralNet. Any public CoralNet copies are duplicates.
     - (c) NCRMP SfM imagery (InPort 63091/63095) is a different image stream at the same sites, not a duplicate.
     - Dedup key: `<SITE>_<YEAR>[_R]_<NN>` plus size. Origin URL: the NCEI HTTPS file URL.
@@ -134,7 +134,7 @@ Notes on the table:
 ## Geolocation
 - Precision level(s) and approximate share of samples at each
   - **station** for about 100 % of images. Spot checks of 0317534 (87/87 sites), 0159155 (40/40) and the 0240600 MHI part (27/27) found every image site code in the accession's site-info CSV.
-  - **none** only if a code is missing from the CSV and from the cover tables. None observed so far.
+  - **none** only if a code is missing from the CSV and from the cover tables. One real case: in 0270550, the 12 images `OAH-B3096_2019_01…12.JPG` have no row in `ESD_SiteInfo_MHI_BLEA_2019.csv` (127 rows for 128 image site codes). That is 0.3 % of that accession; try the cover fallback, else `none`.
 - geo_source (exact field names / table), CRS, depth field, uncertainty
   - Coordinates: `LATITUDE`, `LONGITUDE` of the per-accession site-info CSV. The data dictionary (InPort 71816, `SITEINFO_DATADICTIONARY_2024.csv`) says: "Latitude of the survey site where photoquads were collected (WGS84, decimal degrees)."
   - Join key column: `SITE`, except `OCC_SITEID` in `NCRMP_CLIMATE_SITEINFO_MARIAN_2022.csv`. The 2019 NWHI file has **both** `SITE` (old code) and `OCC_SITEID`, and the images there use `OCC_SITEID`. Index every ID column.
@@ -230,5 +230,5 @@ None are required. Optional:
 - Licence on pre-2023 accessions is implicit (US-government work, no licence field). Some collectors were cooperative-institute or state partners (e.g. PMNM 2015 NWHI, 0276273). NCEI marks all as public and the recent ones CC0, so tier A is reasonable. A verifier may want explicit confirmation.
 - Coordinates are boat GPS over the buoy, not per-frame positions. Two sites sometimes share identical coordinates (copy errors). Old and new site codes differ (`FFS-12` vs `OCC-FFS-0xx`), so never join across accessions or years.
 - The cover CSVs are large (49–156 MB each) and point-level. Build a reduced depth table once. Depth is missing for StRS Hawaiʻi 2013 and Marianas 2014, and for unannotated images.
-- Atlantic/Caribbean NCRMP (Florida, Puerto Rico, USVI, Flower Garden Banks): **no comparable public photo-quadrat image sets found**. The Atlantic benthic protocol (NCRMP Benthic Assessment Protocols 2018, in NCEI 0157633 `Atlantic/…/NCRMP_Protocol_Benthic_BenthicAssessment_2018.pdf`) is in-situ line-point-intercept plus coral demographics. It takes only "at least five photographs per station" (datasheet + 4 cardinal views), and the NCEI Atlantic benthic collections (e.g. NCRMP-Benthic-PR) are tabular. Atlantic imagery that does exist is separate: AOML NCRMP climate photomosaics (NCEI 0178832, 0178633, 0286804) and Flower Garden Banks NMS long-term monitoring photos (non-NCRMP). Both are listed as new candidates.
+- Atlantic/Caribbean NCRMP (Florida, Puerto Rico, USVI, Flower Garden Banks): **no comparable public photo-quadrat image sets found**. The Atlantic benthic protocol (NCRMP Benthic Assessment Protocols 2018, in NCEI 0157633 `Atlantic/…/NCRMP_Protocol_Benthic_BenthicAssessment_2018.pdf`) is in-situ line-point-intercept plus coral demographics. It takes only "at least five photographs per station" (datasheet + 4 cardinal views), and the NCEI Atlantic benthic collections are tabular. Example checked: NCRMP-Benthic-PR accession 0294342 (PR 2023) holds only CSVs (`NCRMP_PR2023_Benthic_Data01_BenthicCover.csv` … `Data06_Rugosity.csv`), `Sample_Frames.zip`, protocol PDFs and one preview JPEG. Atlantic imagery that does exist is separate: AOML NCRMP climate photomosaics (NCEI 0178832, 0178633, 0286804) and Flower Garden Banks NMS long-term monitoring photos (non-NCRMP). Both are listed as new candidates.
 - NCEI's directory host occasionally resets TLS. Listings of 15–20 k files are slow, so build retries into the downloader.
