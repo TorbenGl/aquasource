@@ -1,0 +1,247 @@
+{
+ "_note": "Real api.php answers (generator=categorymembers, prop=coordinates|imageinfo), trimmed to 3 file pages. Fetched 2026-10-08, metadata only.",
+ "batchcomplete": "",
+ "continue": {
+  "gcmcontinue": "file|4449414d414e4431564552535452414554452e4a5047|161204665",
+  "continue": "gcmcontinue||"
+ },
+ "query": {
+  "pages": {
+   "121341087": {
+    "pageid": 121341087,
+    "ns": 6,
+    "title": "File:4822 Bad Goisern am Hallstättersee, Grund Hallstätter See 01 2022-07-25.jpg",
+    "coordinates": [
+     {
+      "lat": 47.609875,
+      "lon": 13.6345,
+      "primary": "",
+      "globe": "earth"
+     }
+    ],
+    "imagerepository": "local",
+    "imageinfo": [
+     {
+      "timestamp": "2022-08-02T09:23:52Z",
+      "user": "Hangman'sDeath",
+      "size": 10598652,
+      "width": 3024,
+      "height": 4032,
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/4822_Bad_Goisern_am_Hallst%C3%A4ttersee%2C_Grund_Hallst%C3%A4tter_See_01_2022-07-25.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "descriptionurl": "https://commons.wikimedia.org/wiki/File:4822_Bad_Goisern_am_Hallst%C3%A4ttersee,_Grund_Hallst%C3%A4tter_See_01_2022-07-25.jpg",
+      "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=121341087",
+      "extmetadata": {
+       "ImageDescription": {
+        "value": "Der Grund des Hallstätter See im Bereich von Steeg",
+        "source": "commons-desc-page"
+       },
+       "DateTimeOriginal": {
+        "value": "2022-07-25 15:40:40",
+        "source": "commons-desc-page"
+       },
+       "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+       },
+       "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/wiki/User:Hangman%27sDeath\" title=\"User:Hangman'sDeath\">Hangman'sDeath</a>",
+        "source": "commons-desc-page"
+       },
+       "LicenseShortName": {
+        "value": "CC0",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "UsageTerms": {
+        "value": "Creative Commons Zero, Public Domain Dedication",
+        "source": "commons-desc-page"
+       },
+       "AttributionRequired": {
+        "value": "false",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "LicenseUrl": {
+        "value": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "source": "commons-desc-page"
+       },
+       "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "License": {
+        "value": "cc0",
+        "source": "commons-templates",
+        "hidden": ""
+       }
+      },
+      "mime": "image/jpeg"
+     }
+    ]
+   },
+   "50887403": {
+    "pageid": 50887403,
+    "ns": 6,
+    "title": "File:Clownfish - Marsa Alam, Egypt - August 8, 2011.jpg",
+    "coordinates": [
+     {
+      "lat": 24.916117,
+      "lon": 34.972583,
+      "primary": "",
+      "globe": "earth"
+     }
+    ],
+    "imagerepository": "local",
+    "imageinfo": [
+     {
+      "timestamp": "2016-08-25T17:41:53Z",
+      "user": "GiorgioGaleotti",
+      "size": 3480182,
+      "width": 2828,
+      "height": 2122,
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/23/Clownfish_-_Marsa_Alam%2C_Egypt_-_August_8%2C_2011.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Clownfish_-_Marsa_Alam,_Egypt_-_August_8,_2011.jpg",
+      "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=50887403",
+      "extmetadata": {
+       "ImageDescription": {
+        "value": "Clownfish - Marsa Alam, Egypt",
+        "source": "commons-desc-page"
+       },
+       "DateTimeOriginal": {
+        "value": "2011-08-08 09:40:49",
+        "source": "commons-desc-page"
+       },
+       "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+       },
+       "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/wiki/User:GiorgioGaleotti\" title=\"User:GiorgioGaleotti\">Giorgio Galeotti</a>",
+        "source": "commons-desc-page"
+       },
+       "LicenseShortName": {
+        "value": "CC BY 4.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "UsageTerms": {
+        "value": "Creative Commons Attribution 4.0",
+        "source": "commons-desc-page"
+       },
+       "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by/4.0",
+        "source": "commons-desc-page"
+       },
+       "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "License": {
+        "value": "cc-by-4.0",
+        "source": "commons-templates",
+        "hidden": ""
+       }
+      },
+      "mime": "image/jpeg"
+     }
+    ]
+   },
+   "80620923": {
+    "pageid": 80620923,
+    "ns": 6,
+    "title": "File:Blue Eye, Theth.webm",
+    "coordinates": [
+     {
+      "lat": 42.364405,
+      "lon": 19.746213,
+      "primary": "",
+      "globe": "earth"
+     }
+    ],
+    "imagerepository": "local",
+    "imageinfo": [
+     {
+      "timestamp": "2019-07-22T09:26:36Z",
+      "user": "Liridon",
+      "size": 38638553,
+      "width": 1920,
+      "height": 1080,
+      "duration": 15.88,
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Blue_Eye%2C_Theth.webm?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Blue_Eye,_Theth.webm",
+      "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=80620923",
+      "extmetadata": {
+       "ImageDescription": {
+        "value": "Blue Eye, Theth",
+        "source": "commons-desc-page"
+       },
+       "DateTimeOriginal": {
+        "value": "Taken on 20 June 2019",
+        "source": "commons-desc-page"
+       },
+       "Credit": {
+        "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+        "source": "commons-desc-page"
+       },
+       "Artist": {
+        "value": "<a href=\"//commons.wikimedia.org/wiki/User:Liridon\" title=\"User:Liridon\">Liridon</a>",
+        "source": "commons-desc-page"
+       },
+       "LicenseShortName": {
+        "value": "CC BY-SA 4.0",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "UsageTerms": {
+        "value": "Creative Commons Attribution-Share Alike 4.0",
+        "source": "commons-desc-page"
+       },
+       "AttributionRequired": {
+        "value": "true",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "LicenseUrl": {
+        "value": "https://creativecommons.org/licenses/by-sa/4.0",
+        "source": "commons-desc-page"
+       },
+       "Copyrighted": {
+        "value": "True",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "Restrictions": {
+        "value": "",
+        "source": "commons-desc-page",
+        "hidden": ""
+       },
+       "License": {
+        "value": "cc-by-sa-4.0",
+        "source": "commons-templates",
+        "hidden": ""
+       }
+      },
+      "mime": "video/webm"
+     }
+    ]
+   }
+  }
+ }
+}
