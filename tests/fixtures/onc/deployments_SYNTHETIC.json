@@ -1,0 +1,4 @@
+[
+  {"deviceCode": "VIDEOCAM-SYN-0001", "locationCode": "SYNLOC", "deviceCategoryCode": "VIDEOCAM", "begin": "2024-01-01T00:00:00.000Z", "end": "2024-06-30T23:59:59.000Z", "lat": 48.5001, "lon": -127.1001, "depth": 210.0},
+  {"deviceCode": "VIDEOCAM-SYN-0001", "locationCode": "SYNLOC", "deviceCategoryCode": "VIDEOCAM", "begin": "2024-07-01T00:00:00.000Z", "end": null, "lat": 48.5002, "lon": -127.1002, "depth": 211.0}
+]
