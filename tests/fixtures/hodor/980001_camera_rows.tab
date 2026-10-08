@@ -1,0 +1,34 @@
+/* DATA DESCRIPTION:
+Citation:	Wilts, Thomas; Böer, Gordon; Winkler, Julian; Cisewski, Boris; Badri-Hoeher, Sabah (2025): HODOR: Hydroacoustic and Optical Dataset for Oceanic Research: camera data [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.980001, 
+	In: Wilts, T et al. (2025): HODOR: Hydroacoustic and Optical Dataset for Oceanic Research [dataset bundled publication]. PANGAEA, https://doi.org/10.1594/PANGAEA.980000
+Abstract:	HODOR (Hydroacoustic and Optical Dataset for Oceanic Research) is one of the first datasets to provide synchronized sonar and optical stereo camera videos, comprising over 400 hours of continuous recordings. The purpose of HODOR is to support the development of machine learning and deep learning algorithms for marine applications, multimodal sensor fusion techniques, biomass quantification, and long-term ecological studies. The data was collected with a stationary underwater fish observatory (UFO) in the Kiel Fjord, an inlet of the Baltic Sea in northern Germany, and includes an 86-day subset of the recordings from 2021, which was selected based on automated detections using the YOLOv5 model
+Keyword(s):	Baltic Sea; Camera observations; fish abundance; lander experiment; sonar; stereo camera
+Supplement to:	Wilts, Thomas; Böer, Gordon; Winkler, Julian; Cisewski, Boris; Schramm, Hauke; Badri-Hoeher, Sabah (2025): Descriptor: Hydroacoustic and Optical Dataset for Oceanic Research (HODOR). IEEE Data Descriptions, 2, 262-270, https://doi.org/10.1109/IEEEDATA.2025.3596913
+Related to:	Gröger, Joachim P; Cisewski, Boris; Badri-Hoeher, Sabah; Böer, Gordon; Boos, Karin; Clemmesen, Catriona; Cojocaru, Ala; Dauben, Verena; Hoeher, Peter A; Lehmann, Andreas; Matz, Sebastian; Mehrtens, Hela; Mittermayer, Felix H; Renkewitz, Helge; Schramm, Hauke; Strickmann, Tobias; Westphalen, Jonni; Wilts, Thomas; Winkler, Julian; Wolf, Dennis; Zenk, Oliver (2024): Development and operation of a novel non-invasive opto-acoustic underwater fish observatory in Kiel Bight, Southwestern Baltic Sea. Frontiers in Marine Science, 11, 1425259, https://doi.org/10.3389/fmars.2024.1425259
+Project(s):	UFOTriNet (UFOTriNet)
+Coverage:	LATITUDE: 54.340625 * LONGITUDE: 10.174105
+	DATE/TIME START: 2021-03-05T00:00:00 * DATE/TIME END: 2022-05-18T00:00:00
+Event(s):	UFO-Trinet * LATITUDE: 54.340625 * LONGITUDE: 10.174105 * DATE/TIME START: 2021-03-05T00:00:00 * DATE/TIME END: 2022-05-18T00:00:00 * METHOD/DEVICE: Underwater fish observatory (UFO)
+Parameter(s):	Sequence identifier (SeqID)
+	Dimensionless time (t) * COMMENT: sequenceStartUnix
+	Dimensionless time (t) * COMMENT: sequenceEndUnix
+	Date/time start (Date/time start)
+	Date/time end (Date/time end)
+	Binary Object (Binary) * COMMENT: cam1FilePath
+	Binary Object (File Size) [Bytes] (Binary (Size)) * COMMENT: cam1FilePath
+	Binary Object (Binary) * COMMENT: cam1FileTimestampsPath
+	Binary Object (File Size) [Bytes] (Binary (Size)) * COMMENT: cam1FileTimestampsPath
+	Binary Object (Binary) * COMMENT: cam2FilePath
+	Binary Object (File Size) [Bytes] (Binary (Size)) * COMMENT: cam2FilePath
+	Binary Object (Binary) * COMMENT: cam2FileTimestampsPath
+	Binary Object (File Size) [Bytes] (Binary (Size)) * COMMENT: cam2FileTimestampsPath
+	Frame Code (Frame Code) * COMMENT: mergingFrames
+License:	Creative Commons Attribution 4.0 International (CC-BY-4.0) (URI: https://creativecommons.org/licenses/by/4.0/)
+Status:	Curation Level: Enhanced curation (URI: https://wiki.pangaea.de/wiki/Curation_levels)
+Size:	58500 data points
+Files:	All files referred to in data matrix can be downloaded in one go as ZIP <https://download.pangaea.de/dataset/980001/allfiles.zip> or TAR <https://download.pangaea.de/dataset/980001/allfiles.tar> (PANGAEA user account required). To download single files, use the filename from data matrix appended to "https://download.pangaea.de/dataset/980001/files/".
+*/
+SeqID	t (sequenceStartUnix)	t (sequenceEndUnix)	Date/time start	Date/time end	Binary (cam1FilePath)	Binary (Size) [Bytes] (cam1FilePath)	Binary (cam1FileTimestampsPath)	Binary (Size) [Bytes] (cam1FileTimestampsPath)	Binary (cam2FilePath)	Binary (Size) [Bytes] (cam2FilePath)	Binary (cam2FileTimestampsPath)	Binary (Size) [Bytes] (cam2FileTimestampsPath)	Frame Code (mergingFrames)
+0	1629609208	1629609282	2021-08-22T05:13:28.033	2021-08-22T05:14:41.673	cam1_0000.mp4	2.5 MBytes	cam1_0000.txt	21.7 kBytes	cam2_0000.mp4	2.5 MBytes	cam2_0000.txt	22.3 kBytes	0
+1	1629609314	1629609498	2021-08-22T05:15:13.543	2021-08-22T05:18:17.753	cam1_0001.mp4	6.8 MBytes	cam1_0001.txt	55.8 kBytes	cam2_0001.mp4	6.7 MBytes	cam2_0001.txt	56.5 kBytes	0
+2	1629609532	1629609806	2021-08-22T05:18:52.253	2021-08-22T05:23:25.994	cam1_0002.mp4	10.6 MBytes	cam1_0002.txt	83.9 kBytes	cam2_0002.mp4	10.3 MBytes	cam2_0002.txt	84.7 kBytes	0
