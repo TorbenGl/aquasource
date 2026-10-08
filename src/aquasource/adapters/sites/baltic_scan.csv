@@ -1,0 +1,5 @@
+site_id,site_name,lat,lon,depth_m,uncertainty_m,source
+de01_rov,DE01 offshore ROV video station,55.39904,20.62784,,,"Mendeley 10.17632/wsd42v8mk5.1 description: 'Geographical information (Y, X in WGS coordinate system). DE01 (55.39904, 20.62784)'; depth not published"
+sm02_coastal,SM02 coastal SCUBA transect,55.90750,21.04090,,,"Mendeley 10.17632/wsd42v8mk5.1 description: 'SM02 (55.90750, 21.04090)'; depth not published"
+sm07_coastal,SM07 coastal SCUBA transect,55.92220,21.03720,,,"Mendeley 10.17632/wsd42v8mk5.1 description: 'SM07 (55.92220, 21.03720)'; depth not published"
+sm08_coastal,SM08 coastal SCUBA transect,55.92360,21.04100,,,"Mendeley 10.17632/wsd42v8mk5.1 description: 'SM08 (55.92360, 21.04100)'; depth not published"
