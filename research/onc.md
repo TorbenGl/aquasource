@@ -4,7 +4,7 @@
 - geo: fixed_site, inferred, no uncertainty; lat/lon/depth of the /deployments record whose begin..end covers the file time (fields from client source, not checked live)
 - files: src/aquasource/adapters/onc.py / scripts/download/onc.sh / tests/test_onc.py / tests/fixtures/onc/ (synthetic, SOURCE.md) / no sites csv (coords come from the API)
 - tests: pass (8 offline, `uv run pytest tests/test_onc.py -q`)
-- sample: 0 files, not run: ONC_TOKEN not set ("not ready: environment variable ONC_TOKEN is not set")
+- sample: 0 files; Sonnet retry 2026-10-08: no ONC_TOKEN, --dry-run fails clearly ("not ready: ONC_TOKEN not set; locations option required"), 8 tests pass; nothing else fixable offline
 - doubts: (max 5)
   - Response shapes (archivefile `files`/`next.parameters`, deployments `deviceCode`/`begin`/`end`/`lat`/`lon`/`depth`) come from the ONC client 2.6.0 source, not from a live call; check on the first token run
   - tests/fixtures/onc has SYNTHETIC records (no token here); replace with real redacted responses
