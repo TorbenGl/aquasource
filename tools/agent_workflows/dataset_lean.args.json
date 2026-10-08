@@ -1,0 +1,166 @@
+{
+ "date": "2026-10-08",
+ "repo": "/home/user/aquasource",
+ "trailers": [
+  "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+  "Claude-Session: https://claude.ai/code/session_01Cdo2pRuAzExxcbrFSWupaE"
+ ],
+ "datasets": [
+  {
+   "key": "canada_ogl",
+   "ticket_id": "3f17ce19-8bfb-8138-a281-ca8f505a24d9",
+   "row_id": "3f17ce19-8bfb-814f-b450-de241324e4c5"
+  },
+  {
+   "key": "noaa_oe",
+   "ticket_id": "3f17ce19-8bfb-810f-b60d-e62321ee84a7",
+   "row_id": "3f17ce19-8bfb-81f0-b0dd-f77e35ca80b3"
+  },
+  {
+   "key": "noaa_dsc",
+   "ticket_id": "3f17ce19-8bfb-81b1-b6ec-f09fa4b782de",
+   "row_id": "3f17ce19-8bfb-81cb-9246-c99b498e2805"
+  },
+  {
+   "key": "hodor",
+   "ticket_id": "3f17ce19-8bfb-81c0-8f55-cc11298b88fd",
+   "row_id": "3f17ce19-8bfb-8126-be0f-c50fb3bcbd73"
+  },
+  {
+   "key": "obsea",
+   "ticket_id": "3f17ce19-8bfb-815b-af28-c83b2f2ac833",
+   "row_id": "3f17ce19-8bfb-818f-a368-efec7d20931c"
+  },
+  {
+   "key": "emso_azores",
+   "ticket_id": "3f17ce19-8bfb-8161-9768-c6a1bdf20361",
+   "row_id": "3f17ce19-8bfb-8120-b5a9-ddc9377d2f3b"
+  },
+  {
+   "key": "onc",
+   "ticket_id": "3f17ce19-8bfb-81d9-8b6d-eb343527f2ca",
+   "row_id": "3f17ce19-8bfb-81de-967e-ca354d15ddd1"
+  },
+  {
+   "key": "aadc",
+   "ticket_id": "3f17ce19-8bfb-81b6-9a24-de31cfb0a1e5",
+   "row_id": "3f17ce19-8bfb-8104-a3f3-cb39c08182b0"
+  },
+  {
+   "key": "csiro_mnf",
+   "ticket_id": "3f17ce19-8bfb-81ff-a39b-ca15874f994b",
+   "row_id": "3f17ce19-8bfb-812e-a42b-df2efa3896e2"
+  },
+  {
+   "key": "moorea_lter",
+   "ticket_id": "3f17ce19-8bfb-818c-a2da-ee751d8bcb86",
+   "row_id": "3f17ce19-8bfb-8198-b3cd-e5c088218578"
+  },
+  {
+   "key": "noaa_habcam",
+   "ticket_id": "3f17ce19-8bfb-81cf-a00c-d5ea21db1d31",
+   "row_id": "3f17ce19-8bfb-8124-bf65-ecd84c7300e7"
+  },
+  {
+   "key": "seanoe_more",
+   "ticket_id": "3f17ce19-8bfb-8174-ba84-ffe5d87e4d44",
+   "row_id": "3f17ce19-8bfb-81b6-b5e7-df004325be50"
+  },
+  {
+   "key": "uk_seabed",
+   "ticket_id": "3f17ce19-8bfb-810f-8251-ee980b40ae82",
+   "row_id": "3f17ce19-8bfb-8109-86ea-f9239461d957"
+  },
+  {
+   "key": "baltic_scan",
+   "ticket_id": "3f17ce19-8bfb-81ba-9f56-d478e124c820",
+   "row_id": "3f17ce19-8bfb-81d6-8601-d0b1266f149b"
+  },
+  {
+   "key": "smithsonian_oa",
+   "ticket_id": "3f17ce19-8bfb-81d7-95af-e9111999c495",
+   "row_id": "3f17ce19-8bfb-8150-9285-d7d4c6ea4289"
+  },
+  {
+   "key": "gbif_marine_media",
+   "ticket_id": "3f17ce19-8bfb-8157-9818-c76bd178eae1",
+   "row_id": "3f17ce19-8bfb-8126-8abc-c5cc78b9fd97"
+  },
+  {
+   "key": "wikimedia_commons",
+   "ticket_id": "3f17ce19-8bfb-81b3-ab9b-c3ae539f405a",
+   "row_id": "3f17ce19-8bfb-814c-abfc-fb480d0dae46"
+  },
+  {
+   "key": "bco_dmo",
+   "ticket_id": "3f17ce19-8bfb-81d1-8f88-ed88b646f8e4",
+   "row_id": "3f17ce19-8bfb-81c1-8f75-ce00c117d959"
+  },
+  {
+   "key": "seatizen",
+   "ticket_id": "3f17ce19-8bfb-81bf-b005-dbf8f0b7dfe8",
+   "row_id": "3f17ce19-8bfb-8138-bc2f-f9aa45e40bac"
+  },
+  {
+   "key": "mareano",
+   "ticket_id": "3f17ce19-8bfb-810e-bb66-d21d907e6066",
+   "row_id": "3f17ce19-8bfb-81cb-8037-c30c38fa1d6c"
+  },
+  {
+   "key": "ooi_camhd",
+   "ticket_id": "3f17ce19-8bfb-81e7-90cb-c673363fdde4",
+   "row_id": "3f17ce19-8bfb-81d1-bca3-cb65906be526"
+  },
+  {
+   "key": "ooi_cameras",
+   "ticket_id": "3f17ce19-8bfb-81cd-a3ec-eb9652df29f7",
+   "row_id": "3f17ce19-8bfb-8175-a48e-c15421716321"
+  },
+  {
+   "key": "koster",
+   "ticket_id": "3f17ce19-8bfb-8168-928e-e82b83f20d2c",
+   "row_id": "3f17ce19-8bfb-81a9-952a-dca0fef31a74"
+  },
+  {
+   "key": "love_observatory",
+   "ticket_id": "3f17ce19-8bfb-8189-b354-cf4457293d7a",
+   "row_id": "3f17ce19-8bfb-813d-95d9-e84f04b57530"
+  },
+  {
+   "key": "wendtorf_bottsand",
+   "ticket_id": "3f17ce19-8bfb-816c-8aea-c02ac0f47798",
+   "row_id": "3f17ce19-8bfb-819c-bf3b-feb6937e4115"
+  }
+ ],
+ "not_queued": {
+  "done": [
+   "benthicnet",
+   "pangaea_images",
+   "german_bight",
+   "noaa_ncrmp",
+   "squidle_imos",
+   "fathomnet",
+   "usgs_cmgp"
+  ],
+  "proposed_drop": [
+   "schmidt_ocean",
+   "jamstec_jedi",
+   "fish4knowledge",
+   "coralnet",
+   "deepfish",
+   "catlin_seaview",
+   "reef_life_survey",
+   "norfisk",
+   "deepsea_mot",
+   "subpipe",
+   "ozfish",
+   "sfishtrack",
+   "brackish",
+   "smartbay",
+   "aloha_aco",
+   "niwa",
+   "aims_ltmp"
+  ]
+ },
+ "umbrella_ticket": "3f17ce19-8bfb-80f4-bcd9-e1547b90e197"
+}
