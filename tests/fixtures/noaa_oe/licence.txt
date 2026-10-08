@@ -1,0 +1,8 @@
+# ISO 19115 record gov.noaa.nodc:0310923 (EX2507 Palau mapping accession), access constraints, quoted
+This dataset is available to the public for a wide variety of uses including scientific research and analysis.
+accessLevel: public
+Cite as: Baechler, Neah (2026). Oceanographic data collected during the EX2507: Beyond the Blue: Palau Mapping 3 expedition on NOAA Ship OKEANOS EXPLORER from 2025-09-19 to 2025-10-03 (NCEI Accession 0310923). [indicate subset used]. NOAA National Centers for Environmental Information. Dataset. https://doi.org/10.25921/9q3h-0832. Accessed [date].
+Distribution liability: NOAA and NCEI make no warranty, expressed or implied, regarding these data, nor does the fact of distribution constitute such a warranty. NOAA and NCEI cannot assume liability for any damages caused by any errors or omissions in these data. If appropriate, NCEI can only certify that the data it distributes are an authentic copy of the records that were accepted for inclusion in the NCEI archives.
+
+# OneStop granule (EX2503_DIVE16 segments): citeAsStatements, verbatim
+Cite this video data segment by using the citation from the cruise.  Follow the link to the cruise landing page under the Documentation tab for the citation text.
