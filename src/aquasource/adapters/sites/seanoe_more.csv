@@ -1,0 +1,3 @@
+site_id,site_name,lat,lon,depth_m,uncertainty_m,source
+tempo_juan_de_fuca,TEMPO camera module (Juan de Fuca; README: "TEMPO for Juan de Fuca"),48.503038,-125.554305,,,"SEANOE 10.17882/101899 DataCite geoLocationBox, second of the two observatory boxes (the record does not name it in words; the README only names the site TEMPO); depth not published"
+momar_azores,MOMAR camera (Azores; README: "MOMAR for the Azores"),37.2933,-32.2733,,,"SEANOE 10.17882/101899 DataCite geoLocationBox, first observatory box (Mid-Atlantic Ridge, Azores); depth not published"

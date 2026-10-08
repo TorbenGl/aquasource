@@ -1,0 +1,93 @@
+[
+ {
+  "name": "dataset_seanoe_101899/images/Images/CAM-TEMPO-MINI-2_20140704233556.jpg",
+  "file_size": 186302,
+  "compress_size": 185958,
+  "method": 8,
+  "header_offset": 503017
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/CAM-TEMPO-MINI-2_20140705020018.jpg",
+  "file_size": 218648,
+  "compress_size": 218519,
+  "method": 8,
+  "header_offset": 689076
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/CAM-TEMPO-MINI-2_20140705020523.jpg",
+  "file_size": 156949,
+  "compress_size": 156088,
+  "method": 8,
+  "header_offset": 907696
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/CAM-TEMPO-MINI-2_20140705021032.jpg",
+  "file_size": 149241,
+  "compress_size": 148207,
+  "method": 8,
+  "header_offset": 1063885
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/CAM-TEMPO-MINI-2_20140705021543.jpg",
+  "file_size": 170211,
+  "compress_size": 169546,
+  "method": 8,
+  "header_offset": 1212193
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/CAM-TEMPO-MINI-2_20140705060015.jpg",
+  "file_size": 208481,
+  "compress_size": 208330,
+  "method": 8,
+  "header_offset": 1381840
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/MOMAR_20140726154241.jpg",
+  "file_size": 216857,
+  "compress_size": 214987,
+  "method": 8,
+  "header_offset": 635886456
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/MOMAR_20140726235418.jpg",
+  "file_size": 169727,
+  "compress_size": 164098,
+  "method": 8,
+  "header_offset": 636101533
+ },
+ {
+  "name": "dataset_seanoe_101899/images/Images/MOMAR_20140727120040.jpg",
+  "file_size": 175171,
+  "compress_size": 169018,
+  "method": 8,
+  "header_offset": 636265721
+ },
+ {
+  "name": "dataset_seanoe_101899/cleaned-dataset.csv",
+  "file_size": 1332798,
+  "compress_size": 261476,
+  "method": 8,
+  "header_offset": 0
+ },
+ {
+  "name": "dataset_seanoe_101899/expert-dataset.csv",
+  "file_size": 1340462,
+  "compress_size": 241275,
+  "method": 8,
+  "header_offset": 261547
+ },
+ {
+  "name": "dataset_seanoe_101899/raw-dataset.csv",
+  "file_size": 24072840,
+  "compress_size": 4322622,
+  "method": 8,
+  "header_offset": 782781767
+ },
+ {
+  "name": "dataset_seanoe_101899/README.md",
+  "file_size": 5588,
+  "compress_size": 1987,
+  "method": 8,
+  "header_offset": 787104456
+ }
+]
