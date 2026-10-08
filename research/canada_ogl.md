@@ -1,5 +1,20 @@
 # Canada open data: GSC seafloor photographs + DFO Fundy Isles drift-camera imagery (`canada_ogl`)
-Status: researched · researched 2026-10-06
+Status: researched 2026-10-06 · lean pass 2026-10-08 (adapter, script, test, sample)
+
+## HANDOFF
+- status: ok (GSC stills route only; DFO Fundy imagery not implemented, see doubts)
+- tier + licence: B, "Open Government Licence - Canada", record level. https://open.canada.ca/en/open-government-licence-canada (CKAN ca-ogl-lgo on 44cbbdc0)
+- geo: station (one position per station, inferred, unc >= 500 m) or image (distinct per-photo positions). geo_source: "GSC <EXPED>_<STN>.csv PHOTO_LAT/PHOTO_LONG; WATER_DEPTH; HORIZONTAL_POSITIONAL_ACCURACY"
+- files: adapters/canada_ogl.py, scripts/download/canada_ogl.sh, tests/test_canada_ogl.py, fixtures tests/fixtures/canada_ogl/. No sites csv needed.
+- tests: pass, 10/10 offline (`uv run --with pytest pytest tests/test_canada_ogl.py -q`; plain `uv run pytest` fails: pytest is not in the venv)
+- sample: 3 PNG downloaded OK (PNG magic checked), all tier B, station precision, all from expedition 65034 (1965); sample dir removed
+- doubts:
+  - WATER_DEPTH 4060 m and 1590 m for 65034 stations at 41-44 N, 62-63 W (Scotian shelf): check depth units and plausibility of pre-1990 values.
+  - Film scans: borders, labels and data imprints not inspected (extra.burned_in_labels_unchecked=true). Filter before pretraining.
+  - Station rule: a station with one photo is labelled station (inferred true), which is conservative.
+  - Fundy stills and video not implemented (nested ZIPs of 350-2100 MB). Pre-1990 1000 m uncertainty floor is an estimate.
+  - PHOTO_GMT assumed GMT (not verified).
+- needs_opus: no
 
 ## Summary
 This key combines two federal Canadian open-data collections, both under the Open Government Licence - Canada 2.0 (tier B):
@@ -73,48 +88,9 @@ Verdict: a good tier-B source with image and station precision, downloadable ove
   - Fundy video frame: the absolute UTC time is the file start time from the MP4 name plus the frame offset. Then look up the matching segment row. Names differ between the CSV (`CON_00220220921_T124140_1Cam_.mp4`) and the ZIP (`CON002-20220921_T124140_1Cam_.mp4`), so normalise both with the regex `CON_?(\d{3})-?(\d{8})_?T(\d{6})` to the key (transect, date, time).
 
 ### resolve_geo recipe
-```
-num(x): float(x) or None for '', 'NA', 'Unknown'
-
-A) GSC photo row r (per-station CSV), with n_distinct = number of distinct (PHOTO_LAT, PHOTO_LONG) over all rows of that station CSV
- 1. lat, lon = num(r.PHOTO_LAT), num(r.PHOTO_LONG)
-    if None: fall back to the map-layer feature (EXPED_CD, STATION_NUM) LATITUDE/LONGITUDE -> precision 'station',
-    geo_source 'GSC MapServer layer 0 LATITUDE/LONGITUDE', inferred True, uncertainty max(step 3, 1000);
-    if that is missing too -> all None, precision 'none'.
- 2. depth_m = num(r.WATER_DEPTH)   (positive metres; None if 'Unknown')
- 3. acc = r.HORIZONTAL_POSITIONAL_ACCURACY
-      'USBL' in acc                       -> frac 0.05, floor 10
-      'antenna offset corrected' in acc   -> frac 0.20, floor 50
-      otherwise ('no correction ...')     -> frac 0.20, floor 100
-    year = int(m[1]) if (m = re.match(r'^(19[6-9]\d|20[0-2]\d)(\d{3}|[A-Z])', EXPED_CD)) else 1900 + int(EXPED_CD[:2])
-    if year < 1990: floor = max(floor, 1000)     # pre-GPS ship navigation (Loran-C/Decca/Transit); estimate
-    unc = max(frac * depth_m, floor) if depth_m else max(floor, 1000)
- 4. if n_distinct > 1: precision 'image', inferred False
-    else:              precision 'station', inferred True, unc = max(unc, 500)  # drift between casts
- 5. geo_source = 'GSC <EXPED>_<STN>.csv PHOTO_LAT/PHOTO_LONG; WATER_DEPTH; ' + acc
-    return lat, lon, depth_m, precision, geo_source, inferred, round(unc)
-
-B) Fundy still row r (BayFundy_ImageLocations.csv, cp1252; or PercentageCover_..._2022.csv for 2022)
- 1. lat, lon = num(r.Latitude), num(r.Longitude)
- 2. d = num(r['Bathymetry_m_Bathymétrie_m'] or r['Depth_m']); depth_m = abs(d) if d not in (None, 0) else None
- 3. if lat or lon is None -> (None, None, depth_m, 'none', 'BayFundy_ImageLocations.csv Latitude/Longitude empty', False, None)
- 4. return lat, lon, depth_m, 'image',
-    'DFO f9098f77 BayFundy_ImageLocations.csv Latitude/Longitude (WGS84, surface GNSS) + Bathymetry_m', False, 50
-
-C) Fundy 2022 video frame (mp4 name, offset_s)
- 1. key = regex CON_?(\d{3})-?(\d{8})_?T(\d{6}) on the mp4 name; t = datetime(date, time, UTC) + offset_s
- 2. seg = row of Start_End_Video_Transect_D_vexillum_BayFundy_2022.csv with the same key
-    (from Video_file_name) and Start_segment_time <= t < Start_segment_time + 20 s
- 3. if seg: f = (t - seg_start)/20
-       lat = Start_latitude + f*(End_latitude - Start_latitude); lon likewise
-       depth_m = abs(Start_depth_m + f*(End_depth_m - Start_depth_m))
-       return lat, lon, depth_m, 'segment', '8ea6c28a Start_End_Video_Transect... Start/End_latitude/longitude, linear interp',
-              True, round(50 + Distance_covered_m/2)
- 4. else if a still of the same transect has |t_still - t| <= 10 s: use its lat/lon/depth -> 'segment', inferred True, 50 + 1.0 m/s * |dt|
- 5. else (frame outside the published usable segments, likely descent/turbid): mark the frame for exclusion; if kept,
-    use the centroid of that transect's still coordinates -> 'station', inferred True,
-    uncertainty = max distance from the centroid to any still of the transect (<= ~2.6 km)
-```
+GSC recipe A (per-photo / station rule, uncertainty table) is implemented in `adapters/canada_ogl.py` (`gsc_geo`).
+Fundy recipes B (still) and C (video segment interpolation) are NOT implemented; their pseudo-code is in the git
+history of this note (commit before the lean pass 2026-10-08).
 
 ## Access & download recipe
 - Enumeration:
@@ -146,12 +122,6 @@ C) Fundy 2022 video frame (mp4 name, offset_s)
 - tests/fixtures/canada_ogl/gsc_photos_2010020_0026_sample.csv: GSC per-station CSV, header + 3 rows (image-level, USBL).
 - tests/fixtures/canada_ogl/licence.txt: OGL-Canada 2.0 text.
 - tests/fixtures/canada_ogl/SOURCE.md: URLs, retrieval date and trimming for each file, plus the Teed et al. 2024 quote used for the Fundy uncertainty.
-
-## Short download instruction
-GSC: crawl https://ftp.maps.canada.ca/pub/nrcan_rncan/raster/marine_geoscience/Seabed_Photo_Collection/ (78 folders). Each `<EXPED>_<STN>.csv` gives PHOTO_LAT/LONG, WATER_DEPTH, accuracy and FullResolutionImageURL. GET the `*_full_res.png` files (20,017 files, ~153 GB, Range OK, 1 req/s).
-DFO Fundy 2022: GET the 7 `Photos_CON00x*.zip` and 4 `Video_*.zip` from https://api-proxy.edh-cde.dfo-mpo.gc.ca/catalogue/records/8ea6c28a-3d6c-47ef-8cf7-56790ee0c7f5/attachments/ (16.6 GB; HEAD unsupported, Range OK).
-Join stills by filename to BayFundy_ImageLocations.csv (record f9098f77); place video frames with Start_End_Video_Transect_D_vexillum_BayFundy_2022.csv.
-Licence OGL-Canada 2.0 (tier B); store the attribution per sample.
 
 ## Open questions / risks
 - The share of GSC station-level vs image-level photos (~53/47%) is extrapolated from one station per expedition. The download script should compute it exactly from all 1,804 CSVs.
