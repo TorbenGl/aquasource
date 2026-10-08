@@ -12,6 +12,7 @@
   - LAUNCH / RECOVERY / PTROBO / SBROBO / CPHD clips are flagged extra.maybe_not_underwater; not checked by pixels.
   - Budget picks newest granules first: the sample is 3 recovery clips, all flagged maybe_not_underwater.
 - needs_opus: no
+- checked by Sonnet 2026-10-08 (tests 12/12, licence page reachable, geo/licence code ok; re-run sample cut at 590 s with 2 mp4 because host is slow, dry-run ok)
 
 ## Summary
 NOAA Ocean Exploration (OER) ROV and camera video from the Okeanos Explorer dives since 2013. The public portal
