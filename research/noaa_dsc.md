@@ -1,5 +1,6 @@
 ## HANDOFF
 - status: ok (NOAA-only images tier A downloadable; co-provider images tier U, not downloaded by default)
+- checked by Sonnet 2026-10-08: tests (11) and 3-image sample pass; geo/licence code reviewed, no changes; tier A (NOAA-only) / U (co-provider) confirmed.
 - tier + licence: A for images whose DataProvider is NOAA alone (about 110 k images); U for NOAA co-provider images (about 24 k). Licence read at collection level: ISO accessLevel public, no licence stated, https://www.ncei.noaa.gov/archive/accession/0145037 ; ERDDAP licence text https://www.ncei.noaa.gov/erddap/info/deep_sea_corals/index.json
 - geo: precision image; geo_source "ERDDAP deep_sea_corals latitude,longitude,DepthInMeters (record CatalogNumber)"
 - files: src/aquasource/adapters/noaa_dsc.py / scripts/download/noaa_dsc.sh / tests/test_noaa_dsc.py / sites csv: none (per-record coordinates)
