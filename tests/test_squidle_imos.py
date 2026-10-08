@@ -71,12 +71,17 @@ class Down(Http):
         raise HttpError(url, 503, "down")
 
 
-def make_adapter(tmp_path, *, http=None, dry_run=True, **options):
+def make_adapter(tmp_path, *, http=None, dry_run=True, platforms=None, **options):
     options.setdefault("accessed", "2026-10-08")
+    platforms = {} if platforms is None else platforms
     cfg = load_config(None, data_root=tmp_path)
     layout = DatasetLayout(tmp_path, "squidle_imos").ensure()
     ctx = Context(cfg, http or NoNet(dry_run=dry_run), layout, options, dry_run, JsonlLog(layout.failures_jsonl))
-    return get_adapter_class("squidle_imos")(ctx)
+    a = get_adapter_class("squidle_imos")(ctx)
+    for pid in sq.SQ_PLATFORM_IDS:  # SQUIDLE+ /api/deployment pages of platforms 1, 5, 7 (default: empty pages)
+        objs = [{"key": k} for k, p in platforms.items() if p == pid]
+        seed(a, f"squidle/platform_{pid}_p1.json", json.dumps({"num_results": len(objs), "total_pages": 1, "page": 1, "objects": objs}))
+    return a
 
 
 def failures(a):
@@ -336,6 +341,39 @@ def test_dive_listing_filters_by_the_date_in_the_dive_code(tmp_path):
     assert [d.dive for d in a.dives("WA201503")] == ["r20150310_010000_b", "undated"]
 
 
+@pytest.mark.parametrize(
+    "value,end,bound",
+    [("2015-01-01", False, "2015-01-01"), ("2015", False, "2015-01-01"), ("2015", True, "2015-12-31"), ("2015-06", True, "2015-06-31"), (2019, True, "2019-12-31"), (None, True, None), ("", False, None)],
+)
+def test_date_bounds_accept_year_month_day(value, end, bound):
+    assert sq.date_bound(value, end) == bound
+
+
+def test_bad_date_and_bad_choice_options_are_refused(tmp_path):
+    with pytest.raises(ValueError):
+        sq.date_bound("last year", False)
+    for opt in ({"twins": "both"}, {"image": "tiny"}):
+        a = make_adapter(tmp_path, **opt)
+        seed_campaigns(a, [CAMPAIGN])
+        with pytest.raises(ValueError):
+            cands(a)
+
+
+def test_year_only_to_bound_keeps_the_whole_year(tmp_path):
+    a = make_adapter(tmp_path, **{"from": 2015, "to": 2015})
+    seed_dives(a, "WA201503", [("r20141231_235959_a", 1), ("r20150101_000000_b", 1), ("r20151231_010000_c", 1), ("r20160101_000000_d", 1)])
+    assert [d.dive for d in a.dives("WA201503")] == ["r20150101_000000_b", "r20151231_010000_c"]
+
+
+def test_a_campaign_whose_listing_cannot_be_read_is_logged_and_the_others_continue(tmp_path):
+    a = make_adapter(tmp_path, order="table", min_spacing_s=0)
+    seed_scott(a)
+    seed_campaigns(a, ["Broken200001", CAMPAIGN])
+    seed(a, "s3/dives_Broken200001_1.xml", "<not xml")
+    assert len(cands(a)) == 3
+    assert [f["stage"] for f in failures(a)] == ["dive_listing"] and failures(a)[0]["item_id"] == "Broken200001"
+
+
 def test_paged_listings_follow_the_continuation_token(tmp_path):
     a = make_adapter(tmp_path)
     key = lambda d: f"{sq.CSV_PREFIX}WA201503/DATA_WA201503_{d}.csv"
@@ -408,15 +446,54 @@ def test_licence_holt_campaign_is_read_from_the_facility_record_at_collection_le
     assert "AUV Holt (campaign GeographeBay201505)" in lic.attribution
 
 
-def test_licence_nimbus_uses_its_own_record(tmp_path):
-    camp, dive = "Apollo202309", "r20230926_232818_NG21_d0"
-    a = make_adapter(tmp_path)
+def test_licence_nimbus_uses_its_own_record_although_the_csv_header_says_sirius(tmp_path):
+    camp, dive = "Apollo202309", "r20230926_232818_NG21_d0"  # real: SQUIDLE+ deployment key, platform 5; the real CSV header says SIRIUS
+    a = make_adapter(tmp_path, platforms={dive: 5})
     seed_campaigns(a, [camp]), seed_dives(a, camp, [(dive, 500)])
-    seed_csv(a, camp, dive, dive_csv(camp, dive, [row(0, cam="FC16")], platform="NIMBUS"))
+    seed_csv(a, camp, dive, dive_csv(camp, dive, [row(0, cam="FC16")], platform="SIRIUS"))
     seed_records(a)
     c = cands(a)[0]
     assert c.extra["platform"] == "IMOS AUV Nimbus" and c.extra["aodn_record"] == sq.PLATFORM_RECORDS["IMOS AUV Nimbus"]
-    assert a.resolve_licence(c).level == "record"
+    lic = a.resolve_licence(c)
+    assert lic.level == "record" and "AUV Nimbus (campaign Apollo202309)" in lic.attribution and "Sirius" not in lic.attribution
+
+
+def test_platform_comes_from_squidle_then_campaign_then_nimbus_dive_name_then_header(tmp_path):
+    a = make_adapter(tmp_path, platforms={"r20200117_023640_trump_north": 5, "r20150526_024446_wa-gb-auv-01": 7})
+    assert a._platform_of("Tasmania202001", "r20200117_023640_trump_north", "SIRIUS") == "IMOS AUV Nimbus"  # no NG in the name
+    assert a._platform_of("GeographeBay201505", "r20150526_024446_wa-gb-auv-01", "SIRIUS") == "ACFR AUV Holt"
+    assert a._platform_of("GeographeBay201505", "unknown_dive", "SIRIUS") == "ACFR AUV Holt"  # campaign override
+    assert a._platform_of("WA202103", "r20210228_224555_NG61_wa-gb-auv-01", "SIRIUS") == "IMOS AUV Nimbus"  # dive name
+    assert a._platform_of("WA202103", "r20210315_230947_SS13_coralpatches_40m_out", "SIRIUS") == "IMOS AUV Sirius"
+    assert a._platform_of("X201001", "d", "") == "IMOS AUV"
+
+
+def test_platform_list_unavailable_falls_back_and_is_logged_once(tmp_path):
+    a = make_adapter(tmp_path, http=Down(dry_run=True))
+    for pid in sq.SQ_PLATFORM_IDS:
+        (a.ctx.layout.raw / f"squidle/platform_{pid}_p1.json").unlink()
+    assert a._platform_of("Apollo202309", "r20230926_232818_NG21_d0", "SIRIUS") == "IMOS AUV Nimbus"
+    assert a._platform_of("Apollo202309", "r20230926_232818_NG22_d1", "SIRIUS") == "IMOS AUV Nimbus"
+    assert [f["stage"] for f in failures(a)] == ["squidle_platforms"]
+
+
+def test_platform_pages_are_followed_and_requested_with_the_platform_filter(tmp_path):
+    urls = []
+
+    class Pages(Http):
+        def request(self, method, url, **k):
+            urls.append(url)
+            page = int(url.rsplit("page=", 1)[1])
+            body = json.dumps({"total_pages": 2, "page": page, "objects": [{"key": f"dive_p{page}"}]})
+            return type("R", (), {"status_code": 200, "text": body, "encoding": "utf-8", "apparent_encoding": "utf-8"})()
+
+    a = make_adapter(tmp_path / "x", http=Pages(dry_run=True, min_interval_s=0))
+    for f in (a.ctx.layout.raw / "squidle").iterdir():
+        f.unlink()
+    m = a._platform_map()
+    assert m == {"dive_p1": "ACFR AUV Holt", "dive_p2": "ACFR AUV Holt"}  # every platform answered the same two pages; the last wins
+    assert len(urls) == 6 and all(u.startswith("https://squidle.org/api/deployment?q=") and "platform_id" in u for u in urls)
+    assert "%22val%22%3A5" in urls[2] and "results_per_page=200" in urls[0]
 
 
 def test_licence_falls_back_to_the_facility_when_the_platform_record_is_unreadable(tmp_path):
@@ -459,6 +536,29 @@ def test_other_terms_in_the_record_are_never_upgraded_to_b(tmp_path, kw, tier):
     seed_scott(a)
     seed_records(a, **kw)
     assert a.resolve_licence(cands(a)[0]).tier == tier
+
+
+def test_platform_record_with_only_the_imos_credit_uses_the_facility_credit_lines(tmp_path):
+    a = make_adapter(tmp_path, min_spacing_s=0)
+    seed_scott(a)  # the real Sirius / Nimbus records have a single credit (the IMOS / NCRIS line), the facility record lists ACFR ...
+    seed(a, f"aodn/{sq.PLATFORM_RECORDS['IMOS AUV Sirius']}.xml", aodn_xml(credits=CREDITS[:1]))
+    lic = a.resolve_licence(cands(a)[0])
+    assert lic.level == "record" and lic.attribution.endswith("Credit: Australian Centre for Field Robotics (ACFR); The University of Sydney (USYD).")
+
+
+def test_nc_wording_in_a_constraint_without_a_licence_link_still_excludes(tmp_path):
+    xml = aodn_xml().replace(
+        "</mco:MD_LegalConstraints>",
+        "</mco:MD_LegalConstraints></mri:resourceConstraints><mri:resourceConstraints><mco:MD_LegalConstraints>"
+        "<mco:useLimitation><gco:CharacterString>Non-commercial use only</gco:CharacterString></mco:useLimitation>"
+        "</mco:MD_LegalConstraints>",
+    )
+    name, url, tier = sq.SquidleImos._licence_of(sq.parse_aodn_record(xml))
+    assert tier == "X"
+    a = make_adapter(tmp_path, min_spacing_s=0)
+    seed_scott(a)
+    seed(a, f"aodn/{sq.PLATFORM_RECORDS['IMOS AUV Sirius']}.xml", xml)
+    assert a.resolve_licence(cands(a)[0]).tier == "X"
 
 
 def test_real_record_text_is_not_misread_as_excluded():

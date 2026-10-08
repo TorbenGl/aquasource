@@ -17,6 +17,8 @@
 #           an unreadable record tier U. Attribution stored per sample: the IMOS acknowledgement quoted in the record ("Data was
 #           sourced from Australia's Integrated Marine Observing System (IMOS) ..."), the citation form it asks for ("IMOS <year>,
 #           IMOS - Autonomous Underwater Vehicles - AUV <platform> (campaign <c>), <URL>, accessed <date>") and its credit lines.
+#           The platform (Sirius / Nimbus / Holt) comes from the SQUIDLE+ deployment list (5 cached metadata pages), because the dive
+#           CSV header says SIRIUS even for Nimbus dives; it chooses the AODN record and the citation.
 # Geo:      image precision, geo_inferred=false, no uncertainty: every image row of the dive CSV has its own post-processed AUV
 #           navigation fix (latitude, longitude, WGS 84). depth_m = depth_sensor (vehicle / camera depth; values outside 0-11000 are
 #           dropped); seafloor depth is in extra.seafloor_depth_m. Rows without a usable fix are skipped.
@@ -34,10 +36,10 @@
 #
 # Usage:
 #   scripts/download/squidle_imos.sh                    # everything that passes the filters (very large: use --budget)
-#   scripts/download/squidle_imos.sh --dry-run          # metadata only (S3 listings, dive CSVs, AODN records), no images
+#   scripts/download/squidle_imos.sh --dry-run          # metadata only (S3 listings, dive CSVs, AODN records, SQUIDLE+ platform pages), no images
 #   scripts/download/squidle_imos.sh --budget 500       # stop after 500 selected images, spread over campaigns / dives / time
 #   scripts/download/squidle_imos.sh --opt campaigns=GBR200709,Apollo202309 --opt frames_per_dive=5
-#   scripts/download/squidle_imos.sh --opt from=2015-01-01 --opt to=2019-12-31 --opt image=thumbnail    # 453x341 low-res pass
+#   scripts/download/squidle_imos.sh --opt from=2015 --opt to=2019 --opt image=thumbnail    # 453x341 low-res pass
 #   scripts/download/squidle_imos.sh --opt min_spacing_s=0 --opt twins=keep                              # every frame, both cameras
 #   scripts/download/squidle_imos.sh --opt route=squidle --opt deployments=213,22                        # poses from SQUIDLE+ exports
 #   Options: campaigns, from, to, min_spacing_s, altitude_min, altitude_max, frames_per_dive, twins (drop|keep), image

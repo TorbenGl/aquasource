@@ -15,7 +15,8 @@ metadata/raw/aodn/) carry ``MD_LegalConstraints`` "Creative Commons Attribution 
 platform), the facility ``af5d0ff9-...`` for ACFR AUV Holt (GeographeBay201505, no platform record: collection level; the
 facility record links the whole ``IMOS/AUV/`` prefix). Dive-level UUIDs of the CSVs are not in the catalogue (404), and
 the campaign README ("AUV data may be reused, provided ... appropriately acknowledged") is older wording compatible with
-CC BY. An NC / ND / research-only term in a record gives tier X, a record that cannot be read gives tier U (never an
+CC BY. The 19 child campaign records of Sirius (2007-2012) carry the same licence but cannot be mapped to campaign codes
+reliably, so the platform record is the most specific one used. An NC / ND / research-only term in a record gives tier X, a record that cannot be read gives tier U (never an
 upgrade). Attribution = the acknowledgement quoted in the record ("Data was sourced from Australia's Integrated Marine
 Observing System (IMOS) ..."), the citation form the record asks for (IMOS <year>, <title>, <URL>, accessed <date>) and the
 credit lines of the record (ACFR, University of Sydney, ...).
@@ -37,8 +38,11 @@ How it works
       some files have ``" geospatial_lon_min"``); the second camera of a stereo pair (``*_AC16``, from about 2020 the CSV
       has ``_FC16`` and ``_AC16`` rows with identical coordinates) is dropped; frames with an altitude outside
       ``altitude_min``-``altitude_max`` (water column, descent, ascent) or without a usable fix are skipped; the rest is thinned
-      to frames at least ``min_spacing_s`` apart (about 15 m along track, no footprint overlap). The platform comes from
-      the dive header (``SIRIUS`` / ``NIMBUS``); GeographeBay201505 is ACFR AUV Holt (the header says SIRIUS).
+      to frames at least ``min_spacing_s`` apart (about 15 m along track, no footprint overlap). The platform (it picks the
+      AODN record and the citation) comes from SQUIDLE+ ``/api/deployment`` (deployment key = dive code; platforms 1, 5, 7;
+      5 cached pages), NOT from the CSV header: the header says SIRIUS for Nimbus dives (Apollo202309, ...) and for
+      GeographeBay201505 (ACFR AUV Holt). If SQUIDLE+ cannot be read: campaign override, ``_NG<n>_`` in the dive name
+      (Nimbus), then the header.
     * Budget-friendly order (``order=spread``, default, any prefix of the stream covers many campaigns): round 0 takes ONE
       frame of every campaign (campaigns in a spread order: oldest, newest, middle, ...), then a weighted round robin over
       the campaigns with weights sqrt(estimated images). Inside a campaign the dives go round robin (centre first, then
@@ -52,7 +56,8 @@ How it works
 
 Adapter options (``--opt key=value``; values are JSON or comma separated lists)
     campaigns         only these campaign codes, e.g. ``GBR200709,Apollo202309`` (default: all 69 in the bucket).
-    from, to          ISO dates (``2015-01-01``): keep dives that start inside (the date is in the dive code ``rYYYYMMDD_...``).
+    from, to          ISO dates (``2015-01-01``, ``2015-06`` or ``2015``; ``to`` is inclusive): keep dives that start inside (the
+                      date is in the dive code ``rYYYYMMDD_...``; a dive code without a date is kept).
     min_spacing_s     minimum time between kept frames of a dive (default 30; ``0`` keeps every frame).
     altitude_min, altitude_max  altitude window in metres (default 0.5 and 6; frames without altitude are dropped).
     frames_per_dive   at most this many frames per dive (default: all thinned frames).
@@ -110,6 +115,8 @@ PLATFORM_RECORDS = {"IMOS AUV Sirius": "fe81b24e-adee-4c77-a8e1-e8a77cfd3dff", "
 PLATFORM_NAMES = {"SIRIUS": "IMOS AUV Sirius", "NIMBUS": "IMOS AUV Nimbus", "HOLT": "ACFR AUV Holt"}
 CAMPAIGN_PLATFORM = {"GeographeBay201505": "ACFR AUV Holt"}  # the dive header says SIRIUS, SQUIDLE+ and the facility say Holt
 SHORT_PLATFORM = {"IMOS AUV Sirius": "Sirius", "IMOS AUV Nimbus": "Nimbus", "ACFR AUV Holt": "Holt"}
+SQ_PLATFORM_IDS = {1: "IMOS AUV Sirius", 5: "IMOS AUV Nimbus", 7: "ACFR AUV Holt"}  # SQUIDLE+ /api/platform ids
+NIMBUS_DIVE_RE = re.compile(r"_NG\d")  # Nimbus dives are named ..._NG21_...; the CSV header says SIRIUS for them
 DEFAULT_ACK = (
     "Data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the "
     "National Collaborative Research Infrastructure strategy (NCRIS)."
@@ -222,6 +229,18 @@ def dive_date(dive: str) -> str | None:
         return date(int(m[1]), int(m[2]), int(m[3])).isoformat()
     except ValueError:
         return None
+
+
+def date_bound(value: object, end: bool) -> str | None:
+    """ISO ``YYYY-MM-DD`` bound of an option value (``2015``, ``2015-06`` or ``2015-06-30``; end bounds are inclusive)."""
+    s = str(value).strip() if value not in (None, "") else ""
+    if not s:
+        return None
+    m = re.match(r"^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$", s)
+    if not m:
+        raise ValueError(f"from / to must be an ISO date (YYYY, YYYY-MM or YYYY-MM-DD), got {s!r}")
+    y, mo, d = m.groups()
+    return f"{y}-{mo or ('12' if end else '01')}-{d or ('31' if end else '01')}"
 
 
 def parse_stamp(value: object) -> float | None:
@@ -435,6 +454,7 @@ class SquidleImos(Adapter):
         super().__init__(ctx)
         self._records: dict[str, dict[str, Any] | None] = {}
         self._campaign_cache: list[str] | None = None
+        self._platform_cache: dict[str, str] | None = None
         self._weights: dict[str, float] = {}
         self._accessed = str(self.options.get("accessed") or datetime.now(timezone.utc).date().isoformat())
         self.skipped: dict[str, int] = {}
@@ -496,9 +516,9 @@ class SquidleImos(Adapter):
         _, keys = self._list(f"{CSV_PREFIX}{campaign}/", f"dives_{campaign}", delimiter=False)
         head, tail = f"{CSV_PREFIX}{campaign}/DATA_{campaign}_", ".csv"
         out = [_Dive(campaign, k[len(head) : -len(tail)], k, size) for k, size in keys if k.startswith(head) and k.endswith(tail)]
-        lo, hi = self.options.get("from"), self.options.get("to")
+        lo, hi = date_bound(self.options.get("from"), False), date_bound(self.options.get("to"), True)
         if lo or hi:
-            out = [d for d in out if (dd := dive_date(d.dive)) is None or ((not lo or dd >= str(lo)) and (not hi or dd <= str(hi)))]
+            out = [d for d in out if (dd := dive_date(d.dive)) is None or ((not lo or dd >= lo) and (not hi or dd <= hi))]
         return sorted(out, key=lambda d: d.dive)
 
     # ------------------------------------------------------------------------------------------ the CSVs
@@ -511,8 +531,7 @@ class SquidleImos(Adapter):
     def candidates_from_csv(self, text: str, campaign: str, dive: str) -> list[Candidate]:
         """Candidates of one dive CSV after the camera / altitude / fix filters and the time thinning."""
         parsed = parse_dive_csv(text)
-        pcode = (parsed.header.get("platform_code") or "").upper()
-        platform = CAMPAIGN_PLATFORM.get(campaign) or PLATFORM_NAMES.get(pcode) or (f"IMOS AUV {pcode.title()}" if pcode else "IMOS AUV")
+        platform = self._platform_of(campaign, dive, parsed.header.get("platform_code"))
         a_min = self._opt_float("altitude_min", DEFAULT_ALT_MIN)
         a_max = self._opt_float("altitude_max", DEFAULT_ALT_MAX)
         drop_twins = str(self.options.get("twins", "drop")).lower() != "keep"
@@ -555,11 +574,46 @@ class SquidleImos(Adapter):
         picked = [kept[i] for i in (order if limit is None else order[:limit])]
         return [self._candidate_s3(f, campaign, dive, platform) for f in picked]
 
+    def _platform_map(self) -> dict[str, str]:
+        """``dive code -> platform name`` from SQUIDLE+ ``/api/deployment`` (platforms 1, 5, 7; a few cached metadata pages)."""
+        if self._platform_cache is None:
+            found: dict[str, str] = {}
+            try:
+                for pid, pname in SQ_PLATFORM_IDS.items():
+                    for page in range(1, 20):
+                        q = urlencode(
+                            {"q": json.dumps({"filters": [{"name": "platform_id", "op": "eq", "val": pid}]}, separators=(",", ":")),
+                            "results_per_page": 200, "page": page},
+                            quote_via=quote,
+                        )  # fmt: skip
+                        obj = self.ctx.cached_json(f"{SQUIDLE}/api/deployment?{q}", f"squidle/platform_{pid}_p{page}.json")
+                        for o in obj.get("objects") or []:
+                            if o.get("key"):
+                                found[str(o["key"])] = pname
+                        if page >= int(obj.get("total_pages") or 1):
+                            break
+            except (HttpError, ValueError, AttributeError) as exc:
+                log.warning("squidle_imos: SQUIDLE+ platform list unavailable (%s); platform from the dive name / CSV header", exc)
+                self.ctx.fail("platform_map", "squidle_platforms", f"{type(exc).__name__}: {exc}")
+            self._platform_cache = found
+        return self._platform_cache
+
+    def _platform_of(self, campaign: str, dive: str, header_code: str | None) -> str:
+        """Platform of a dive. The CSV header ``platform_code`` says SIRIUS for Nimbus dives (Apollo202309 ...), so SQUIDLE+
+        (deployment key = dive code) comes first, then the campaign override, the ``_NG<n>_`` Nimbus dive name, the header."""
+        name = self._platform_map().get(dive) or CAMPAIGN_PLATFORM.get(campaign)
+        if name:
+            return name
+        if NIMBUS_DIVE_RE.search(dive):
+            return "IMOS AUV Nimbus"
+        pcode = (header_code or "").upper()
+        return PLATFORM_NAMES.get(pcode) or (f"IMOS AUV {pcode.title()}" if pcode else "IMOS AUV")
+
     def _skip(self, why: str) -> None:
         self.skipped[why] = self.skipped.get(why, 0) + 1
 
     def _candidate_s3(self, f: Frame, campaign: str, dive: str, platform: str) -> Candidate:
-        kind = "thumbnails" if str(self.options.get("image", "full_res")).lower().startswith("thumb") else "full_res"
+        kind = "thumbnails" if str(self.options.get("image", "full_res")).lower() == "thumbnail" else "full_res"
         url = IMAGE_URL.format(campaign=campaign, dive=dive, kind=kind, name=f.name)
         seafloor = to_float(f.rec.get("depth"))
         alt = to_float(f.rec.get("altitude_sensor"))
@@ -586,6 +640,9 @@ class SquidleImos(Adapter):
         route = str(self.options.get("route", "s3")).lower()
         if route not in ROUTES:
             raise ValueError(f"route must be one of {ROUTES}")
+        for opt, allowed in (("twins", ("drop", "keep")), ("image", ("full_res", "thumbnail"))):
+            if str(self.options.get(opt, allowed[0])).lower() not in allowed:
+                raise ValueError(f"{opt} must be one of {allowed}")
         if route == "squidle":
             yield from self._discover_squidle()
             return
@@ -619,7 +676,11 @@ class SquidleImos(Adapter):
 
     def _campaign_stream(self, campaign: str) -> Iterator[Candidate]:
         """Candidates of one campaign: round robin over its dives (centre first), CSVs read when first needed."""
-        dives = self.dives(campaign)
+        try:
+            dives = self.dives(campaign)
+        except (HttpError, ValueError, ET.ParseError) as exc:
+            self.ctx.fail(campaign, "dive_listing", f"{type(exc).__name__}: {exc}", url=f"{CSV_PREFIX}{campaign}/")
+            return
         est = sum(d.size for d in dives) / ROW_BYTES
         self._weights[campaign] = math.sqrt(max(est, 1.0))
         per_dive: dict[int, list[Candidate]] = {}
@@ -683,19 +744,20 @@ class SquidleImos(Adapter):
         tiers: list[str] = []
         lic = None
         for item in rec["licences"]:
+            if classify(" ".join(item["texts"])) == "X":
+                tiers.append("X")  # NC / ND / research-only wording counts even in a constraint without a licence link
+                lic = lic or item
+                continue
             text = " ".join(x for x in (item["name"], item["url"]) if x)
             if not text:
                 continue
-            tier = classify(text)
-            if classify(" ".join(item["texts"])) == "X":
-                tier = "X"
-            tiers.append(tier)
+            tiers.append(classify(text))
             lic = lic or item
         if not lic:
             return None, None, "U"
         known = [t for t in tiers if t != "U"]
         tier = "X" if "X" in tiers else (known[0] if known and len(set(known)) == 1 else "U")
-        name = lic["name"]
+        name = lic["name"] or lic["url"] or ("excluded terms" if tier == "X" else "")
         if "creativecommons.org/licenses/by/4.0" in (lic["url"] or "") and tier == "B":
             name = "CC-BY-4.0"
         return name, lic["url"] or None, tier
@@ -716,7 +778,8 @@ class SquidleImos(Adapter):
     def _attribution(self, campaign: str, platform: str, rec: dict[str, Any] | None) -> str:
         fac = self._record(FACILITY) or {}
         ack = (rec or {}).get("ack") or fac.get("ack") or DEFAULT_ACK
-        credits = [c for c in ((rec or {}).get("credits") or fac.get("credits") or []) if "Integrated Marine Observing System" not in c]
+        own = [c for c in (rec or {}).get("credits") or [] if "Integrated Marine Observing System" not in c]
+        credits = own or [c for c in fac.get("credits") or [] if "Integrated Marine Observing System" not in c]
         short = SHORT_PLATFORM.get(platform, platform.replace("IMOS ", ""))
         year = self._accessed[:4]
         parts = [
