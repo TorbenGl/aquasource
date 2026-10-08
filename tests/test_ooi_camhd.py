@@ -44,18 +44,18 @@ def test_parse_size():
     assert oc.parse_size("n/a") is None
 
 
-def test_licence_is_unknown_tier_u():
+def test_licence_is_tier_b():
     cand = Candidate(source="ooi_camhd", item_id="x", media_type="video", media_url=DAY_URL, origin_url=DAY_URL)
     lic = _adapter().resolve_licence(cand)
-    assert lic.tier == "U"
-    assert lic.level == "unknown"
+    assert lic.tier == "B"
+    assert lic.level == "collection"
     assert lic.url == oc.POLICY_URL
 
 
 def test_geo_is_region_from_site_table():
     cand = Candidate(source="ooi_camhd", item_id="x", media_type="video", media_url=DAY_URL, origin_url=DAY_URL)
     geo = _adapter().resolve_geo(cand)
-    assert geo.geo_precision == "region"
-    assert abs(geo.lat - 45.9266) < 1e-4 and abs(geo.lon + 129.9795) < 1e-4
-    assert geo.depth_m == 1552.0
-    assert geo.geo_inferred is True
+    assert geo.geo_precision == "fixed_site"
+    assert abs(geo.lat - 45.93364) < 1e-4 and abs(geo.lon + 130.01364) < 1e-4
+    assert geo.depth_m == 1543.0
+    assert geo.geo_inferred is False

@@ -4,20 +4,20 @@ Source: OOI raw data server https://rawdata.oceanobservatories.org/files/RS03ASH
 (Apache directory listings, anonymous). One ``.mov`` (about 13 GB) and one ``.mp4`` (about 852 MB, 1080p transcode) per
 3-hour file start. Only the ``.mp4`` rendition is yielded: the ``.mov`` is too large for the sample budget.
 
-Licence: NOT CONFIRMED. The OOI Data Use Policy (https://oceanobservatories.org/wp-content/uploads/2024/01/1102-00010_Data_Use_Policy_OOI.pdf)
-and the data policy page answered HTTP 403 to every fetch (2026-10-08), so no licence string could be read. Tier U, level
-``unknown``. Never upgraded. Default config tiers (A, B) therefore select nothing; opt in with ``tiers`` in the config
-only after the policy has been read.
+Licence: OOI Data Use Policy v2-00 (1102-00010, read via a web.archive.org copy of
+https://oceanobservatories.org/wp-content/uploads/2024/01/1102-00010_Data_Use_Policy_OOI.pdf; the live site answers 403), s4.1:
+all OOI data are public, free of charge, and the User may use them "for any legal and non-prohibited purpose whatsoever ...
+create derivative works, publish, distribute". No NC/ND, but no named licence (no CC): collection-level bespoke permissive
+grant, classed tier B (attribution kept), not A. Default config tiers (A, B) select it.
 
-Geo: fixed camera. ``geo_precision`` region, ``geo_source`` = sites/ooi_camhd.csv (ASHES vent field position from the
-Wikipedia article, depth 1552 m from the OOI site listing). The instrument's own OOI metadata position was not reachable.
-Applied to every video, ``geo_inferred`` true.
+Geo: fixed camera. ``geo_precision`` fixed_site, ``geo_source`` = sites/ooi_camhd.csv (OOI asset-management deployment table,
+RS03ASHS-PN03B-06-CAMHDA301, lat/lon/water_depth of deployments 1-12). Applied to every video, ``geo_inferred`` false.
 
 How it works
     * Discovery walks the directory tree year -> month -> day (metadata only, cached per day under metadata/raw/).
       ``from`` / ``to`` (YYYY-MM-DD) narrow the walk; ``per_day`` keeps at most N videos per calendar day.
     * Item id = file name (``CAMHDA301-<UTC timestamp>.mp4``), stable across runs.
-    * Media: plain HTTPS GET; expected size is parsed from the listing.
+    * Media: plain HTTPS GET; listing size is rounded, so no strict size check.
 
 Adapter options (``--opt key=value``)
     from / to     first and last day to list, YYYY-MM-DD (default: the whole archive, oldest first)
@@ -147,28 +147,28 @@ class OoiCamhdAdapter(Adapter):
 
     def resolve_licence(self, cand: Candidate) -> Licence:
         return make_licence(
-            "OOI data use policy (licence not stated; policy unreadable, HTTP 403)",
-            level="unknown",
+            "OOI Data Use Policy v2-00 s4.1 (free public use, derivatives allowed; no named licence)",
+            level="collection",
             url=POLICY_URL,
             attribution=(
                 "OOI CamHD video, RS03ASHS-PN03B-06-CAMHDA301, Ocean Observatories Initiative, "
-                "https://rawdata.oceanobservatories.org (licence not confirmed)"
+                "https://rawdata.oceanobservatories.org"
             ),
-            tier="U",
+            tier="B",
         )
 
     def resolve_geo(self, cand: Candidate) -> Geo:
         if self._site is None:
             self._site = load_sites(SITE_ID)[SITE_ID]
         return self._site.geo(
-            precision="region",
+            precision="fixed_site",
             geo_source=f"{self._site.source}; fixed camera, applied to every video",
-            inferred=True,
+            inferred=False,
         )
 
     def resolve_media(self, cand: Candidate) -> MediaRef:
         return MediaRef(
             url=cand.media_url,
             ext="mp4",
-            expected_bytes=cand.raw.get("size"),
+            expected_bytes=None,  # listing sizes are rounded (43K, 852M): never a strict check
         )

@@ -2,13 +2,12 @@
 # Download OOI CamHD (CAMHDA301, ASHES vent field, Axial Seamount) mp4 files into <data_root>/ooi_camhd/{videos,metadata}
 #
 # Source:   OOI raw data server https://rawdata.oceanobservatories.org/files/RS03ASHS/PN03B/CAMHDA301/ (anonymous)
-# Licence:  NOT CONFIRMED: tier U. The OOI Data Use Policy PDF and the data policy page returned HTTP 403, so no
-#           licence string was read. Default tiers (A,B) select nothing: do not download until the policy is read.
-# Geo:      region (fixed camera at the ASHES vent field, sites/ooi_camhd.csv), geo_inferred true
+# Licence:  tier B (collection level): OOI Data Use Policy v2-00 s4.1, free use incl. derivatives, no named licence
+# Geo:      fixed_site (camera position from OOI asset-management deployment table, sites/ooi_camhd.csv)
 # Size:     one 1080p mp4 about 852 MB per 3 h file (the .mov about 13 GB is not used); about 8 files per day
 #
 # Manual steps before running:
-#   none (no token). Read the OOI Data Use Policy first and set tiers only if the licence allows it.
+#   none (no token).
 #
 # Usage:
 #   scripts/download/ooi_camhd.sh --dry-run                       # listing only, no video
