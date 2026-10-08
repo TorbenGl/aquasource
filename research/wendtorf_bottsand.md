@@ -11,7 +11,9 @@
   - Frames are GoPro Hero9 video frames at 1 s from a USV: flag surface/air frames with extra.maybe_not_underwater=true.
   - Single survey (27 Aug 2024, Bottsand Strand, approx 54.43N 10.29E) in shallow Baltic water: check region weighting.
   - Drone orthomosaics and sonar are out of scope for images; only the GoPro frames are media.
-- needs_opus: yes. Access restricted by the owner; nothing can be done without the owner granting access or a token with access.
+- retry 2026-10-08 (Sonnet): searched Zenodo (query Wendtorf Bottsand; concept record 16085851 has no other open version) and no PANGAEA/other copy found. Still blocked.
+- human action: ask the record owner (Carlson, Zenodo 16085852) to open the files or share geotagged_continuous.zip with a licence statement; then write the adapter.
+- needs_opus: no. Not solvable by a stronger model; needs the owner to grant access.
 
 # Wendtorf / Bottsand GoPro frames (`wendtorf_bottsand`)
 Status: blocked · researched 2026-10-08
