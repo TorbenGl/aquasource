@@ -1,0 +1,2 @@
+site_id,site_name,lat,lon,depth_m,uncertainty_m,source
+ooi_camhd,OOI CamHD CAMHDA301 at ASHES vent field (RS03ASHS/PN03B; Axial Seamount),45.9266,-129.9795,1552.0,1000,"Wikipedia ASHES vent field article (45 deg 55' 35.76\" N, 129 deg 58' 46.2\" W, converted to decimal; article position is the vent field, not the camera; uncertainty 1000 m is an assumption); depth 1552 m from OOI site listing https://oceanobservatories.org/site/rs03ashs/ (search snippet, page not reachable)"
