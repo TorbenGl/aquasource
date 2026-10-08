@@ -11,7 +11,9 @@
   - researchdata.se snd1069-3 notice says the data are no longer available there (possible move to snd.se, unverified)
   - SND ROV dives (1999-2007) are campaign footage, not the observatory archive; file count and size unknown
   - BDJ 10.3897/BDJ.9.e60548 'Usage licence' text not retrieved (page body missing in fetch)
-- needs_opus: yes, licence contradiction (CC BY URL vs WITHDRAWN) and no reachable KSO licence or deposit; needs a human to contact Tjarnö Marine Lab / Sven Lovén Centre (Lundälv) or the KSO team (Obst, Anton) for permission.
+- retry 2026-10-08 (Sonnet): Zenodo (only BDJ figures/PDF + model 13589902 + Nilsson 2025 PDF, all CC BY, no media), GitHub org ocean-data-factory-sweden (kso, kso-utils: code only, sample footage on Google Drive, no licence), GBIF 51d0bd32 (CC BY 4.0, occurrences only, no media), snd.se snd1069-5 still WITHDRAWN with 'no longer available'; no newer version found. Still blocked.
+- human must check: ask Tjarno Marine Lab (Lundalv/Univ. Gothenburg) or Wildlife.ai (Anton) for the Koster ROV 1997-2023 video archive and its licence; or ask SND whether snd1069 was re-published.
+- needs_opus: no (needs human), was: licence contradiction (CC BY URL vs WITHDRAWN) and no reachable KSO licence or deposit; needs a human to contact Tjarnö Marine Lab / Sven Lovén Centre (Lundälv) or the KSO team (Obst, Anton) for permission.
 
 ## Summary
 Koster Seafloor Observatory (Kosterhavet National Park, Skagerrak, Sweden, about 58.9 N 11.0 E) publishes snapshots of
