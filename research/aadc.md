@@ -1,16 +1,13 @@
 ## HANDOFF
-- status: blocked
-- tier + licence: B, CC BY 4.0 at record level (`use_constraints` "CCBY Attribution License"; API https://data.aad.gov.au/metadata/api/records/VMS_Benthic_Photography). Site footer also says CC BY 4.0 (https://data.aad.gov.au/aadc/about/condition_of_use.cfm redirects to /docs/conditions-of-use)
-- geo: region at best (record `spatial_coverage` is a bounding box only, no per-image or per-station coordinates in metadata); geo_source would be the record bbox, not yet implemented
-- files: research/aadc.md, tests/fixtures/aadc/ (3 detail JSON + SOURCE.md). No adapter, script or test written (blocked on media access)
-- tests: not run (no adapter)
-- sample: 0 files, not attempted (no working download route)
-- doubts:
-  - Media download: `eds/<n>/download` links return the SPA HTML shell (1211 bytes) to HEAD and GET; no direct file found
-  - Most underwater records are marked "not yet publicly available" (e.g. ASAC_2201_Casey_photoquadrats1/2, AAS_4633); only open ones count
-  - Per-image coordinates: unknown, probably inside the data packages (5 to 86 GB); check before any geo claim
-  - Discovery works (JSON API, 59 hits for full_text=underwater); candidates: VMS_Benthic_Photography (stills), underwater_video_V40304 (avi), CEAMARC_200708_V3_MARINE_VIDEO_SAMPLES (request point)
-- needs_opus: yes, access: the download route for `eds` links is unknown (need a form or an API token?), and geo for region-only records is a policy call
+- status: blocked (human/policy decision, not a technical one)
+- tier + licence: B, CC BY 4.0 per record (`use_constraints`); VMS_Benthic_Photography also has a LICENSE file in the package
+- geo: package has per-station/event tables (`VMS_events.kml`, `camera/ctd_images.csv`, `camera/benthic_sites.kml`, rmt csv): station-level geo would be possible; record bbox = region fallback. Not yet parsed (needs file access)
+- files: research/aadc.md, tests/fixtures/aadc/ (3 detail JSON + SOURCE.md). No adapter, script, test or sample
+- tests: none; sample: none
+- download route FOUND (2026-10-08, retry): file list is open without auth: `GET https://data.aad.gov.au/eds/api/dataset/<eds_id>/objects?recursive=true&removeBasePath=true` (VMS_Benthic_Photography eds_id 3419: 5140 objects, 4859 jpg, 6.4 GB, with s3_link names). Dataset info: `GET /eds/api/dataset/<eds_id>` (uuid, visibility `public`).
+- the blocker: file bytes come only from `POST /eds/api/dataset/<uuid>/download` (and `/download/file/<id>`) with body `{email_address}` -> returns a `downloadURL` (signed). `GET .../object?prefix=` gives 401. This needs an email in the request, which the project rule forbids (and it is a registration-style gate); no token route found
+- doubts: AADC terms may permit it, but a person must decide whether to supply a project contact address (e.g. via AQUASOURCE_CONTACT) or ask the AADC for a bulk copy / S3 bucket (`s3://aadc-datasets/`) access. Untested: whether the signed URL is per-file or per-dataset (zip)
+- needs_opus: no; needs a human decision on the email gate. If approved: adapter = list objects, jpg files, geo from ctd_images.csv/VMS_events.kml (station), else bbox region
 
 ## Summary
 Australian Antarctic Data Centre (AADC, https://data.aad.gov.au). Underwater stills and video exist (benthic photos, marine
