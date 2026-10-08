@@ -29,7 +29,8 @@ import hashlib
 import logging
 import os
 import re
-import zipfile
+import struct
+import zlib
 from collections import defaultdict
 from pathlib import Path, PurePosixPath
 from typing import Iterable
@@ -108,6 +109,45 @@ def parse_name(name: str) -> dict | None:
     }
 
 
+def scan_zip(path: Path) -> dict[str, tuple[int, int, int, int]]:
+    """Walk the local file headers of a (possibly truncated) zip: name -> (data offset, method, compressed, size).
+
+    Only members that lie completely inside the file are returned. Stops at the first non-local-header signature
+    (central directory) or at members that use data descriptors (sizes 0 in the header).
+    """
+    out: dict[str, tuple[int, int, int, int]] = {}
+    total = Path(path).stat().st_size
+    with open(path, "rb") as fh:
+        pos = 0
+        while pos + 30 <= total:
+            fh.seek(pos)
+            sig, _v, flag, method, _t, _d, _crc, csize, usize, nlen, elen = struct.unpack("<IHHHHHIIIHH", fh.read(30))
+            if sig != 0x04034B50 or (flag & 8):
+                break
+            name = fh.read(nlen).decode("utf-8", "replace")
+            data_off = pos + 30 + nlen + elen
+            if data_off + csize > total:
+                break
+            if not name.endswith("/"):
+                out[PurePosixPath(name).name] = (data_off, method, csize, usize)
+            pos = data_off + csize
+    return out
+
+
+def read_member(path: Path, entries: dict, base: str) -> bytes:
+    if base not in entries:
+        raise RuntimeError(f"{base} not found (complete) in zip")
+    off, method, csize, _ = entries[base]
+    with open(path, "rb") as fh:
+        fh.seek(off)
+        raw = fh.read(csize)
+    if method == 0:
+        return raw
+    if method == 8:
+        return zlib.decompress(raw, -15)
+    raise RuntimeError(f"{base}: unsupported zip method {method}")
+
+
 @register
 class MooreaLterAdapter(Adapter):
     key = "moorea_lter"
@@ -150,12 +190,27 @@ class MooreaLterAdapter(Adapter):
         return self.ctx.layout.root / "archives" / ZIPS[year][1]
 
     def _ensure_archive(self, year: int) -> Path:
-        """Return the complete year zip, downloading and MD5-checking it once (never called in a dry run)."""
+        """Return the year zip: complete (MD5-checked) or, if the stream is cut off, the truncated ``.part`` head.
+
+        The member node resets long streams (about 19 MB seen) and ignores Range. Local file headers carry the sizes
+        (checked for 2010), so complete members of a truncated zip are still readable by ``scan_zip``. Option
+        ``head_mb=N`` stops after N MB on purpose (small samples).
+        """
         _, name, size, md5, _ = ZIPS[year]
         path = self._archive(year)
         if path.exists() and path.stat().st_size == size:
             return path
-        self.http.download(self._zip_url(year), path, expected_bytes=size)
+        part = path.with_name(path.name + ".part")
+        if part.exists() and part.stat().st_size > 1_000_000 and not self.options.get("refetch"):
+            return part
+        head = int(self.options.get("head_mb") or 0) * 1_000_000 or None
+        try:
+            self.http.download(self._zip_url(year), path, expected_bytes=None if head else size, max_bytes=head)
+        except Exception as exc:  # cut-off stream, size limit reached, connection reset
+            if part.exists() and part.stat().st_size > 1_000_000:
+                log.warning("moorea_lter: %d zip truncated at %d bytes (%s); using complete members only", year, part.stat().st_size, exc)
+                return part
+            raise
         digest = hashlib.md5()
         with open(path, "rb") as fh:
             for block in iter(lambda: fh.read(1 << 20), b""):
@@ -184,14 +239,12 @@ class MooreaLterAdapter(Adapter):
                 self.ctx.fail(self._zip_url(year), "discover", f"{type(exc).__name__}: {exc}")
                 continue
             cells: dict[str, list[Candidate]] = defaultdict(list)
-            with zipfile.ZipFile(path) as zf:
-                names = {PurePosixPath(i.filename).name: i for i in zf.infolist() if not i.is_dir()}
-                for base, info in names.items():
-                    tok = parse_name(base)
-                    if tok is None or (habitats and tok["habitat"] not in habitats):
-                        continue
-                    anno = f"{base}.txt"
-                    cells[tok["sid"]].append(self._candidate(year, base, info.file_size, tok, anno in names))
+            names = scan_zip(path)
+            for base, ent in names.items():
+                tok = parse_name(base)
+                if tok is None or (habitats and tok["habitat"] not in habitats):
+                    continue
+                cells[tok["sid"]].append(self._candidate(year, base, ent[3], tok, f"{base}.txt" in names))
             # round-robin over the cells of this year, each cell in (poles, quadrat, date) order
             for lst in cells.values():
                 lst.sort(key=lambda c: (c.raw["poles"], c.raw["quadrat"], c.raw["date"]))
@@ -266,11 +319,13 @@ class MooreaLterAdapter(Adapter):
         year, member = ref.extra["year"], ref.extra["member"]
         archive = self._archive(year)
         if not archive.exists():
+            archive = archive.with_name(archive.name + ".part")
+        if not archive.exists():
             raise RuntimeError(f"{ZIPS[year][1]} is not downloaded (discover() must run first)")
-        with zipfile.ZipFile(archive) as zf:
-            data = self._read_member(zf, member)
-            anno_name = cand.raw.get("annotation")
-            anno = self._read_member(zf, anno_name) if anno_name else None
+        entries = scan_zip(archive)
+        data = read_member(archive, entries, member)
+        anno_name = cand.raw.get("annotation")
+        anno = read_member(archive, entries, anno_name) if anno_name else None
         magic = MAGIC[ref.ext if ref.ext in MAGIC else "jpg"]
         if not data.startswith(magic):
             raise RuntimeError(f"{member}: not a valid {ref.ext} file (bad magic bytes)")
@@ -284,13 +339,6 @@ class MooreaLterAdapter(Adapter):
             ap.parent.mkdir(parents=True, exist_ok=True)
             ap.write_bytes(anno)
         return len(data), hashlib.sha256(data).hexdigest()
-
-    @staticmethod
-    def _read_member(zf: zipfile.ZipFile, base: str) -> bytes:
-        for info in zf.infolist():
-            if not info.is_dir() and PurePosixPath(info.filename).name == base:
-                return zf.read(info)
-        raise RuntimeError(f"{base} not found in zip")
 
     def estimate(self) -> dict:
         return {"images": 2055, "zip_bytes": sum(z[2] for z in ZIPS.values()), "years": sorted(ZIPS)}

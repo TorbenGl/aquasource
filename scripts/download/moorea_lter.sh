@@ -17,7 +17,7 @@
 # Usage:
 #   scripts/download/moorea_lter.sh                    # all images, 2008 then 2009 then 2010 (needs ~5.6 GB disk)
 #   scripts/download/moorea_lter.sh --dry-run          # no zip downloads: lists nothing until a zip is present
-#   scripts/download/moorea_lter.sh --budget 3         # 3 images, from the first year zip (2008) only
+#   scripts/download/moorea_lter.sh --budget 3 --opt head_mb=12   # 3 images from the first 12 MB of the 2008 zip (cut-off streams are salvaged)
 #   scripts/download/moorea_lter.sh --opt years=2010   # only the 963 MB 2010 zip (contains some PNG files)
 #   scripts/download/moorea_lter.sh --opt habitats=out17m
 #

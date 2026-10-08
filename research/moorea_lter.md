@@ -1,17 +1,18 @@
 ## HANDOFF
-- status: blocked (adapter, script and offline tests done; no bulk download possible)
+- status: ok (sample passes via truncated-zip salvage; full bulk zip still unreliable)
 - tier + licence: B, CC BY 4.0, read at record level: EML intellectualRights of knb-lter-mcr.5006.3 rev 3, https://cn.dataone.org/cn/v2/object/https%3A%2F%2Fpasta.lternet.edu%2Fpackage%2Fmetadata%2Feml%2Fknb-lter-mcr%2F5006%2F3
 - geo: station (100 %), geo_source = `sites/moorea_lter.csv` row from filename tokens (EML site polygon centroids; BCO-DMO 918265 for LTER1/2 10 m), geo_inferred, uncertainty 200-1650 m
 - files: adapters/moorea_lter.py, scripts/download/moorea_lter.sh, tests/test_moorea_lter.py, adapters/sites/moorea_lter.csv, fixtures/moorea_lter/
-- tests: pass (9/9 offline, `uv run pytest tests/test_moorea_lter.py -q`)
-- sample: 0 files downloaded, error: 2010 zip (963 MB) stream reset at about 19 MB, 2 tries, Range ignored; sample dir removed
+- tests: pass (10/10 offline, `uv run pytest tests/test_moorea_lter.py -q`)
+- sample (retry 2026-10-08): `--budget 3 --opt head_mb=12` gave 3 images + samples.jsonl + 2 annotation files; sample dir removed. Fix: the zip local file headers hold sizes, so the adapter now reads complete members from a truncated `.part` (scan_zip) instead of needing the full zip or central directory; option head_mb=N stops the stream on purpose; a cut-off stream is salvaged automatically. Without head_mb the 2010 zip streamed >28 MB at ~0.5 MB/s with no reset (full 963 MB would take ~30-80 min).
 - doubts:
-  - discover() downloads each year zip (no per-image listing exists, GMN ignores Range): conflicts with the metadata-only rule in base.py; needs a shared-code decision
-  - access: needs EDI API key (route A) or a copy from MCR; bulk zip path is blocked anonymously today
+  - discover() still pulls zip bytes (first head_mb MB per year zip) because no listing endpoint exists; conflicts with base.py "metadata only" wording; dry run downloads nothing. Needs a shared-code decision or an EDI key (route A)
+  - a truncated head only covers the first site/habitat cells of a year (lter1 out17m first in 2008/2010), so geo variety is low unless full zips are fetched
   - licence: MCR policy page and 5013.3 say "no redistribution"; record CC BY kept (tier B)
   - 2010 zip: PNG files and damaged images reported; only magic bytes checked, no full decode
   - publication-derived geo: polygon centroids (up to 1.65 km), fringing depths from 2005-06 rows
-- needs_opus: yes, because access is blocked (zip stream) and discover() needs media bytes to build the zip index (base.py conflict)
+  - MD5 only checked on complete zips; `.part` heads are unchecked
+- needs_opus: no
 
 # MCR LTER: Coral Reef: Computer Vision: Moorea Labeled Corals (`moorea_lter`)
 Status: blocked (download) · lean pass 2026-10-08; research 2026-10-06

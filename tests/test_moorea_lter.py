@@ -146,3 +146,15 @@ def test_fetch_copies_image_and_annotation_and_rejects_bad_magic(tmp_path, monke
 def test_dry_run_without_zip_lists_nothing_and_makes_no_request(tmp_path):
     a = make_adapter(tmp_path, dry_run=True)
     assert list(a.discover()) == []  # NoNet raises on any request, so no download was attempted
+
+
+def test_truncated_zip_yields_only_complete_members(tmp_path, monkeypatch):
+    from aquasource.adapters.moorea_lter import scan_zip
+
+    a = make_adapter(tmp_path)
+    synthetic_2008(a)
+    p = a._archive(2008)
+    full = len(scan_zip(p))
+    p.write_bytes(p.read_bytes()[: p.stat().st_size // 2])
+    part = scan_zip(p)
+    assert 0 < len(part) < full
