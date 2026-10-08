@@ -11,6 +11,7 @@
   - Positions are the latest deployment of each camera (spread up to 37 m at CE04OSBP); fixed site applied to every frame.
   - Size: a camera-day can be about 300 frames of 10-16 MB (about 5 GB). Use per_day, from/to. Full archive is about 6 cameras x 12 years of day listings (1 req/s metadata).
   - Camera list = 6 CAMDS instruments found by sweeping all RS sites and CE01-CE04; CE06-CE09, CP, GA, GI, GP, GS, AS not finished (sweep stopped for time).
+- checked by Sonnet 2026-10-08: policy re-read (s4.1 any legal purpose incl. derivatives, no NC/ND; no attribution mandated) so tier B justified; geo/licence code OK; tests 7/7; 3-frame sample OK.
 - needs_opus: no
 
 ## Notes
