@@ -1,0 +1,6 @@
+session_name,session_doi,place,date,raw_data,processed_data
+20150611_REU-St-Gilles_scuba,https://doi.org/10.5281/zenodo.11408925,ST-GILLES,2015-06-11,1,0
+20150615_REU-La-Saline_scuba,https://doi.org/10.5281/zenodo.11408927,LA-SALINE,2015-06-15,1,0
+20150616_REU-La-Saline_scuba,https://doi.org/10.5281/zenodo.11408941,LA-SALINE,2015-06-16,1,0
+20150617_REU-St-Leu_scuba,https://doi.org/10.5281/zenodo.11408955,ST-LEU,2015-06-17,1,0
+20150619_REU-St-Gilles_scuba,https://doi.org/10.5281/zenodo.11408981,ST-GILLES,2015-06-19,1,0
