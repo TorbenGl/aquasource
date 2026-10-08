@@ -30,3 +30,6 @@ https://servomatic9000.axiomalaska.com/photo-server/usgs/5821795839062507905/583
 No `publication_sites.csv`: geolocation is per navigation row, not from a publication table.
 
 Timing caveat from the same check: the portal's `date` for that photo is "Aug 26, 2012 05:08:18 PM" (from `neighborhoodFrames_seafloor_video.json`), while the EXIF `DateTimeOriginal`/`GPSTimeStamp` say 17:31:18/17:31:17 on the same day. The seconds agree and the minutes differ by 23, so the camera clock and the navigation clock are offset for this survey. Use the coordinate from the row, never re-derive it from EXIF time.
+
+## Verification (2026-10-08)
+Independent re-fetch: video rows, id 257, the frame-service response and the FGDC record are identical to the stored fixtures; the photo-server HEAD returns 200 image/jpeg for the ids above. Layers differ in column set (Hawaii/Pacific and Puget Sound use `photoname`, UUID `picasa_id` and a cruise-name `picasa_album_id`).
