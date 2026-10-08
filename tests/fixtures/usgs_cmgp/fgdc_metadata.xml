@@ -1,0 +1,269 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata>
+  <idinfo>
+    <citation>
+      <citeinfo>
+        <origin>Nadine E. Golden</origin>
+        <origin>Seth D. Ackerman</origin>
+        <origin>Evan T. Dailey</origin>
+        <pubdate>2015</pubdate>
+        <title>Coastal Marine Geology Program Video and Photograph Portal</title>
+        <geoform>Web page</geoform>
+        <pubinfo>
+          <pubplace>Santa Cruz, CA</pubplace>
+          <publish>U.S. Geological Survey</publish>
+        </pubinfo>
+        <onlink>https://doi.org/10.5066/F7JH3J7N</onlink>
+      </citeinfo>
+    </citation>
+    <descript>
+      <abstract>Access to the U.S. Geological Survey (USGS) Coastal and Marine Geology Program’s (CMGP) vast collection of unique and valuable seafloor and coastal imagery is made available in the CMGP Video and Photograph Portal. The portal provides a single location for data discovery and viewing.
+The CMGP and our research partners invest immense resources collecting, processing, and archiving seafloor and oblique coastal video and photographs. Until the publication of the CMGP Video and Photograph Portal in 2015, only a small number of these data sets were available to the public through static web interfaces. Prior to development of the data portal, retrieving this imagery most often required internal USGS access with specific hardware and software. Furthermore, it was difficult to manage and challenging to share such a large amount of information.
+The Coastal and Marine Geology Program (CMGP) Video and Photograph Portal contains imagery spanning from 2003 to the present. Video and photographs originally collected on analog film media have been digitized and processed along with more recently collected digital video and photographs to meet a common standard for all CMGP video/photo imagery. The Portal is based on an interactive map allowing users to zoom into an area of interest and find available USGS imagery. The co-located video and still photographs are displayed simultaneously, just as they were acquired in the field.
+In the portal, videos are ultimately stored and streamed as embedded YouTube videos, and photographs are stored in Picasa. Presenting the imagery in this way requires multiple processing steps and tools, including video and photo editing, database management, and computer scripting to automate processing, formatting and quality assurance tasks. A robust set of processing tools have been developed to streamline and automate portions of the workflow based on the wide range of data types processed so far. However, sometimes the data received are uniquely organized and formatted, requiring individualized processing. In that case processing tools are updated to accept a wider range of data formats and organizational structures.</abstract>
+      <purpose>The Coastal and Marine Geology Program Video and Photograph Portal hosts imagery from many of the regions where CMGP scientists work, including California, Oregon, Puget Sound, Hawaii, Alaska, Massachusetts, Florida, the Gulf of Mexico and Atlantic Coasts, and American Samoa, as well as numerous other projects.
+The USGS Coastal and Marine Geology Program collects imagery during field surveys for a variety of purposes, including ground-truth verification of remotely sensed geophysical data, documenting change to coastal features, and understanding sediment transport processes. Seafloor video and still images are collected using underwater sampling devices and other techniques. Oblique aerial imagery is collected from both fixed-wing aircraft,  helicopters, and unmanned drones flown over coastal areas before and after storms or other events to document changes to sensitive coastal formations and structures.</purpose>
+    </descript>
+    <timeperd>
+      <timeinfo>
+        <rngdates>
+          <begdate>2003</begdate>
+          <enddate>present</enddate>
+        </rngdates>
+      </timeinfo>
+      <current>ground conditions at the time the imagery were acquired</current>
+    </timeperd>
+    <status>
+      <progress>In work</progress>
+      <update>As needed</update>
+    </status>
+    <spdom>
+      <bounding>
+        <westbc>-179.82421874282</westbc>
+        <eastbc>-56.777343747733</eastbc>
+        <northbc>72.127936279759</northbc>
+        <southbc>23.402764904526</southbc>
+      </bounding>
+    </spdom>
+    <keywords>
+      <theme>
+        <themekt>USGS Metadata Identifier</themekt>
+        <themekey>USGS:fa1a6827-fbde-442a-80f6-b607892854a5</themekey>
+      </theme>
+      <theme>
+        <themekt>ISO 19115 Topic Category</themekt>
+        <themekey>geoscientificInformation</themekey>
+        <themekey>oceans</themekey>
+        <themekey>biota</themekey>
+      </theme>
+      <theme>
+        <themekt>Data Categories for Marine Planning</themekt>
+        <themekey>Physical Habitats and Geomorphology</themekey>
+        <themekey>Biodiversity</themekey>
+        <themekey>Water Column Features</themekey>
+        <themekey>Substrate</themekey>
+      </theme>
+      <theme>
+        <themekt>Global Change Master Directory (GCMD)</themekt>
+        <themekey>Continental Margins</themekey>
+      </theme>
+      <theme>
+        <themekt>USGS Thesaurus</themekt>
+        <themekey>aerial photography</themekey>
+        <themekey>image collections</themekey>
+        <themekey>photographs</themekey>
+        <themekey>coastal ecosystems</themekey>
+        <themekey>marine ecosystems</themekey>
+        <themekey>geology</themekey>
+        <themekey>videography</themekey>
+        <themekey>videos</themekey>
+      </theme>
+      <theme>
+        <themekt>None</themekt>
+        <themekey>U.S. Geological Survey</themekey>
+        <themekey>USGS</themekey>
+        <themekey>Pacific Coastal and Marine Science Center</themekey>
+        <themekey>PCMSC</themekey>
+        <themekey>Coastal and Marine Geology</themekey>
+        <themekey>imagery</themekey>
+        <themekey>still imagery</themekey>
+      </theme>
+      <place>
+        <placekt>Geographic Names Information System (GNIS)</placekt>
+        <placekey>United States of America</placekey>
+        <placekey>State of California</placekey>
+        <placekey>Pacific Ocean</placekey>
+        <placekey>Atlantic Ocean</placekey>
+        <placekey>State of Hawaii</placekey>
+        <placekey>America Samoa</placekey>
+        <placekey>State of Oregon</placekey>
+        <placekey>Puget Sound</placekey>
+        <placekey>Commonwealth of Massachussets</placekey>
+        <placekey>Rhode Island</placekey>
+        <placekey>State of Louisiana</placekey>
+        <placekey>State of Mississippi</placekey>
+        <placekey>State of Alabama</placekey>
+        <placekey>State of Florida</placekey>
+      </place>
+      <place>
+        <placekt>None</placekt>
+        <placekey>Gulf Coast</placekey>
+      </place>
+    </keywords>
+    <accconst>None</accconst>
+    <useconst>USGS-authored or produced data and information are in the public domain from the U.S. Government and are freely redistributable with proper metadata and source attribution. Please recognize and acknowledge the U.S. Geological Survey as the originator(s) of the dataset and in products derived from these data</useconst>
+    <ptcontac>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>U.S. Geological Survey, Pacific Coastal and Marine Science Center</cntorg>
+          <cntper>PCMSC Science Data Coordinator</cntper>
+        </cntorgp>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>2885 Mission Street</address>
+          <city>Santa Cruz</city>
+          <state>CA</state>
+          <postal>95060</postal>
+          <country>United States</country>
+        </cntaddr>
+        <cntvoice>831-427-4747</cntvoice>
+        <cntemail>pcmsc_data@usgs.gov</cntemail>
+      </cntinfo>
+    </ptcontac>
+    <native>ExifTool [Computer software], 2015. accessed on July 27, 2015, at http://owl.phy.queensu.ca/~phil/exiftool/
+FFmpeg [Computer software], 2016. accessed on August 1, 2016, at https://www.ffmpeg.org
+ImageMagick Studio LLC [Computer software], 2015. accessed on March 28, 2016, at http://www.imagemagick.org
+Picasa [website]. 2016. accessed on August 1, 2016, at https://support.google.com/picasa
+Python Software Foundation [Computer software]. 2015. accessed on July 27, 2015 at https://www.python.org
+R Core Team. 2014. R Foundation for Statistical Computing, Vienna, Austria.
+YouTube [website]. 2016. accessed on August 1, 2016, at https://support.google.com/youtube</native>
+  </idinfo>
+  <dataqual>
+    <attracc>
+      <attraccr>No formal attribute accuracy tests were conducted</attraccr>
+    </attracc>
+    <logic>No formal logical accuracy tests were conducted</logic>
+    <complete>Data set is considered complete for the information presented, as described in the abstract. Additional imagery will be added as datasets become available. Users are advised to read the rest of the metadata record carefully for additional details.</complete>
+    <posacc>
+      <horizpa>
+        <horizpar>A formal accuracy assessment of the horizontal positional information in the data set has either not been conducted, or is not applicable.</horizpar>
+      </horizpa>
+      <vertacc>
+        <vertaccr>NA formal accuracy assessment of the horizontal positional information in the data set has either not been conducted, or is not applicable.</vertaccr>
+      </vertacc>
+    </posacc>
+    <lineage>
+      <procstep>
+        <procdesc>Formatting: After video and/or photographic imagery is acquired from its source (the principal investigator of a survey, survey technicians, archives or other USGS databases), the imagery is manipulated and reviewed to ensure it is “portal-ready.” Videos and photos containing extraneous frames, such as boat deck shots, extensive water column sequences, blank or distorted imagery from equipment malfunction, and other content not directly relevant to seafloor and coastal understanding is removed. The imagery must also be edited to meet proper file formatting and resolution for its publication in the portal. Raw video files recorded during surveys may be too large and/or an unsuitable format for web-streaming. Video are compressed to a standard codec (such as MPEG-4) and uploaded in a suitable container (such as MP4) so that the videos meet the necessary YouTube specifications. Compressing the video reduces the file size, thus making web-streaming feasible, while only slightly reducing video quality of the original recording. 
+Other video processing steps may include stripping audio tracks and creating video text overlays displaying survey information such as survey ID, date, and station. Older video collected on film is converted to digital format to enable it to be uploaded to  the portal. Video stored in DVD format, which contains multiple different files (such as VOB files) for a single video, is reformatted to a single video file with the standard  codec and container.        
+File type reformatting is generally not required for photographs, as Picasa, the web-hosting platform for photographs in the portal, accepts a wide range of standard image file types. Photographs published in the portal contain exchangeable image file format (Exif) metadata tags. These tags are either created during collection by the recording equipment or are added during processing stages. During processing, photographs are checked for Exif information including: credit for creation, contact information, geographic coordinates, and tags may also contain summary information about the survey. This metadata can be used to identify, locate, and provide contact information for a given image. Photographs that do not already contain the proper Exif metadata for the portal are updated using a set of processing tools described below.</procdesc>
+        <procdate>20150101</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>Imagery formatting tools: Multiple tools are used to edit, format, review, and upload imagery to the portal. These include video and photograph editing software, command-line tools, and computer scripts.
+Editing, formatting and compressing videos is accomplished using command-line functionality from the free software project FFmpeg. The software meets most processing requirements for the videos, and can trim extraneous video frames, remove or edit audio tracks, create text overlays, cut a single video into multiple videos, concatenate videos, as well as convert codecs, containers, filters and compress videos as required by the data.
+ExifTool, another free software project, provides command-line functionality to edit a photo’s Exif metadata tags. For this purpose, the ExifTool has been incorporated into Python scripts, allowing large numbers of photos to be edited with data from spreadsheets containing geographic coordinates, citations and summary text. Other Python computer scripts have been written that also utilize ExifTool, FFmpeg, as well as standard operating system tools, to edit, name, catalog and organize video files.</procdesc>
+        <procdate>20150101</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>Uploading: After navigation records are compiled and completed for all imagery, the photographs and videos are uploaded using scripts written and provided by the portal’s web developing contractors. Additional structured query language (SQL) scripts then create a final spreadsheet record containing internet links to imagery (such as YouTube IDs and Picasa Album and image IDs), latitude, longitude, and the number of seconds into a video for every row in the record. This final record with imagery and location is shared with the contractors, and the data is added to the interactive portal. Additionally, metadata and a summary of the survey with links to publications and funding programs is uploaded for each YouTube video, and a summary of the data with links is added to the portal’s data catalog web pages. Surveys in the portal’s data catalog are organized and grouped according to geographic regions and survey themes.</procdesc>
+        <procdate>20150101</procdate>
+      </procstep>
+      <procstep>
+        <procdesc>Keywords section of metadata edited for consistency across the USGS Pacific Coastal and Marine Science Center and to further optimize discovery in search engines and data catalogs. Metadata was modified to bring up to current USGS PCMSC standards. Minor typos were corrected. No data information was changed.</procdesc>
+        <procdate>20180907</procdate>
+        <proccont>
+          <cntinfo>
+            <cntperp>
+              <cntper>Susan A Cochran</cntper>
+              <cntorg>U.S. Geological Survey, Pacific Coastal and Marine Science Center</cntorg>
+            </cntperp>
+            <cntpos>Geologist</cntpos>
+            <cntaddr>
+              <addrtype>mailing and physical address</addrtype>
+              <address>2885 Mission Street</address>
+              <city>Santa Cruz</city>
+              <state>CA</state>
+              <postal>95060-5792</postal>
+              <country>USA</country>
+            </cntaddr>
+            <cntvoice>(831) 460-7545</cntvoice>
+            <cntemail>scochran@usgs.gov</cntemail>
+          </cntinfo>
+        </proccont>
+      </procstep>
+      <procstep>
+        <procdesc>Edited metadata to add keywords section with USGS persistent identifier as theme keyword. No data were changed.</procdesc>
+        <procdate>20201019</procdate>
+        <proccont>
+          <cntinfo>
+            <cntorgp>
+              <cntorg>U.S. Geological Survey</cntorg>
+              <cntper>VeeAnn A. Cross</cntper>
+            </cntorgp>
+            <cntpos>Marine Geologist</cntpos>
+            <cntaddr>
+              <addrtype>Mailing and Physical</addrtype>
+              <address>384 Woods Hole Road</address>
+              <city>Woods Hole</city>
+              <state>MA</state>
+              <postal>02543-1598</postal>
+            </cntaddr>
+            <cntvoice>508-548-8700 x2251</cntvoice>
+            <cntfax>508-457-2310</cntfax>
+            <cntemail>vatnipp@usgs.gov</cntemail>
+          </cntinfo>
+        </proccont>
+      </procstep>
+    </lineage>
+  </dataqual>
+  <spdoinfo>
+    <indspref>Navigation data provides the basis for visualizing the CMGP video and photograph imagery in the portal. Accurate geographic coordinates combined with date and time information are required to display data on the portal’s interactive map. These coordinates are generally acquired from a survey’s GPS navigation records. Every data point on the map represents a time value along a survey trackline which also has an associated date, latitude, longitude, video (if applicable) and photo (if applicable). Each data point can be associated with a video and photo, or just one of the imagery types if the other does not exist (but at least one is required). The imagery is tied to the navigation records using time as a common field. The portal uses this record to display, for each coordinate containing imagery, the corresponding video and/or photo, as linked by their YouTube file ID and/or Picasa and Picasa album ID. This master navigation file is created for each survey containing imagery uploaded to the portal.
+Multiple Python scripts are used to reformat GPS navigation records depending on their source and original format. USGS online databases contain navigation records for some surveys, while other navigation data are provided by science projects in various formats. A Python script reformats these records into the standard format used by the portal, containing date, time, latitude and longitude fields, as well as survey identification fields (#Appendix: Scripts). This process requires parsing date-time values and reformatting date and time to separate values, converting coordinates to decimal degree format, as well as organizing the other values into spreadsheet format.
+One common format for navigation records is the National Marine Electronics Association (NMEA) GPS strings, as collected using HYPACK navigation hardware, for example. A Python script parses and reformats the complex NMEA strings into a standard format with date, time, latitude and longitude formats. Optionally, the script can be run to group or batch reformat numerous files collected over multiple survey dates, thus expediting processing times.</indspref>
+  </spdoinfo>
+  <distinfo>
+    <distrib>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>U.S. Geological Survey, Pacific Coastal and Marine Science Center</cntorg>
+          <cntper>Nadine E. Golden</cntper>
+        </cntorgp>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>2885 Mission Street</address>
+          <city>Santa Cruz</city>
+          <state>CA</state>
+          <postal>95060</postal>
+          <country>USA</country>
+        </cntaddr>
+        <cntvoice>831-460-7530</cntvoice>
+        <cntemail>ngolden@usgs.gov</cntemail>
+      </cntinfo>
+    </distrib>
+    <distliab>These data, identified as video and photograph data, have been approved for release and publication by the U.S. Geological Survey (USGS). Although these data have been subjected to rigorous review and are substantially complete, the USGS reserves the right to revise the data pursuant to further analysis and review. Furthermore, they are released on condition that neither the USGS nor the United States Government may be held liable for any damages resulting from its authorized or unauthorized use.</distliab>
+  </distinfo>
+  <metainfo>
+    <metd>20201019</metd>
+    <metc>
+      <cntinfo>
+        <cntorgp>
+          <cntorg>U.S. Geological Survey, Pacific Coastal and Marine Science Center</cntorg>
+          <cntper>PCMSC Science Data Coordinator</cntper>
+        </cntorgp>
+        <cntaddr>
+          <addrtype>mailing and physical</addrtype>
+          <address>2885 Mission Street</address>
+          <city>Santa Cruz</city>
+          <state>CA</state>
+          <postal>95060</postal>
+          <country>United States</country>
+        </cntaddr>
+        <cntvoice>831-427-4747</cntvoice>
+        <cntemail>pcmsc_data@usgs.gov</cntemail>
+      </cntinfo>
+    </metc>
+    <metstdn>Content Standard for Digital Geospatial Metadata</metstdn>
+    <metstdv>FGDC-STD-001-1998</metstdv>
+  </metainfo>
+</metadata>
