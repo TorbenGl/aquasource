@@ -3,7 +3,7 @@
 - tier + licence: B, CC BY 4.0, record level (https://www.seanoe.org/data/00907/101899/ licence badge; DataCite rights https://api.datacite.org/dois/10.17882/101899)
 - geo: fixed_site, inferred; geo_source = DataCite geoLocationBox per observatory (src/aquasource/adapters/sites/seanoe_more.csv), camera from file-name prefix
 - files: src/aquasource/adapters/seanoe_more.py / scripts/download/seanoe_more.sh / tests/test_seanoe_more.py / src/aquasource/adapters/sites/seanoe_more.csv (+ tests/fixtures/seanoe_more/)
-- tests: pass (10 passed, offline)
+- tests: pass (10 passed, offline); checked by Sonnet 2026-10-08: licence CC BY 4.0 confirmed (DataCite), geo code OK, sample 3 JPEG + samples.jsonl OK
 - sample: 3 of 3 JPEG downloaded OK (budget 3, ~6.7 s, 4 metadata requests; header + end markers FFD8/FFD9 checked; sample dir removed)
 - doubts:
   - Juan de Fuca point (48.503038 N, -125.554305) is the second DataCite box; the record names no site in words (README only says "TEMPO for Juan de Fuca"). Check against the paper / TEMPO deployment list.
