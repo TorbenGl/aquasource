@@ -12,7 +12,7 @@
   - Full history is about 275 GB of zips (about 2 million JPEG, estimate from zip sizes); the adapter reads only the zip index, media comes from files.obsea.es one picture at a time; check the host load before a large run
   - Monthly zips are read with HTTP Range requests (central directory + index.csv); if a future zip has no top-level index.csv it is logged in failures.jsonl
 - needs_opus: no
-- checked: tests 7/7; sample OK; no network use in tests
+- checked: tests 7/7; sample OK; no network use in tests; checked by Sonnet 2026-10-08 (licence cc-by-4.0 confirmed on Zenodo record, geo ok, re-run took 589 s because Zenodo returned 504s)
 
 ## Summary
 OBSEA (Observatorio Submarino de Vilanova i la Geltru, UPC / EMSO, 4 km offshore, NW Mediterranean, 20 m) runs a seabed
