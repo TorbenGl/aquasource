@@ -358,17 +358,26 @@ if (args.publish_existing && args.publish_existing.length) {
   log(`Saved to Notion: ${s0.saved.join(', ')}${s0.failed.length ? '; failed: ' + s0.failed.join(', ') : ''}`)
 }
 
+// Model per stage. Datasets finished before the switch keep their original options so their cached results replay.
+const LEGACY = new Set(args.legacy_keys || [])
+const M = args.models || {}
+function mopt(d, stage, base) {
+  if (LEGACY.has(d.key)) return base
+  const m = M[stage]
+  return m ? { ...base, model: m } : base
+}
+
 for (const d of args.datasets || []) {
   const rec = { key: d.key }
   if (!d.have_note) {
-    rec.research = await agent(researchPrompt(d), { label: `research:${d.key}`, phase: 'Research', schema: RESEARCH_SCHEMA })
+    rec.research = await agent(researchPrompt(d), mopt(d, 'research', { label: `research:${d.key}`, phase: 'Research', schema: RESEARCH_SCHEMA }))
     if (!rec.research) return stop(`research:${d.key}`)
   }
-  rec.verify = await agent(verifyPrompt(d), { label: `verify:${d.key}`, phase: 'Verify', schema: VERIFY_SCHEMA })
+  rec.verify = await agent(verifyPrompt(d), mopt(d, 'verify', { label: `verify:${d.key}`, phase: 'Verify', schema: VERIFY_SCHEMA }))
   if (!rec.verify) return stop(`verify:${d.key}`)
   rec.impl = await agent(implPrompt(d), { label: `impl:${d.key}`, phase: 'Implement', schema: IMPL_SCHEMA, model: 'sonnet' })
   if (!rec.impl) return stop(`impl:${d.key}`)
-  rec.review = await agent(reviewPrompt(d, rec.impl), { label: `review:${d.key}`, phase: 'Review', schema: REVIEW_SCHEMA })
+  rec.review = await agent(reviewPrompt(d, rec.impl), mopt(d, 'review', { label: `review:${d.key}`, phase: 'Review', schema: REVIEW_SCHEMA }))
   if (!rec.review) return stop(`review:${d.key}`)
   out.push(rec)
   log(`${d.key}: ${rec.verify.notion_status} / tier ${rec.verify.tier} / review ${rec.review.verdict}`)
@@ -378,7 +387,7 @@ if (args.screen_candidates && args.candidates) {
   const known = args.known_keys || []
   for (const key of args.candidates) {
     const c = { key }
-    const s = await agent(screenPrompt(c, known), { label: `screen:${c.key}`, phase: 'Screen', schema: SCREEN_SCHEMA })
+    const s = await agent(screenPrompt(c, known), M.screen ? { label: `screen:${c.key}`, phase: 'Screen', schema: SCREEN_SCHEMA, model: M.screen } : { label: `screen:${c.key}`, phase: 'Screen', schema: SCREEN_SCHEMA })
     if (!s) return stop(`screen:${c.key}`)
     out.push({ key: c.key, screen: s })
   }

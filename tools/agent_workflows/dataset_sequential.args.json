@@ -76,7 +76,7 @@
             "key": "squidle_imos",
             "ticket_id": "3f17ce19-8bfb-81f6-b7c5-f6d27ec1a5eb",
             "row_id": "3f17ce19-8bfb-8196-9fa1-df79b80dfdbc",
-            "have_note": false
+            "have_note": true
         },
         {
             "key": "fathomnet",
@@ -439,5 +439,17 @@
         "wikimedia_commons",
         "bco_dmo",
         "gbif_marine_media"
-    ]
+    ],
+    "legacy_keys": [
+        "benthicnet",
+        "pangaea_images",
+        "german_bight",
+        "noaa_ncrmp"
+    ],
+    "models": {
+        "research": "sonnet",
+        "verify": "sonnet",
+        "review": "sonnet",
+        "screen": "haiku"
+    }
 }
