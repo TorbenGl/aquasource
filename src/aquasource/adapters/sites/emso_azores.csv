@@ -1,0 +1,2 @@
+site_id,site_name,lat,lon,depth_m,uncertainty_m,source
+emso_azores,EMSO-Azores Lucky Strike TEMPO module (Tour Eiffel edifice),37.2889,-32.275567,1695.0,,SEANOE 10.17882/101838 metadata: Position Latitude 37 deg 17.334 N Longitude 32 deg 16.534 W (converted to decimal, W negative); depth 1695 m

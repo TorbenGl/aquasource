@@ -1,0 +1,38 @@
+{
+  "_note": "Extracted by hand from the SEANOE landing pages (fetched 2026-10-08 via doi.org redirect). Metadata only.",
+  "records": [
+    {
+      "doi": "10.17882/101838",
+      "landing": "https://www.seanoe.org/data/00906/101838/",
+      "title": "SMOOVE, video data from EMSO-Azores observatory, 2023-2024",
+      "date_published": "2024-09",
+      "temporal_extent": "2023-07-26 - 2024-08-07",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "videos_count": 55,
+      "size_label": "56 Go",
+      "tar": "https://www.seanoe.org/data/00906/101838/data/112940.tar",
+      "lat": 37.2889,
+      "lon": -32.275567,
+      "depth_m": 1695,
+      "first_member_real_header": {
+        "name": "SMOOVE-23-07-26_09-59-24-00.mkv",
+        "size": 1219167490,
+        "data_offset": 512,
+        "typeflag": "0",
+        "magic": "ustar  (GNU-style, read with Range 0-2047)",
+        "fetched": "2026-10-08"
+      }
+    },
+    {
+      "doi": "10.17882/101828",
+      "landing": "https://www.seanoe.org/data/00906/101828/",
+      "title": "SMOOVE, video data from EMSO-Azores observatory, 2021-2022",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "size_label": "34 Go",
+      "tar": [
+        "https://www.seanoe.org/data/00906/101828/data/112943.tar",
+        "https://www.seanoe.org/data/00906/101828/data/112944.tar"
+      ]
+    }
+  ]
+}
