@@ -11,7 +11,8 @@
   - The CKAN record gives only `uk-ogl` (no version); treated as OGL (tier B). The OGL v3 text is seen only on the Haig Fras ISO record.
   - Station text files carry frame timestamps (YYYYMMDDHHMMSS); not parsed yet, so timestamp is null.
   - The script forces `--min-geo-precision region` for this dataset. That is a policy choice for the whole run.
-- needs_opus: yes, because region-level geo is a bbox centre (not a station or image position) and the checker has to decide whether that counts as an acceptable publication-derived coordinate.
+- checked by Sonnet 2026-10-08: OGL (uk-ogl) confirmed on CKAN, tests pass, sample 3 JPEG + samples.jsonl OK; bbox-centre region geo (lat 50.607, lon 1.038, inferred, 9.9 km) is correctly labelled, not swapped, acceptable as noisy region-level.
+- needs_opus: no (was yes), because region-level geo is a bbox centre (not a station or image position) and the checker has to decide whether that counts as an acceptable publication-derived coordinate.
 
 ---
 
