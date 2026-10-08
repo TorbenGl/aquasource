@@ -1,0 +1,51 @@
+[
+ {
+  "name": "Creative Commons Attribution 4.0 International",
+  "selectableForAnnotations": true,
+  "selectableForImages": true,
+  "spdxId": "CC-BY-4.0",
+  "url": "https://creativecommons.org/licenses/by/4.0/legalcode"
+ },
+ {
+  "name": "Creative Commons Attribution Non Commercial 4.0 International",
+  "selectableForAnnotations": true,
+  "selectableForImages": true,
+  "spdxId": "CC-BY-NC-4.0",
+  "url": "https://creativecommons.org/licenses/by-nc/4.0/legalcode"
+ },
+ {
+  "name": "Creative Commons Attribution Non Commercial No Derivatives 4.0 International",
+  "selectableForAnnotations": false,
+  "selectableForImages": true,
+  "spdxId": "CC-BY-NC-ND-4.0",
+  "url": "https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode"
+ },
+ {
+  "name": "Creative Commons Attribution Share Alike 4.0 International",
+  "selectableForAnnotations": true,
+  "selectableForImages": true,
+  "spdxId": "CC-BY-SA-4.0",
+  "url": "https://creativecommons.org/licenses/by-sa/4.0/legalcode"
+ },
+ {
+  "name": "Creative Commons Zero v1.0 Universal",
+  "selectableForAnnotations": true,
+  "selectableForImages": true,
+  "spdxId": "CC0-1.0",
+  "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
+ },
+ {
+  "name": "JPL Image Use Policy",
+  "selectableForAnnotations": false,
+  "selectableForImages": true,
+  "spdxId": "JPL-image",
+  "url": "https://www.jpl.nasa.gov/jpl-image-use-policy"
+ },
+ {
+  "name": "NIST Public Domain Notice",
+  "selectableForAnnotations": true,
+  "selectableForImages": true,
+  "spdxId": "NIST-PD",
+  "url": "https://github.com/tcheneau/simpleRPL/blob/e645e69e38dd4e3ccfeceb2db8cba05b7c2e0cd3/LICENSE.txt"
+ }
+]

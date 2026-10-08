@@ -1,0 +1,57 @@
+# Text extracted (HTML tags stripped) from https://www.fathomnet.org/terms (page says "Last updated: 2025-01-12"); excerpts only
+Contributing Visual Content to FathomNet Database –
+For submission of Visual Content to FathomNet Database, we allow contributors to select from one of four Creative Commons licenses:
+CC0
+,
+CC-BY
+,
+CC-BY-NC
+, and
+CC-BY-NC-ND
+.  Notwithstanding any contrary provisions of any license you select, you acknowledge and agree that all Visual Content submitted to the FathomNet Database may be used for the training and development of machine learning algorithms.
+Using FathomNet Database Visual Content
+– Visual Content is made available in the Database via a list of URLs or direct downloads for online search and annotation, and are used only as training data for developing machine learning algorithms.  Any Visual Content that is accessible by you in the Database (other than Visual Content that you own) is being made available under a Creative Commons license selected by the owner who contributed the Visual Content.  All such Visual Content is and remains the copyrighted work of its owner, who expressly retains all right, title, and interest in and to its Visual Content, including, without limitation, all intellectual property rights therein and thereto.
+
+Account Registration
+You must register for and set up an account in order to access and use the Database and Portal, contribute Visual Content, and/or create Annotation Data.  You may not use anyone else’s account at any time, and you may not allow others to use your account to access FathomNet.   You may close your account and cease using FathomNet at any time.
+
+# --- https://www.fathomnet.org/datause ---
+Contributors of visual content to the FathomNet Database and FathomVerse agree to the FathomNet Terms of Use
+www.fathomnet.org/terms
+or FathomVerse Terms of Use
+www.fathomverse.game/terms
+, and contributors will select from one of the following Creative Commons licenses when sharing visual content outside of the Portal:
+CC0
+,
+CC-BY
+,
+CC-BY-NC
+, or
+CC-BY-NC-ND
+. Contributors submitting their visual content to FathomVerse ID may do so following the FathomVerse ID Terms of Use
+www.fathomverse.game/terms-id
+, and contributors must select the
+CC-BY
+license for these submissions. Contributors of visual content to the FathomNet Database, FathomVerse, and FathomVerse ID should be aware that their data may be shared with appropriate watermark and attribution outside of the FathomVerse app using native, in-app sharing functionality (as described in the FathomVerse Terms of Use
+www.fathomverse.game/terms
+). Visual content and metadata submitted to FathomVerse and FathomVerse ID will also be shared with the FathomNet Database once enriched with annotation data. Visual content in the FathomNet Database that is licensed as CC-BY may eventually be archived by third parties (such as NOAA-NCEI), and imagery with the same license hosted on FathomNet-maintained URLs may be transferred and hosted by third parties such as NOAA-NCEI. Visual content in the Database is intended to be solely used for training and development of machine learning algorithms; it is not intended to be used as an occurrence dataset.
+
+Acknowledgements
+- Anyone using FathomNet for a publication or project acknowledges FathomNet (e.g., include references to our
+publications
+). If you are sharing your work via a presentation or poster, please include a FathomNet
+logo
+on your materials.
+Enrichments
+- The user contributes back to the FathomNet community by creating how-to videos or workflows that are posted on
+FathomNet’s website
+or
+YouTube
+channels, posting trained models on
+FathomNet Models
+, promoting or participating in FathomVerse engagement activities, contributing training data, and/or providing subject-matter expertise to validate submitted data for the purpose of growing the ecosystem.
+Benevolent Use
+- The data is to be used in ways that are consistent with the
+United Nations Sustainable Development Goals
+.
+

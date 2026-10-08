@@ -1,0 +1,74 @@
+[
+ {
+  "contributorsEmail": "scott.brown@noaa.gov",
+  "depthMeters": 63.7,
+  "imageLicense": "CC0-1.0",
+  "lastValidation": "2026-02-16T08:33:15.734943Z",
+  "latitude": 29.4648,
+  "longitude": -87.6247,
+  "timestamp": null,
+  "url": "https://storage.googleapis.com/nmfs_odp_hq/nodd_tools/datasets/gfisher/761901231_Cam5/761901231_Cam5.mp4.00.00.02.400000.jpg",
+  "uuid": "dcbfc174-fcd9-428d-b0a6-d2d4e9bcfba4",
+  "valid": true
+ },
+ {
+  "contributorsEmail": "scott.brown@noaa.gov",
+  "depthMeters": 87.4,
+  "imageLicense": "CC0-1.0",
+  "lastValidation": "2026-02-11T08:11:51.619718Z",
+  "latitude": 28.081,
+  "longitude": -92.0223,
+  "timestamp": null,
+  "url": "https://storage.googleapis.com/nmfs_odp_hq/nodd_tools/datasets/gfisher/SC2-camera3_03-14-21_19-57-25.000/SC2-camera3_03-14-21_19-57-25.000.avi.00.18.10.000000.jpg",
+  "uuid": "b30b9012-5732-4137-8597-9ff0f5bf059b",
+  "valid": true
+ },
+ {
+  "contributorsEmail": "scott.brown@noaa.gov",
+  "depthMeters": 79.0,
+  "imageLicense": "CC0-1.0",
+  "lastValidation": "2026-02-11T08:42:35.226046Z",
+  "latitude": 28.6365,
+  "longitude": -89.5522,
+  "timestamp": "2021-03-12T15:17:04.200Z",
+  "url": "https://storage.googleapis.com/nmfs_odp_hq/nodd_tools/datasets/gfisher/SC2-camera2_03-12-21_15-09-59.000/SC2-camera2_03-12-21_15-09-59.000.avi.00.07.05.200000.jpg",
+  "uuid": "61a0f397-c6c7-4cf0-843a-a65740db1123",
+  "valid": true
+ },
+ {
+  "contributorsEmail": "scott.brown@noaa.gov",
+  "depthMeters": 79.0,
+  "imageLicense": "CC0-1.0",
+  "lastValidation": "2026-02-11T08:44:34.353990Z",
+  "latitude": 28.6365,
+  "longitude": -89.5522,
+  "timestamp": "2021-03-12T15:17:04.400Z",
+  "url": "https://storage.googleapis.com/nmfs_odp_hq/nodd_tools/datasets/gfisher/SC2-camera2_03-12-21_15-09-59.000/SC2-camera2_03-12-21_15-09-59.000.avi.00.07.05.400000.jpg",
+  "uuid": "24832f37-b416-4fba-9825-19996198d58d",
+  "valid": true
+ },
+ {
+  "contributorsEmail": "brian@mbari.org",
+  "depthMeters": null,
+  "imageLicense": "CC-BY-4.0",
+  "lastValidation": "2025-12-11T08:00:24.348306Z",
+  "latitude": 37.469,
+  "longitude": 130.828,
+  "timestamp": null,
+  "url": "https://oer.hpc.msstate.edu/FathomNet/staging/FN251128095328/FN251128095328_DSC_4383.JPG",
+  "uuid": "ead1a05d-9b75-491d-b902-57da6bbeaa2c",
+  "valid": true
+ },
+ {
+  "contributorsEmail": "brian@mbari.org",
+  "depthMeters": null,
+  "imageLicense": "CC-BY-4.0",
+  "lastValidation": "2025-12-11T08:00:24.028329Z",
+  "latitude": 37.469,
+  "longitude": 130.828,
+  "timestamp": null,
+  "url": "https://oer.hpc.msstate.edu/FathomNet/staging/FN251128095328/FN251128095328_DSC_4450.JPG",
+  "uuid": "e2dfa963-d7aa-42e7-a42f-288753edbc38",
+  "valid": true
+ }
+]
