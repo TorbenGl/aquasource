@@ -1,0 +1,115 @@
+{
+  "num_results": 8196,
+  "objects": [
+    {
+      "alt": 2.38,
+      "campaign": {
+        "id": 4,
+        "key": "Batemans201211",
+        "name": "Batemans201211"
+      },
+      "color": "#361014",
+      "data": {
+        "backscatter_rat": 0.000312,
+        "chlorophyll_conc": 0.927,
+        "cluster_tag": 3.0,
+        "salinity": 35.425143,
+        "temperature": 16.57
+      },
+      "dep": 18.094441,
+      "deployment": {
+        "id": 22,
+        "key": "r20121128_195806_Burrewarra_BU_DG3_05_dense",
+        "name": "Burrewarra_BU_DG3_05_dense"
+      },
+      "events": [],
+      "id": 154081,
+      "lat": -35.82695625,
+      "lon": 150.2332375,
+      "media": {
+        "id": 154081,
+        "key": "PR_20121128_200011_588_LC16",
+        "path_best_thm": "https://s3-ap-southeast-2.amazonaws.com/imos-data/IMOS/AUV/auv_viewer_data/images/Batemans201211/r20121128_195806_Burrewarra_BU_DG3_05_dense/thumbnails/PR_20121128_200011_588_LC16.jpg",
+        "timestamp_start": "2012-11-28T20:00:11"
+      },
+      "platform": {
+        "id": 1,
+        "key": "IMOS AUV Sirius",
+        "name": "IMOS AUV Sirius"
+      },
+      "timestamp": "2012-11-28T20:00:11"
+    },
+    {
+      "alt": 2.38,
+      "campaign": {
+        "id": 4,
+        "key": "Batemans201211",
+        "name": "Batemans201211"
+      },
+      "color": "#361014",
+      "data": {},
+      "dep": 18.094441,
+      "deployment": {
+        "id": 22,
+        "key": "r20121128_195806_Burrewarra_BU_DG3_05_dense",
+        "name": "Burrewarra_BU_DG3_05_dense"
+      },
+      "events": [],
+      "id": 11082415,
+      "lat": -35.82695625,
+      "lon": 150.2332375,
+      "media": {
+        "id": 10413856,
+        "key": "r20121128_195806_Burrewarra_BU_DG3_05_dense",
+        "path_best_thm": "https://squidle.org/api/media/10413856/thumbnail?size=400",
+        "timestamp_start": "2012-11-28T20:00:11"
+      },
+      "platform": {
+        "id": 1,
+        "key": "IMOS AUV Sirius",
+        "name": "IMOS AUV Sirius"
+      },
+      "timestamp": "2012-11-28T20:00:11"
+    },
+    {
+      "alt": 2.093,
+      "campaign": {
+        "id": 4,
+        "key": "Batemans201211",
+        "name": "Batemans201211"
+      },
+      "color": "#361014",
+      "data": {
+        "backscatter_rat": 0.000202,
+        "chlorophyll_conc": 0.876,
+        "cluster_tag": 1.0,
+        "salinity": 35.173753999999995,
+        "temperature": 16.885
+      },
+      "dep": 18.042819,
+      "deployment": {
+        "id": 22,
+        "key": "r20121128_195806_Burrewarra_BU_DG3_05_dense",
+        "name": "Burrewarra_BU_DG3_05_dense"
+      },
+      "events": [],
+      "id": 154082,
+      "lat": -35.82695764,
+      "lon": 150.23323611,
+      "media": {
+        "id": 154082,
+        "key": "PR_20121128_200012_589_LC16",
+        "path_best_thm": "https://s3-ap-southeast-2.amazonaws.com/imos-data/IMOS/AUV/auv_viewer_data/images/Batemans201211/r20121128_195806_Burrewarra_BU_DG3_05_dense/thumbnails/PR_20121128_200012_589_LC16.jpg",
+        "timestamp_start": "2012-11-28T20:00:12"
+      },
+      "platform": {
+        "id": 1,
+        "key": "IMOS AUV Sirius",
+        "name": "IMOS AUV Sirius"
+      },
+      "timestamp": "2012-11-28T20:00:12"
+    }
+  ],
+  "page": 1,
+  "total_pages": 2732
+}

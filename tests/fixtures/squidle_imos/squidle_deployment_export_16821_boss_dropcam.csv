@@ -1,0 +1,6 @@
+,path_best,timestamp_start,key,id,pose.lon,pose.lat,pose.dep,deployment.key,deployment.campaign.key,media_type.name
+0,https://data.imas.utas.edu.au/imagery/UWA/UWA_BOSS/202211_Investigator/INV_DC_001//full_res/INV_DC_001_east.jpg,2022-11-27 15:21:00,INV_DC_001_east,8642570,120.9335453,-34.16379179,77.0,INV_DC_001,202211_Investigator,image
+1,https://data.imas.utas.edu.au/imagery/UWA/UWA_BOSS/202211_Investigator/INV_DC_001//full_res/INV_DC_001_north.jpg,2022-11-27 15:21:00,INV_DC_001_north,8642571,120.9335453,-34.16379179,77.0,INV_DC_001,202211_Investigator,image
+2,https://data.imas.utas.edu.au/imagery/UWA/UWA_BOSS/202211_Investigator/INV_DC_001//full_res/INV_DC_001_south.jpg,2022-11-27 15:21:00,INV_DC_001_south,8642572,120.9335453,-34.16379179,77.0,INV_DC_001,202211_Investigator,image
+3,https://data.imas.utas.edu.au/imagery/UWA/UWA_BOSS/202211_Investigator/INV_DC_001//full_res/INV_DC_001_west.jpg,2022-11-27 15:21:00,INV_DC_001_west,8642573,120.9335453,-34.16379179,77.0,INV_DC_001,202211_Investigator,image
+

@@ -1,0 +1,119 @@
+{
+  "num_results": 10860,
+  "objects": [
+    {
+      "alt": 1.72,
+      "campaign": {
+        "id": 540,
+        "key": "WA202103",
+        "name": "WA202103"
+      },
+      "color": "#0bddb3",
+      "data": {
+        "backscater": 0.0022559999999999998,
+        "chlorophyll": 0.813,
+        "cluster_tag": 0.0,
+        "colored_dissolved_organic_matter": 0.301,
+        "dep": 45.753168,
+        "salinity": 34.87184787486468,
+        "temp": 24.579
+      },
+      "dep": 47.473168,
+      "deployment": {
+        "id": 11646,
+        "key": "r20210315_230947_SS13_coralpatches_40m_out",
+        "name": "r20210315_230947_SS13_coralpatches_40m_out"
+      },
+      "events": [],
+      "id": 6664723,
+      "lat": -28.847136499999998,
+      "lon": 114.04728,
+      "media": {
+        "id": 6691949,
+        "key": "PR_20210315_231424_786_LC16",
+        "path_best_thm": "https://s3-ap-southeast-2.amazonaws.com/imos-data/IMOS/AUV/auv_viewer_data/images/WA202103/r20210315_230947_SS13_coralpatches_40m_out/thumbnails/PR_20210315_231424_786_LC16.jpg",
+        "timestamp_start": "2021-03-15T23:14:24"
+      },
+      "platform": {
+        "id": 1,
+        "key": "IMOS AUV Sirius",
+        "name": "IMOS AUV Sirius"
+      },
+      "timestamp": "2021-03-15T23:14:24"
+    },
+    {
+      "alt": 1.72,
+      "campaign": {
+        "id": 540,
+        "key": "WA202103",
+        "name": "WA202103"
+      },
+      "color": "#0bddb3",
+      "data": {},
+      "dep": 47.473168,
+      "deployment": {
+        "id": 11646,
+        "key": "r20210315_230947_SS13_coralpatches_40m_out",
+        "name": "r20210315_230947_SS13_coralpatches_40m_out"
+      },
+      "events": [],
+      "id": 11082922,
+      "lat": -28.847136499999998,
+      "lon": 114.04728,
+      "media": {
+        "id": 10414363,
+        "key": "r20210315_230947_SS13_coralpatches_40m_out",
+        "path_best_thm": "https://squidle.org/api/media/10414363/thumbnail?size=400",
+        "timestamp_start": "2021-03-15T23:14:24"
+      },
+      "platform": {
+        "id": 1,
+        "key": "IMOS AUV Sirius",
+        "name": "IMOS AUV Sirius"
+      },
+      "timestamp": "2021-03-15T23:14:24"
+    },
+    {
+      "alt": 1.775,
+      "campaign": {
+        "id": 540,
+        "key": "WA202103",
+        "name": "WA202103"
+      },
+      "color": "#0bddb3",
+      "data": {
+        "backscater": 0.0022559999999999998,
+        "chlorophyll": 0.813,
+        "cluster_tag": 0.0,
+        "colored_dissolved_organic_matter": 0.301,
+        "dep": 45.7045348,
+        "salinity": 34.85720483422741,
+        "temp": 24.569000000000003
+      },
+      "dep": 47.4795348,
+      "deployment": {
+        "id": 11646,
+        "key": "r20210315_230947_SS13_coralpatches_40m_out",
+        "name": "r20210315_230947_SS13_coralpatches_40m_out"
+      },
+      "events": [],
+      "id": 6664724,
+      "lat": -28.8471381,
+      "lon": 114.0472806,
+      "media": {
+        "id": 6691950,
+        "key": "PR_20210315_231425_453_LC16",
+        "path_best_thm": "https://s3-ap-southeast-2.amazonaws.com/imos-data/IMOS/AUV/auv_viewer_data/images/WA202103/r20210315_230947_SS13_coralpatches_40m_out/thumbnails/PR_20210315_231425_453_LC16.jpg",
+        "timestamp_start": "2021-03-15T23:14:25"
+      },
+      "platform": {
+        "id": 1,
+        "key": "IMOS AUV Sirius",
+        "name": "IMOS AUV Sirius"
+      },
+      "timestamp": "2021-03-15T23:14:25"
+    }
+  ],
+  "page": 1,
+  "total_pages": 3620
+}
