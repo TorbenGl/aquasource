@@ -1,3 +1,17 @@
+## HANDOFF
+- status: ok
+- tier + licence: A, CC0 1.0 (record level: https://catalog.data.gov/dataset/habitat-mapping-camera-habcam, from NOAA InPort 27598); nav CC0/PDM (R2R bag-info)
+- geo: segment, R2R `*_bestres.geoCSV` ship_latitude/ship_longitude interpolated at filename UTC time (inferred, 300 m)
+- files: src/aquasource/adapters/noaa_habcam.py / scripts/download/noaa_habcam.sh / tests/test_noaa_habcam.py / no sites csv
+- tests: pass (14)
+- sample: 3 PNG files downloaded OK, samples.jsonl written (cold cache 3 min with --opt list_pages=4; full listing adds ~3 min once)
+- doubts:
+  - Licence contradiction: data.gov says CC0, NOAA ISO XML says useConstraints otherRestrictions, access non-public; VIAME copy states no licence.
+  - Geo is ship GPS at filename time (UTC assumed statistically), not vehicle position; 300 m uncertainty is an assumption.
+  - CFF 2017-2019 subsets (8 k, tier U) not yielded.
+  - Girder item/download Range not honoured; adapter downloads whole PNGs (5 MB).
+- needs_opus: yes - CC0 (data.gov) vs non-public/otherRestrictions (ISO XML) licence contradiction for tier A call
+
 # NOAA HabCam (NEFSC) (`noaa_habcam`)
 Status: researched · researched 2026-10-06
 
@@ -98,28 +112,7 @@ Verdict: ingest the 2015 NEFSC subset (tier A, segment). Keep the CFF folders ou
   - Images by day: 05-17…05-25 (57.0 k in metadata.txt) → HRS1506; 05-27…06-09 (17.6 k) → HRS1507; 06-12…06-21 (29.6 k) → HRS1508.
 
 ### resolve_geo recipe
-Input: one Girder item record (`name`, `folderId`, `_id`, `size`), as in `tests/fixtures/noaa_habcam/viame_items_page.json`, and optionally its `metadata.txt` row.
-1. Match `name` against `^(\d{6})\.(\d{8})\.(\d{9})\.(\d+)\.(png|tif)$`. If it does not match, return `lat=lon=depth_m=None, geo_precision="none", geo_source="none", geo_inferred=False, geo_uncertainty_m=None`.
-2. Build `t = datetime.strptime(date+hhmmss, "%Y%m%d%H%M%S").replace(tzinfo=UTC) + milliseconds(mmm)`.
-3. If `folderId` is one of the CFF dataset folders (`5eb371608d01d968cc1642dd`, `5eb372788d01d968cc165ced`, `5eb375298d01d968cc168607`, `5eb376888d01d968cc16aadd`), or the name's cruise code is not `201503`, return:
-   - `lat=lon=None, depth_m=None, geo_precision="region"`
-   - `geo_source="VIAME folder US_NE_<year>_CFF_HABCAM (US Northeast shelf scallop grounds); no public per-image navigation"`
-   - `geo_inferred=True, geo_uncertainty_m=None`
-   - Optionally store `region_bbox=[-75.25,37.0,-66.0,42.1]` from InPort 27598 in the sample metadata, not as lat/lon.
-4. Otherwise (2015 NEFSC), pick the cruise whose window from the table above contains `t`. If none does, return the "none" result from step 1 with `geo_source="no R2R nav window for timestamp"`.
-5. Load and cache that cruise's `_bestres.geoCSV`. For every line:
-   - Skip it if it is the `iso_time,` column line, or if it starts with `#` followed by a letter (`#dataset`, `#title`, …).
-   - If it starts with `#` followed by a digit, strip the `#` and set `flagged=True`.
-   - Split on `,`, parse `iso_time` (`%Y-%m-%dT%H:%M:%SZ`, UTC), `ship_longitude` and `ship_latitude`. Skip `NAN`.
-   - Keep one fix per second, preferring unflagged. Sort by time.
-6. Find fixes `a` (time ≤ t) and `b` (time > t). If either is missing, or `b.t − a.t > 10 s`, or the implied speed between a and b exceeds 8 m/s, return `lat=lon=None, geo_precision="none", geo_source="R2R nav gap"`, `geo_inferred=False`, `geo_uncertainty_m=None`.
-7. Set `f = (t − a.t)/(b.t − a.t)`, `lat = a.lat + f·(b.lat − a.lat)`, `lon = a.lon + f·(b.lon − a.lon)`, and round to 6 dp.
-8. Return:
-   - `lat, lon`, `depth_m=None`, `geo_precision="segment"`
-   - `geo_source="R2R r2rnav <cruise>_bestres.geoCSV ship_latitude/ship_longitude interpolated at filename UTC time (NCEI <accession>)"`
-   - `geo_inferred=True`, `geo_uncertainty_m=300`
-   - Also store `nav_flagged = a.flagged or b.flagged`, plus `altitude_m` from the metadata.txt `Altitude` column if the row exists, so that `Altitude` is never misread as depth.
-9. The fixture's expected outputs are listed in `tests/fixtures/noaa_habcam/SOURCE.md`. For example, `201503.20150517.160624359.187700.png` → 37.687949, −74.641700, and the flagged-hour image `…103817616.70150` → 37.909550, −74.449934.
+Implemented in `adapters/noaa_habcam.py` (`resolve_geo`, `parse_bestres`): filename UTC time -> leg window -> bracketing 1-s R2R fixes (gap <= 10 s, speed <= 8 m/s) -> linear interpolation, segment, inferred, 300 m, depth null; flagged (`#`) fixes kept with `extra.nav_flagged`. CFF folders are not yielded. Nav files are read with HTTP range windows for the first 150 lookups per leg, then downloaded whole (45-50 MB each).
 
 ## Access & download recipe
 - Enumeration (endpoints / listings / pagination), auth, rate limits
@@ -151,14 +144,8 @@ None are required for the public 2015 subset. Optional:
 - To use the CFF 2017–2019 subsets, ask Coonamessett Farm Foundation or Kitware (viame-web@kitware.com) for a licence statement and any navigation logs.
 
 ## Fixtures
-- tests/fixtures/noaa_habcam/viame_items_page.json: Girder item-listing page (3 items) of the 2015 NEFSC folder, exactly as served.
-- tests/fixtures/noaa_habcam/metadata_txt_excerpt.csv: header + 4 rows of the 2015 `metadata.txt` (CRLF kept). It shows that there is no lat/lon and that `Altitude` is height above the bottom.
-- tests/fixtures/noaa_habcam/HRS1506_bestres_excerpt.geoCSV: R2R 1-s navigation header plus 9 unflagged rows around the three fixture images and 4 `#`-flagged rows around a 10:38Z image, from byte ranges of the NCEI file.
-- tests/fixtures/noaa_habcam/r2rnav_bag-info_HRS1506.txt: R2R bag-info containing `R2R-License: Creative Commons - Public Domain Mark 1.0` (licence evidence for the geo source).
-- tests/fixtures/noaa_habcam/cff2017_items_page.json: 2-item listing of the CFF 2017 `Left` folder, for the region/tier-U branch.
-- tests/fixtures/noaa_habcam/SOURCE.md: URLs, retrieval date, trimming and expected `resolve_geo` outputs.
+tests/fixtures/noaa_habcam/ (items page, metadata excerpt, bestres excerpt, bag-info licence evidence, CFF page, SOURCE.md with expected outputs).
 
-## Short download instruction
 1. List the 2015 NEFSC PNGs: `GET https://viame.kitware.com/api/v1/item?folderId=5e4eed5478ed364cd0f98b40&limit=1000&offset=k&sort=name` (119,461 PNG, 651 GB, no auth).
 2. Download the sampled items via `/api/v1/item/{_id}/download`. Drop files under 500 KB and keep the left 1360 px of each 2720×1024 stereo pair.
 3. Fetch the R2R 1-s nav `HRS1506/1507/1508_bestres.geoCSV` from NCEI accessions 0260576, 0206224 and 0206225. Parse the `#`-flagged rows too, then sort.
