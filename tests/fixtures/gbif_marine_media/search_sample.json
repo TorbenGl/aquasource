@@ -1,0 +1,844 @@
+{
+ "note": "3 real GBIF occurrence search records (api.gbif.org/v1/occurrence/search?mediaType=StillImage&hasCoordinate=true&hasGeospatialIssue=false&depth=0,200&limit=300, fetched 2026-10-08). Trimmed to the 3 records named in SOURCE.md; otherwise verbatim.",
+ "count": 3,
+ "endOfRecords": true,
+ "results": [
+  {
+   "key": 6148296146,
+   "datasetKey": "b124e1e0-4755-430f-9eab-894f25a9b59c",
+   "publishingOrgKey": "d3978a37-635a-4ae3-bb85-7b4d41bc0b88",
+   "datasetCategory": [
+    "CitizenScience"
+   ],
+   "installationKey": "7bdf9f6d-317a-45ec-8bb7-7ff61345d6a6",
+   "hostingOrganizationKey": "d3978a37-635a-4ae3-bb85-7b4d41bc0b88",
+   "publishingCountry": "NO",
+   "protocol": "EML",
+   "lastCrawled": "2026-10-04T03:23:22.242+00:00",
+   "lastParsed": "2026-10-04T04:10:42.938+00:00",
+   "crawlId": 498,
+   "extensions": {
+    "http://rs.gbif.org/terms/1.0/Multimedia": [
+     {
+      "http://purl.org/dc/terms/license": "CC BY 4.0",
+      "http://purl.org/dc/terms/format": "image/jpeg",
+      "http://purl.org/dc/terms/identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/14b3f21c-b9c0-4545-9a66-3a0db6311a8d_image.jpeg",
+      "http://purl.org/dc/terms/rightsHolder": "Anita Helgeland",
+      "http://purl.org/dc/terms/type": "Image"
+     }
+    ]
+   },
+   "basisOfRecord": "HUMAN_OBSERVATION",
+   "individualCount": 5,
+   "occurrenceStatus": "PRESENT",
+   "classifications": {
+    "7ddf754f-d193-4cc9-b351-99906754a03b": {
+     "usage": {
+      "key": "32ZQ7",
+      "name": "Cygnus cygnus (Linnaeus, 1758)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Linnaeus, 1758)",
+      "genericName": "Cygnus",
+      "specificEpithet": "cygnus",
+      "formattedName": "<i>Cygnus</i> <i>cygnus</i> (Linnaeus, 1758)"
+     },
+     "acceptedUsage": {
+      "key": "32ZQ7",
+      "name": "Cygnus cygnus (Linnaeus, 1758)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Linnaeus, 1758)",
+      "genericName": "Cygnus",
+      "specificEpithet": "cygnus",
+      "formattedName": "<i>Cygnus</i> <i>cygnus</i> (Linnaeus, 1758)"
+     },
+     "taxonomicStatus": "ACCEPTED",
+     "classification": [
+      {
+       "key": "CS5HF",
+       "name": "Eukaryota",
+       "rank": "DOMAIN"
+      },
+      {
+       "key": "N",
+       "name": "Animalia",
+       "rank": "KINGDOM"
+      },
+      {
+       "key": "CH2",
+       "name": "Chordata",
+       "rank": "PHYLUM"
+      },
+      {
+       "key": "8V4V3",
+       "name": "Vertebrata",
+       "rank": "SUBPHYLUM"
+      },
+      {
+       "key": "8V4V5",
+       "name": "Gnathostomata",
+       "rank": "INFRAPHYLUM"
+      },
+      {
+       "key": "8VVWB",
+       "name": "Osteichthyes",
+       "rank": "PARVPHYLUM"
+      },
+      {
+       "key": "9CK8W",
+       "name": "Tetrapoda",
+       "rank": "MEGACLASS"
+      },
+      {
+       "key": "V2",
+       "name": "Aves",
+       "rank": "CLASS"
+      },
+      {
+       "key": "PQ",
+       "name": "Anseriformes",
+       "rank": "ORDER"
+      },
+      {
+       "key": "9H6K5",
+       "name": "Anatidae",
+       "rank": "FAMILY"
+      },
+      {
+       "key": "9H7JC",
+       "name": "Cygnus",
+       "rank": "GENUS"
+      },
+      {
+       "key": "32ZQ7",
+       "name": "Cygnus cygnus",
+       "rank": "SPECIES"
+      }
+     ],
+     "iucnRedListCategoryCode": "LC",
+     "issues": []
+    },
+    "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+     "usage": {
+      "key": "2498347",
+      "name": "Cygnus cygnus (Linnaeus, 1758)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Linnaeus, 1758)",
+      "genericName": "Cygnus",
+      "specificEpithet": "cygnus",
+      "formattedName": "<i>Cygnus</i> <i>cygnus</i> (Linnaeus, 1758)"
+     },
+     "acceptedUsage": {
+      "key": "2498347",
+      "name": "Cygnus cygnus (Linnaeus, 1758)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Linnaeus, 1758)",
+      "genericName": "Cygnus",
+      "specificEpithet": "cygnus",
+      "formattedName": "<i>Cygnus</i> <i>cygnus</i> (Linnaeus, 1758)"
+     },
+     "taxonomicStatus": "ACCEPTED",
+     "classification": [
+      {
+       "key": "1",
+       "name": "Animalia",
+       "rank": "KINGDOM"
+      },
+      {
+       "key": "44",
+       "name": "Chordata",
+       "rank": "PHYLUM"
+      },
+      {
+       "key": "212",
+       "name": "Aves",
+       "rank": "CLASS"
+      },
+      {
+       "key": "1108",
+       "name": "Anseriformes",
+       "rank": "ORDER"
+      },
+      {
+       "key": "2986",
+       "name": "Anatidae",
+       "rank": "FAMILY"
+      },
+      {
+       "key": "8996942",
+       "name": "Cygnus",
+       "rank": "GENUS"
+      },
+      {
+       "key": "2498347",
+       "name": "Cygnus cygnus",
+       "rank": "SPECIES"
+      }
+     ],
+     "iucnRedListCategoryCode": "LC",
+     "issues": []
+    }
+   },
+   "taxonKey": 2498347,
+   "kingdomKey": 1,
+   "phylumKey": 44,
+   "classKey": 212,
+   "orderKey": 1108,
+   "familyKey": 2986,
+   "genusKey": 8996942,
+   "speciesKey": 2498347,
+   "acceptedTaxonKey": 2498347,
+   "scientificName": "Cygnus cygnus (Linnaeus, 1758)",
+   "scientificNameAuthorship": "(Linnaeus, 1758)",
+   "acceptedScientificName": "Cygnus cygnus (Linnaeus, 1758)",
+   "kingdom": "Animalia",
+   "phylum": "Chordata",
+   "order": "Anseriformes",
+   "family": "Anatidae",
+   "genus": "Cygnus",
+   "species": "Cygnus cygnus",
+   "genericName": "Cygnus",
+   "specificEpithet": "cygnus",
+   "taxonRank": "SPECIES",
+   "taxonomicStatus": "ACCEPTED",
+   "iucnRedListCategory": "LC",
+   "decimalLatitude": 59.357116,
+   "decimalLongitude": 5.391509,
+   "coordinateUncertaintyInMeters": 25.0,
+   "depth": 2.0,
+   "depthAccuracy": 1.0,
+   "continent": "EUROPE",
+   "stateProvince": "Rogaland",
+   "gadm": {
+    "level0": {
+     "gid": "NOR",
+     "name": "Norway"
+    },
+    "level1": {
+     "gid": "NOR.13_1",
+     "name": "Rogaland"
+    },
+    "level2": {
+     "gid": "NOR.13.24_1",
+     "name": "Tysvær"
+    }
+   },
+   "year": 2026,
+   "month": 1,
+   "day": 29,
+   "eventDate": "2026-01-29",
+   "startDayOfYear": 29,
+   "endDayOfYear": 29,
+   "issues": [
+    "COORDINATE_ROUNDED",
+    "CONTINENT_DERIVED_FROM_COORDINATES"
+   ],
+   "modified": "2026-01-29T12:39:59.000+00:00",
+   "lastInterpreted": "2026-10-04T04:10:42.938+00:00",
+   "license": "http://creativecommons.org/licenses/by/4.0/legalcode",
+   "isSequenced": false,
+   "identifiers": [
+    {
+     "identifier": "urn:uuid:1164eed4-914f-482e-9db4-955b550ad620"
+    }
+   ],
+   "media": [
+    {
+     "type": "StillImage",
+     "format": "image/jpeg",
+     "license": "http://creativecommons.org/licenses/by/4.0/",
+     "rightsHolder": "Anita Helgeland",
+     "identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/14b3f21c-b9c0-4545-9a66-3a0db6311a8d_image.jpeg"
+    }
+   ],
+   "facts": [],
+   "relations": [],
+   "isInCluster": false,
+   "recordedBy": "Anita Helgeland",
+   "dnaSequenceID": [],
+   "nucleotideSequence": [],
+   "geodeticDatum": "WGS84",
+   "class": "Aves",
+   "countryCode": "NO",
+   "recordedByIDs": [],
+   "identifiedByIDs": [],
+   "gbifRegion": "EUROPE",
+   "country": "Norway",
+   "publishedByGbifRegion": "EUROPE",
+   "identifier": "urn:uuid:1164eed4-914f-482e-9db4-955b550ad620",
+   "http://unknown.org/crawl_attempt": "498",
+   "dynamicProperties": "{\"Activity\":\"Forage\"}",
+   "locality": "Høyevika, Tysvær, Ro",
+   "municipality": "Tysvær",
+   "associatedReferences": "https://mobil.artsobservasjoner.no/sighting/39651793",
+   "http://unknown.org/status": "not_reviewed",
+   "county": "Rogaland",
+   "collectionCode": "so2-birds",
+   "gbifID": "6148296146",
+   "occurrenceID": "urn:uuid:1164eed4-914f-482e-9db4-955b550ad620",
+   "catalogNumber": "39651793",
+   "http://unknown.org/omitFromScheduledCrawl": "true",
+   "institutionCode": "nbic",
+   "locationID": "3261008",
+   "fieldNotes": "Familie - Hann, ho og tre juvenile Activity: Forage.",
+   "behavior": "feeding"
+  },
+  {
+   "key": 6454357462,
+   "datasetKey": "b124e1e0-4755-430f-9eab-894f25a9b59c",
+   "publishingOrgKey": "d3978a37-635a-4ae3-bb85-7b4d41bc0b88",
+   "datasetCategory": [
+    "CitizenScience"
+   ],
+   "installationKey": "7bdf9f6d-317a-45ec-8bb7-7ff61345d6a6",
+   "hostingOrganizationKey": "d3978a37-635a-4ae3-bb85-7b4d41bc0b88",
+   "publishingCountry": "NO",
+   "protocol": "EML",
+   "lastCrawled": "2026-10-04T03:23:22.242+00:00",
+   "lastParsed": "2026-10-04T04:15:25.258+00:00",
+   "crawlId": 498,
+   "extensions": {
+    "http://rs.gbif.org/terms/1.0/Multimedia": [
+     {
+      "http://purl.org/dc/terms/license": "CC BY 4.0",
+      "http://purl.org/dc/terms/format": "image/jpeg",
+      "http://purl.org/dc/terms/identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/0fb674b7-abfd-4360-8884-f3c1d41163aa_image.jpg",
+      "http://purl.org/dc/terms/rightsHolder": "Anne Mari With Ottesen",
+      "http://purl.org/dc/terms/type": "Image"
+     },
+     {
+      "http://purl.org/dc/terms/license": "CC BY 4.0",
+      "http://purl.org/dc/terms/format": "image/jpeg",
+      "http://purl.org/dc/terms/identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/1c735c81-9c5e-42a6-8a07-01a65caf8632_image.jpg",
+      "http://purl.org/dc/terms/rightsHolder": "Anne Mari With Ottesen",
+      "http://purl.org/dc/terms/type": "Image"
+     },
+     {
+      "http://purl.org/dc/terms/license": "CC BY 4.0",
+      "http://purl.org/dc/terms/format": "image/jpeg",
+      "http://purl.org/dc/terms/identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/d5b83897-2b0c-4b52-9425-725a3fb3faeb_image.jpg",
+      "http://purl.org/dc/terms/rightsHolder": "Anne Mari With Ottesen",
+      "http://purl.org/dc/terms/type": "Image"
+     }
+    ]
+   },
+   "basisOfRecord": "HUMAN_OBSERVATION",
+   "occurrenceStatus": "PRESENT",
+   "classifications": {
+    "7ddf754f-d193-4cc9-b351-99906754a03b": {
+     "usage": {
+      "key": "35WW8",
+      "name": "Didemnum vexillum Kott, 2002",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "Kott, 2002",
+      "genericName": "Didemnum",
+      "specificEpithet": "vexillum",
+      "formattedName": "<i>Didemnum</i> <i>vexillum</i> Kott, 2002"
+     },
+     "acceptedUsage": {
+      "key": "35WW8",
+      "name": "Didemnum vexillum Kott, 2002",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "Kott, 2002",
+      "genericName": "Didemnum",
+      "specificEpithet": "vexillum",
+      "formattedName": "<i>Didemnum</i> <i>vexillum</i> Kott, 2002"
+     },
+     "taxonomicStatus": "ACCEPTED",
+     "classification": [
+      {
+       "key": "CS5HF",
+       "name": "Eukaryota",
+       "rank": "DOMAIN"
+      },
+      {
+       "key": "N",
+       "name": "Animalia",
+       "rank": "KINGDOM"
+      },
+      {
+       "key": "CH2",
+       "name": "Chordata",
+       "rank": "PHYLUM"
+      },
+      {
+       "key": "7NF2Z",
+       "name": "Tunicata",
+       "rank": "SUBPHYLUM"
+      },
+      {
+       "key": "B8V3P",
+       "name": "Ascidiacea",
+       "rank": "CLASS"
+      },
+      {
+       "key": "7NFGX",
+       "name": "Aplousobranchia",
+       "rank": "ORDER"
+      },
+      {
+       "key": "7NH7C",
+       "name": "Didemnidae",
+       "rank": "FAMILY"
+      },
+      {
+       "key": "7NWPD",
+       "name": "Didemnum",
+       "rank": "GENUS"
+      },
+      {
+       "key": "35WW8",
+       "name": "Didemnum vexillum",
+       "rank": "SPECIES"
+      }
+     ],
+     "issues": []
+    },
+    "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+     "usage": {
+      "key": "7707408",
+      "name": "Didemnum vexillum Kott, 2002",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "Kott, 2002",
+      "genericName": "Didemnum",
+      "specificEpithet": "vexillum",
+      "formattedName": "<i>Didemnum</i> <i>vexillum</i> Kott, 2002"
+     },
+     "acceptedUsage": {
+      "key": "7707408",
+      "name": "Didemnum vexillum Kott, 2002",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "Kott, 2002",
+      "genericName": "Didemnum",
+      "specificEpithet": "vexillum",
+      "formattedName": "<i>Didemnum</i> <i>vexillum</i> Kott, 2002"
+     },
+     "taxonomicStatus": "ACCEPTED",
+     "classification": [
+      {
+       "key": "1",
+       "name": "Animalia",
+       "rank": "KINGDOM"
+      },
+      {
+       "key": "44",
+       "name": "Chordata",
+       "rank": "PHYLUM"
+      },
+      {
+       "key": "356",
+       "name": "Ascidiacea",
+       "rank": "CLASS"
+      },
+      {
+       "key": "9589977",
+       "name": "Aplousobranchia",
+       "rank": "ORDER"
+      },
+      {
+       "key": "5220",
+       "name": "Didemnidae",
+       "rank": "FAMILY"
+      },
+      {
+       "key": "2329630",
+       "name": "Didemnum",
+       "rank": "GENUS"
+      },
+      {
+       "key": "7707408",
+       "name": "Didemnum vexillum",
+       "rank": "SPECIES"
+      }
+     ],
+     "issues": []
+    }
+   },
+   "taxonKey": 7707408,
+   "kingdomKey": 1,
+   "phylumKey": 44,
+   "classKey": 356,
+   "orderKey": 9589977,
+   "familyKey": 5220,
+   "genusKey": 2329630,
+   "speciesKey": 7707408,
+   "acceptedTaxonKey": 7707408,
+   "scientificName": "Didemnum vexillum Kott, 2002",
+   "scientificNameAuthorship": "Kott, 2002",
+   "acceptedScientificName": "Didemnum vexillum Kott, 2002",
+   "kingdom": "Animalia",
+   "phylum": "Chordata",
+   "order": "Aplousobranchia",
+   "family": "Didemnidae",
+   "genus": "Didemnum",
+   "species": "Didemnum vexillum",
+   "genericName": "Didemnum",
+   "specificEpithet": "vexillum",
+   "taxonRank": "SPECIES",
+   "taxonomicStatus": "ACCEPTED",
+   "decimalLatitude": 59.607369,
+   "decimalLongitude": 5.452343,
+   "coordinateUncertaintyInMeters": 5.0,
+   "depth": 2.0,
+   "depthAccuracy": 0.0,
+   "continent": "EUROPE",
+   "stateProvince": "Vestland",
+   "gadm": {
+    "level0": {
+     "gid": "NOR",
+     "name": "Norway"
+    },
+    "level1": {
+     "gid": "NOR.7_1",
+     "name": "Hordaland"
+    },
+    "level2": {
+     "gid": "NOR.7.29_1",
+     "name": "Sveio"
+    }
+   },
+   "year": 2026,
+   "month": 1,
+   "day": 18,
+   "eventDate": "2026-01-18",
+   "startDayOfYear": 18,
+   "endDayOfYear": 18,
+   "issues": [
+    "COORDINATE_ROUNDED",
+    "CONTINENT_DERIVED_FROM_COORDINATES"
+   ],
+   "modified": "2026-07-25T23:41:42.000+00:00",
+   "lastInterpreted": "2026-10-04T04:15:25.258+00:00",
+   "license": "http://creativecommons.org/licenses/by/4.0/legalcode",
+   "isSequenced": false,
+   "identifiers": [
+    {
+     "identifier": "urn:uuid:c7032a9e-0d49-40e8-9d1c-953ce8f662f8"
+    }
+   ],
+   "media": [
+    {
+     "type": "StillImage",
+     "format": "image/jpeg",
+     "license": "http://creativecommons.org/licenses/by/4.0/",
+     "rightsHolder": "Anne Mari With Ottesen",
+     "identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/0fb674b7-abfd-4360-8884-f3c1d41163aa_image.jpg"
+    },
+    {
+     "type": "StillImage",
+     "format": "image/jpeg",
+     "license": "http://creativecommons.org/licenses/by/4.0/",
+     "rightsHolder": "Anne Mari With Ottesen",
+     "identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/1c735c81-9c5e-42a6-8a07-01a65caf8632_image.jpg"
+    },
+    {
+     "type": "StillImage",
+     "format": "image/jpeg",
+     "license": "http://creativecommons.org/licenses/by/4.0/",
+     "rightsHolder": "Anne Mari With Ottesen",
+     "identifier": "https://www.artsobservasjoner.no/MediaLibrary/2026/1/d5b83897-2b0c-4b52-9425-725a3fb3faeb_image.jpg"
+    }
+   ],
+   "facts": [],
+   "relations": [],
+   "isInCluster": false,
+   "recordedBy": "Anne Mari With Ottesen",
+   "identifiedBy": "Vivian , Husa",
+   "dnaSequenceID": [],
+   "nucleotideSequence": [],
+   "geodeticDatum": "WGS84",
+   "class": "Ascidiacea",
+   "countryCode": "NO",
+   "recordedByIDs": [],
+   "identifiedByIDs": [],
+   "gbifRegion": "EUROPE",
+   "country": "Norway",
+   "publishedByGbifRegion": "EUROPE",
+   "identifier": "urn:uuid:c7032a9e-0d49-40e8-9d1c-953ce8f662f8",
+   "http://unknown.org/crawl_attempt": "498",
+   "locality": "Islandsberget, båthavn, Sveio, Ve",
+   "municipality": "Sveio",
+   "associatedReferences": "https://mobil.artsobservasjoner.no/sighting/39596864",
+   "http://unknown.org/status": "not_reviewed",
+   "county": "Vestland",
+   "collectionCode": "so2-bugs",
+   "gbifID": "6454357462",
+   "occurrenceID": "urn:uuid:c7032a9e-0d49-40e8-9d1c-953ce8f662f8",
+   "catalogNumber": "39596864",
+   "http://unknown.org/omitFromScheduledCrawl": "true",
+   "institutionCode": "nbic",
+   "locationID": "3255714",
+   "fieldNotes": "Fant flere små kolonier på bryggetau på alle 4 bryggene.",
+   "eventTime": "15.0"
+  },
+  {
+   "key": 6406420337,
+   "datasetKey": "417f4d21-959b-4773-90a2-c38d1822d873",
+   "publishingOrgKey": "1c8732e1-36b1-4a7c-978e-f69542768ec3",
+   "networkKeys": [
+    "68e8e67a-43e6-44a3-8817-dc0e6b70f973",
+    "8e30b684-6a54-4aba-aa73-66201c2c736e",
+    "2b7c7b4f-4d4f-40d3-94de-c28b6fa054a6"
+   ],
+   "installationKey": "394c0f8e-8b5e-4fbc-b942-568a4a267032",
+   "hostingOrganizationKey": "c3ad790a-d426-4ac1-8e32-da61f81f0117",
+   "publishingCountry": "US",
+   "protocol": "EML",
+   "lastCrawled": "2026-09-22T09:32:19.771+00:00",
+   "lastParsed": "2026-09-22T09:34:54.543+00:00",
+   "crawlId": 478,
+   "projectId": "IMLS MA 05-12-0450-12, IMLS MA 30-15-0276-15, IMLS MA-30-18-0438-18, NSF 2001528 ",
+   "extensions": {
+    "http://rs.tdwg.org/ac/terms/Multimedia": [
+     {
+      "http://purl.org/dc/elements/1.1/rights": "CC BY-NC 4.0",
+      "http://purl.org/dc/terms/rights": "https://creativecommons.org/licenses/by-nc/4.0/legalcode",
+      "http://purl.org/dc/elements/1.1/format": "image/jpeg",
+      "http://purl.org/dc/elements/1.1/type": "StillImage",
+      "http://purl.org/dc/terms/identifier": "7d0e0609-b086-441b-b63a-3ef69e3590ec",
+      "http://rs.tdwg.org/ac/terms/accessURI": "https://assets1.specifycloud.org/static/shellmuseum/originals/f565ba30-7717-45d3-9fed-1a82c62ad871.jpg",
+      "http://ns.adobe.com/xap/1.0/rights/Owner": "National Shell Museum",
+      "http://purl.org/dc/terms/type": "http://purl.org/dc/dcmitype/StillImage"
+     }
+    ]
+   },
+   "basisOfRecord": "PRESERVED_SPECIMEN",
+   "occurrenceStatus": "PRESENT",
+   "classifications": {
+    "7ddf754f-d193-4cc9-b351-99906754a03b": {
+     "usage": {
+      "key": "7QP7V",
+      "name": "Cinctura tortugana (Hollister, 1957)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Hollister, 1957)",
+      "genericName": "Cinctura",
+      "specificEpithet": "tortugana",
+      "formattedName": "<i>Cinctura</i> <i>tortugana</i> (Hollister, 1957)"
+     },
+     "acceptedUsage": {
+      "key": "7QP7V",
+      "name": "Cinctura tortugana (Hollister, 1957)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Hollister, 1957)",
+      "genericName": "Cinctura",
+      "specificEpithet": "tortugana",
+      "formattedName": "<i>Cinctura</i> <i>tortugana</i> (Hollister, 1957)"
+     },
+     "taxonomicStatus": "ACCEPTED",
+     "classification": [
+      {
+       "key": "CS5HF",
+       "name": "Eukaryota",
+       "rank": "DOMAIN"
+      },
+      {
+       "key": "N",
+       "name": "Animalia",
+       "rank": "KINGDOM"
+      },
+      {
+       "key": "M2L",
+       "name": "Mollusca",
+       "rank": "PHYLUM"
+      },
+      {
+       "key": "7NF3Y",
+       "name": "Gastropoda",
+       "rank": "CLASS"
+      },
+      {
+       "key": "9WLSP",
+       "name": "Caenogastropoda",
+       "rank": "SUBCLASS"
+      },
+      {
+       "key": "7NFCR",
+       "name": "Neogastropoda",
+       "rank": "ORDER"
+      },
+      {
+       "key": "7NGHY",
+       "name": "Buccinoidea",
+       "rank": "SUPERFAMILY"
+      },
+      {
+       "key": "7NHL8",
+       "name": "Fasciolariidae",
+       "rank": "FAMILY"
+      },
+      {
+       "key": "7NXMZ",
+       "name": "Fasciolariinae",
+       "rank": "SUBFAMILY"
+      },
+      {
+       "key": "7NZM8",
+       "name": "Cinctura",
+       "rank": "GENUS"
+      },
+      {
+       "key": "7QP7V",
+       "name": "Cinctura tortugana",
+       "rank": "SPECIES"
+      }
+     ],
+     "issues": []
+    },
+    "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c": {
+     "usage": {
+      "key": "11160147",
+      "name": "Cinctura tortugana (Hollister, 1957)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Hollister, 1957)",
+      "genericName": "Cinctura",
+      "specificEpithet": "tortugana",
+      "formattedName": "<i>Cinctura</i> <i>tortugana</i> (Hollister, 1957)"
+     },
+     "acceptedUsage": {
+      "key": "11160147",
+      "name": "Cinctura tortugana (Hollister, 1957)",
+      "rank": "SPECIES",
+      "code": "ZOOLOGICAL",
+      "authorship": "(Hollister, 1957)",
+      "genericName": "Cinctura",
+      "specificEpithet": "tortugana",
+      "formattedName": "<i>Cinctura</i> <i>tortugana</i> (Hollister, 1957)"
+     },
+     "taxonomicStatus": "ACCEPTED",
+     "classification": [
+      {
+       "key": "1",
+       "name": "Animalia",
+       "rank": "KINGDOM"
+      },
+      {
+       "key": "52",
+       "name": "Mollusca",
+       "rank": "PHYLUM"
+      },
+      {
+       "key": "225",
+       "name": "Gastropoda",
+       "rank": "CLASS"
+      },
+      {
+       "key": "982",
+       "name": "Neogastropoda",
+       "rank": "ORDER"
+      },
+      {
+       "key": "6776",
+       "name": "Fasciolariidae",
+       "rank": "FAMILY"
+      },
+      {
+       "key": "4604278",
+       "name": "Cinctura",
+       "rank": "GENUS"
+      },
+      {
+       "key": "11160147",
+       "name": "Cinctura tortugana",
+       "rank": "SPECIES"
+      }
+     ],
+     "issues": []
+    }
+   },
+   "taxonKey": 11160147,
+   "kingdomKey": 1,
+   "phylumKey": 52,
+   "classKey": 225,
+   "orderKey": 982,
+   "familyKey": 6776,
+   "genusKey": 4604278,
+   "speciesKey": 11160147,
+   "acceptedTaxonKey": 11160147,
+   "scientificName": "Cinctura tortugana (Hollister, 1957)",
+   "scientificNameAuthorship": "(Hollister, 1957)",
+   "acceptedScientificName": "Cinctura tortugana (Hollister, 1957)",
+   "kingdom": "Animalia",
+   "phylum": "Mollusca",
+   "order": "Neogastropoda",
+   "family": "Fasciolariidae",
+   "genus": "Cinctura",
+   "species": "Cinctura tortugana",
+   "genericName": "Cinctura",
+   "specificEpithet": "tortugana",
+   "taxonRank": "SPECIES",
+   "taxonomicStatus": "ACCEPTED",
+   "decimalLatitude": 26.425478,
+   "decimalLongitude": -82.061961,
+   "depth": 0.15,
+   "depthAccuracy": 0.15,
+   "continent": "NORTH_AMERICA",
+   "stateProvince": "Florida",
+   "gadm": {},
+   "waterBody": "Gulf of Mexico",
+   "year": 2026,
+   "eventDate": "2026",
+   "issues": [
+    "GEODETIC_DATUM_ASSUMED_WGS84",
+    "CONTINENT_INVALID",
+    "CONTINENT_DERIVED_FROM_COORDINATES",
+    "RECORDED_DATE_INVALID",
+    "IDENTIFIED_DATE_INVALID",
+    "INSTITUTION_MATCH_NONE"
+   ],
+   "lastInterpreted": "2026-09-22T09:34:54.543+00:00",
+   "license": "http://creativecommons.org/publicdomain/zero/1.0/legalcode",
+   "isSequenced": false,
+   "identifiers": [
+    {
+     "identifier": "d30f8a76-9fc1-4ab4-a706-0d18ded309ff"
+    }
+   ],
+   "media": [
+    {
+     "type": "StillImage",
+     "format": "image/jpeg",
+     "license": "http://creativecommons.org/licenses/by-nc/4.0/",
+     "rightsHolder": "National Shell Museum",
+     "identifier": "https://assets1.specifycloud.org/static/shellmuseum/originals/f565ba30-7717-45d3-9fed-1a82c62ad871.jpg"
+    }
+   ],
+   "facts": [],
+   "relations": [],
+   "isInCluster": false,
+   "identifiedBy": "Ken Piech",
+   "preparations": "Dry - 1",
+   "dnaSequenceID": [],
+   "nucleotideSequence": [],
+   "geodeticDatum": "WGS84",
+   "class": "Gastropoda",
+   "countryCode": "US",
+   "recordedByIDs": [],
+   "identifiedByIDs": [],
+   "gbifRegion": "NORTH_AMERICA",
+   "country": "United States of America",
+   "publishedByGbifRegion": "NORTH_AMERICA",
+   "identifier": "d30f8a76-9fc1-4ab4-a706-0d18ded309ff",
+   "catalogNumber": "135591",
+   "habitat": "tidepool",
+   "verbatimEventDate": "2/2/26",
+   "locationRemarks": "Coordinates given by collector. ESB. This shell was collected following a serious cold spell in february 2026, which caused/coincided with a mass mortality of marine invertebrates at the time.",
+   "http://unknown.org/crawl_attempt": "478",
+   "locality": "Algiers Beach, Sanibel Island",
+   "county": "Lee Co.",
+   "http://unknown.org/status": "not_reviewed",
+   "collectionCode": "BMSM",
+   "gbifID": "6406420337",
+   "occurrenceID": "d30f8a76-9fc1-4ab4-a706-0d18ded309ff"
+  }
+ ]
+}
