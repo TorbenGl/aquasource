@@ -379,3 +379,58 @@ def test_video_caps_do_not_apply_to_still_photos_without_frame_offset(tmp_path):
     folder = "https://oer.hpc.msstate.edu/FathomNet/staging/FN251128095808/"
     recs = [{**LIGHT[4], "uuid": f"posco-{i}", "url": f"{folder}FN251128095808_DSC_{i:04d}.JPG"} for i in range(8)]  # synthetic
     assert len(list(make_adapter(tmp_path, {0: recs}).discover())) == 8
+
+
+# --------------------------------------------------------------------------------------------- metadata cache
+class PageHttp(NoNet):
+    """Serves one real fixture page (with contributorsEmail, as the API does) or fails with a given status."""
+
+    def __init__(self, status=200):
+        super().__init__(dry_run=True)
+        self.status, self.urls = status, []
+
+    def get_json(self, url, **kw):
+        self.urls.append(url)
+        if self.status >= 400:
+            raise HttpError(url, self.status, "boom")
+        return {"content": [dict(r) for r in FULL[:1] + FULL[4:]], "pageNumber": 0, "totalItems": 2}
+
+
+def test_page_cache_has_no_email_addresses_and_second_run_does_not_hit_the_api(tmp_path):
+    assert all(r["contributorsEmail"] for r in FULL)  # the real API answer carries them
+    a = make_adapter(tmp_path, {}, http=PageHttp(), count=3000)
+    (a.ctx.layout.raw / "geoimages" / "size3000_page0000.json").unlink(missing_ok=True)
+    first = a._page(0)
+    cached = (a.ctx.layout.raw / "geoimages" / "size3000_page0000.json").read_text()
+    assert len(first) == 2 and "contributorsEmail" not in cached and "@" not in cached
+    b = make_adapter(tmp_path, {}, count=3000)  # NoNet: would raise on a request
+    (b.ctx.layout.raw / "geoimages" / "size3000_page0000.json").write_text(cached)
+    assert [r["uuid"] for r in b._page(0)] == [r["uuid"] for r in first]
+
+
+def test_old_cache_with_email_addresses_is_scrubbed_on_read(tmp_path):
+    a = make_adapter(tmp_path, {0: FULL[:1]})  # make_adapter writes the full record, e-mail included
+    path = a.ctx.layout.raw / "geoimages" / "size3000_page0000.json"
+    assert "contributorsEmail" in path.read_text()
+    assert [r["uuid"] for r in a._page(0)] == [FULL[0]["uuid"]]
+    assert "contributorsEmail" not in path.read_text()
+
+
+def test_missing_page_is_logged_and_skipped_but_outage_is_not_swallowed(tmp_path):
+    a = make_adapter(tmp_path, {}, http=PageHttp(404), count=3000)
+    (a.ctx.layout.raw / "geoimages" / "size3000_page0000.json").unlink(missing_ok=True)
+    assert list(a.discover()) == []
+    assert "page0" in a.ctx.layout.failures_jsonl.read_text()
+    b = make_adapter(tmp_path / "b", {}, http=PageHttp(503), count=3000)
+    (b.ctx.layout.raw / "geoimages" / "size3000_page0000.json").unlink(missing_ok=True)
+    with pytest.raises(HttpError):
+        list(b.discover())
+
+
+def test_posco_credit_only_for_the_known_upload_folders(tmp_path):
+    a = make_adapter(tmp_path)
+    other = {**LIGHT[4], "uuid": "x", "url": "https://oer.hpc.msstate.edu/FathomNet/staging/FN260811225816/a.png"}
+    c = a._candidate(other, "FN260811225816", None)
+    assert "POSCO" not in a.resolve_licence(c).attribution
+    c2 = a._candidate(LIGHT[4], "FN251128095328", None)
+    assert "POSCO" in a.resolve_licence(c2).attribution

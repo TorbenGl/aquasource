@@ -40,12 +40,15 @@ How it works
     * Media: plain HTTPS GET of ``url`` (GCS supports Range / resume). ``resolve_media`` reads the full record
       ``GET /api/images/<uuid>`` once for ``sha256`` (and re-checks ``valid`` and the licence tier: contributors can
       withdraw or change images); ``fetch_media`` verifies the sha256 and the image magic number and deletes a bad file.
-    * Not done: pixel filters (deck / surface / black frames at the ends of a drop), the 140 source ``.mp4`` videos of the
+    * Not done: pixel filters (deck / surface / black frames at the ends of a drop; the 16 POSCO macroalgae photos may be
+      intertidal or above water: apply the usual above-water filter), the 140 source ``.mp4`` videos of the
       bucket (same station coordinate, not in the FathomNet DB), dedup against BenthicNet (excluded there anyway) and the
       candidate ``noaa_fisheries_nodd`` (dedup by ``sha256`` / video name, kept in ``extra.video``).
     * Politeness: 1 s between requests to database.fathomnet.org (no limit documented, a connection reset every ~15th call
       through proxies is retried by the HTTP client), 0.25 s to the GCS bucket, 1 s to other hosts. No token, no account.
-      The records carry institutional ``contributorsEmail`` values; they are dropped and never stored or copied.
+      The records carry institutional ``contributorsEmail`` values; they are removed before the answer is cached in
+      metadata/raw/ and never stored or copied. A missing page (HTTP 4xx) or a failed CC-BY query is logged in the failures
+      file and skipped; a server outage stops the run (cached pages are reused on the next run).
 
 Adapter options (``--opt key=value``; booleans and lists as JSON or comma separated)
     tiers              licence tiers to yield, default ``A,B`` (``A,B,C`` adds CC-BY-SA, 0 images today).
@@ -114,7 +117,8 @@ GEO_SOURCE_UPLOAD = (
 )
 STATION_UNCERTAINTY_M = 200.0  # assumption (research note): deployment position of a camera rig, nothing published
 UPLOAD_UNCERTAINTY_M = 2000.0  # assumption (research note): POSCO position shared by an upload folder, 3 decimals
-POSCO_HINT = "POSCO (owner institution of the georeferenced CC BY images in FathomNet)"
+POSCO_HINT = "POSCO (owner institution of the georeferenced CC BY uploads FN2511*, state 2026-10-08)"
+POSCO_RE = re.compile(r"^https://oer\.hpc\.msstate\.edu/FathomNet/staging/FN2511\d+/")
 
 DEFAULT_PAGE_SIZE = 3000
 DEFAULT_FRAMES_PER_VIDEO = 5
@@ -202,6 +206,15 @@ def light_record(rec: dict[str, Any]) -> dict[str, Any]:
     return {k: rec[k] for k in keys if k in rec}
 
 
+def _scrub(data: Any) -> str:
+    """JSON text of an API answer without ``contributorsEmail`` (institutional e-mail addresses are never stored)."""
+    rows = data if isinstance(data, list) else data.get("content") if isinstance(data, dict) else None
+    for row in rows if isinstance(rows, list) else ():
+        if isinstance(row, dict):
+            row.pop("contributorsEmail", None)
+    return json.dumps(data)
+
+
 def check_options(options: dict[str, Any]) -> list[str]:
     problems = []
     if str(options.get("order", "spread")).lower() not in ORDERS:
@@ -278,12 +291,7 @@ class FathomNetAdapter(Adapter):
         if resp.status_code >= 400:
             raise HttpError(url, resp.status_code, resp.text[:300])
         data = resp.json()
-        rows = data if isinstance(data, list) else data.get("content")
-        if isinstance(rows, list):  # keep no personal data (institutional e-mail addresses) in the cache
-            for row in rows:
-                if isinstance(row, dict):
-                    row.pop("contributorsEmail", None)
-        self.ctx.save_raw(name, json.dumps(data))
+        self.ctx.save_raw(name, _scrub(data))  # keeps no personal data (institutional e-mail addresses) in the cache
         return data
 
     def _count(self) -> int:
@@ -291,9 +299,30 @@ class FathomNetAdapter(Adapter):
         return int(data["count"])
 
     def _page(self, page: int) -> list[dict[str, Any]]:
+        """One ``GET /geoimages`` page. Cached under metadata/raw/geoimages/ WITHOUT the institutional e-mail addresses.
+
+        A missing page (HTTP 4xx) is logged in the failures file and skipped; other errors (outage) stop the run, and
+        the pages already cached are reused by the next run.
+        """
         size = self.page_size
         url = f"{API}/geoimages?size={size}&page={page}&sort=uuid"
-        data = self.ctx.cached_json(url, f"geoimages/size{size}_page{page:04d}.json")
+        name = f"geoimages/size{size}_page{page:04d}.json"
+        path = self.ctx.layout.raw / name
+        if path.exists() and not self.options.get("refresh_metadata"):
+            text = path.read_text(encoding="utf-8")
+            if "contributorsEmail" in text:  # cache written by an older version: scrub it in place
+                text = _scrub(json.loads(text))
+                self.ctx.save_raw(name, text)
+            data = json.loads(text)
+        else:
+            try:
+                data = self.http.get_json(url)
+            except HttpError as exc:
+                if exc.status is not None and 400 <= exc.status < 500:
+                    self.ctx.fail(f"page{page}", "discover", f"{exc}", url=url)
+                    return []
+                raise
+            self.ctx.save_raw(name, _scrub(data))
         content = data.get("content") if isinstance(data, dict) else data
         return list(content or [])
 
@@ -301,7 +330,11 @@ class FathomNetAdapter(Adapter):
         """Georeferenced non-CC0 records that are allowed by the tiers (CC-BY-4.0: 16 images). One small POST."""
         want = ["CC-BY-4.0"] + (["CC-BY-SA-4.0"] if "C" in self._tiers else [])
         body = {"imageLicenses": want, "limit": CCBY_QUERY_LIMIT, "offset": 0, **WORLD_BOX}
-        data = self._post_json(f"{API}/geoimages/query", body, "geoimages_query_ccby.json")
+        try:
+            data = self._post_json(f"{API}/geoimages/query", body, "geoimages_query_ccby.json")
+        except HttpError as exc:  # optional extra: the pages themselves still work
+            self.ctx.fail("ccby-query", "discover", f"{exc}")
+            return []
         return list(data if isinstance(data, list) else data.get("content", []))
 
     # ------------------------------------------------------------------------------------------- discover
@@ -426,7 +459,7 @@ class FathomNetAdapter(Adapter):
         if url.startswith(GFISHER_PREFIX):
             text = f"{NOAA_CREDIT}; {spdx.replace('CC0-1.0', 'CC0 1.0')}"
             return text
-        if spdx.startswith("CC-BY") and station_of(rec) is not None:
+        if POSCO_RE.search(url):
             return f"Image: {POSCO_HINT}, via FathomNet"
         return "Image: contributing institution recorded in FathomNet (see the image record), via FathomNet"
 
