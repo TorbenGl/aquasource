@@ -14,7 +14,7 @@ Status: researched 2026-10-06 · lean pass 2026-10-08 (adapter, script, test, sa
   - Station rule: a station with one photo is labelled station (inferred true), which is conservative.
   - Fundy stills and video not implemented (nested ZIPs of 350-2100 MB). Pre-1990 1000 m uncertainty floor is an estimate.
   - PHOTO_GMT assumed GMT (not verified).
-- needs_opus: no
+- needs_opus: no (checked by Sonnet 2026-10-08: OGL tier B confirmed, tests 10/10, sample 3 PNG + samples.jsonl OK)
 
 ## Summary
 This key combines two federal Canadian open-data collections, both under the Open Government Licence - Canada 2.0 (tier B):
