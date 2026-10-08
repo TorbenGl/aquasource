@@ -11,7 +11,7 @@
   - File and record licence disagree: a CC0 occurrence with CC BY-NC media (fixture 6406420337). File level applied, `extra.licence_conflict` set.
   - Offset paging stops at 100,000 (GBIF cap) of about 717 k records: more needs partitioning (year, datasetKey or depth bands).
   - CC0 media were rare in the sample (0 of 600 occurrences); the publishers' own terms (iNaturalist, Artsobservasjoner, museums) are not checked.
-- needs_opus: yes, licence contradictions between occurrence and media level are common (the rule "most specific level" was applied as written, but a checker should confirm it for pretraining).
+- needs_opus: no. Checked by Sonnet 2026-10-08: file-level media licence wins, record licence only when media states none, unknown never upgraded (tier U, not downloaded); geo lat/lon correct; tests 7 pass; sample 3 files OK. Precision `image` kept (photo taken at occurrence place).
 
 ## Notes (lean pass 2026-10-08)
 - Access: anonymous GBIF API, no token. Metadata requests ~1 request/s (`host_intervals`). Media fetched from each publisher's host (plain HTTPS).
