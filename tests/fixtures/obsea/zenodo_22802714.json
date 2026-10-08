@@ -1,0 +1,521 @@
+{
+ "created": "2026-09-16T21:31:13.766326+00:00",
+ "modified": "2026-09-22T07:00:34.952239+00:00",
+ "id": 22802714,
+ "conceptrecid": "22802713",
+ "doi": "10.5281/zenodo.22802714",
+ "conceptdoi": "10.5281/zenodo.22802713",
+ "doi_url": "https://doi.org/10.5281/zenodo.22802714",
+ "metadata": {
+  "title": "Underwater photography at OBSEA seabed station during 2013",
+  "doi": "10.5281/zenodo.22802714",
+  "publication_date": "2026-09-16",
+  "description": "<h1>Description</h1>\n<p>This dataset contains underwater pictures collected by several cameras at the OBSEA seafloor observatory. Located 4 km offshore from Vilanova i la Geltrú, Spain (NW Mediterranean), <a href=\"https://obsea.es\">OBSEA</a> is a multiparametric platform that has been continuously acquiring multidisciplinary marine data since 2009. The observatory includes a seabed station and a moored buoy.</p>\n<p>The dataset contains underwater pictures taken by several underwater cameras at OBSEA seafloor station.</p>\n<p>This dataset is also available at OBSEA's <a href=\"https://data.obsea.es/erddap\">ERDDAP server</a>.</p>\n<h1>General Information</h1>\n<ul>\n<li><strong>Platforms</strong>: OBSEA Expandable Seafloor Observatory</li>\n<li><strong>Sensors</strong>: <a href=\"http://vocab.nerc.ac.uk/collection/L22/current/TOOL2269/\">IPC608UW-10</a>, <a href=\"http://vocab.nerc.ac.uk/collection/L22/current/TOOL2285/\">DCS-7010L</a>, GNC328G2-XD, <a href=\"http://vocab.nerc.ac.uk/collection/L22/current/TOOL2294/\">Sony_SNC-RZ25N</a>, PopUp_Cam, <a href=\"http://vocab.nerc.ac.uk/collection/L22/current/TOOL1927/\">AXIS_P1346</a></li>\n<li><strong>Coordinates</strong>: latitude  41.18212 °N, longitude 1.75257 °E, depth 20.0 m</li>\n<li><strong>Temporal Coverage</strong>: from 2013-01-09 to 2013-03-18</li>\n<li><strong>Sampling Frequency</strong>: variable</li>\n</ul>\n<h1>Files and Formats</h1>\n<p>The data is organized in monthly zip files, containing the original pictures. Inside each zip there is an index with some metadata of the files, including coordinates and field of view (foi column). A NetCDF file with a manifest of pictures is also provided, compliant with the <a href=\"https://github.com/emso-eric/emso-metadata-specifications\">EMSO Metadata Specifications</a>.</p>",
+  "access_right": "open",
+  "creators": [
+   {
+    "name": "Martínez, Enoc",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0003-1233-7105"
+   },
+   {
+    "name": "Nogueras, Marc",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0001-7272-0128"
+   },
+   {
+    "name": "Toma, Daniel M.",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0003-0472-1190"
+   },
+   {
+    "name": "Francescangeli, Marco",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0001-6250-0447"
+   },
+   {
+    "name": "Aguzzi, Jacopo",
+    "affiliation": "Institut de Ciències del Mar",
+    "orcid": "0000-0002-1484-8219"
+   },
+   {
+    "name": "Artero-Delgado, Carla",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0002-1266-0474"
+   },
+   {
+    "name": "Carandell, Matias",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0003-0559-4453"
+   },
+   {
+    "name": "Sarria, David",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0001-9965-2479"
+   },
+   {
+    "name": "Garcia-Benadi, Albert",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0002-5560-4392"
+   },
+   {
+    "name": "Batet, Gerard",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0001-5428-5249"
+   },
+   {
+    "name": "Prat, Oriol",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0009-0009-9975-9343"
+   },
+   {
+    "name": "Baños, Pol",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0003-0780-3255"
+   },
+   {
+    "name": "Bghiel, Ikram",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0009-0007-1576-8417"
+   },
+   {
+    "name": "Cadena, Javier",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0002-8960-9968"
+   },
+   {
+    "name": "García, Luna",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0009-0009-7133-2890"
+   },
+   {
+    "name": "Vidal, Neus",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0009-0006-1236-9376"
+   },
+   {
+    "name": "Català, Albert",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0009-0000-1203-8709"
+   },
+   {
+    "name": "Falahzadeh Abarghouee, Ahmad",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0002-4126-5182"
+   },
+   {
+    "name": "del Rio, Joaquin",
+    "affiliation": "Universitat Politècnica de Catalunya",
+    "orcid": "0000-0002-6191-2201"
+   }
+  ],
+  "related_identifiers": [
+   {
+    "identifier": "https://data.obsea.es/erddap/tabledap/OBSEA_seabed_station_pictures_L0a",
+    "relation": "isVariantFormOf",
+    "scheme": "url"
+   }
+  ],
+  "resource_type": {
+   "title": "Dataset",
+   "type": "dataset"
+  },
+  "license": {
+   "id": "cc-by-4.0"
+  },
+  "grants": [
+   {
+    "code": "AIA2025-163346-C41",
+    "internal_id": "003x0zc53::AIA2025-163346-C41",
+    "funder": {
+     "name": "Agencia Estatal de Investigación"
+    },
+    "title": "INTELIGENCIA ARTIFICIAL PARA LA RESTAURACION DE HABITATS SUBMARINOS BASADA EN AUV"
+   },
+   {
+    "code": "101094924",
+    "internal_id": "10.13039/501100000780::101094924",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "operAtional seNsing lifE technologies for maRIne ecosystemS",
+    "acronym": "ANERIS",
+    "program": "HORIZON.1.3",
+    "url": "https://cordis.europa.eu/projects/101094924",
+    "doi": "10.3030/101094924"
+   },
+   {
+    "code": "101112883",
+    "internal_id": "10.13039/501100000780::101112883",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Digital Twin-sustained 4D ecological monitoring of restoration in fishery depleted areas",
+    "acronym": "DIGI4ECO",
+    "program": "HORIZON.2.6",
+    "url": "https://cordis.europa.eu/projects/101112883",
+    "doi": "10.3030/101112883"
+   },
+   {
+    "code": "101112823",
+    "internal_id": "10.13039/501100000780::101112823",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Integration of biodiversity monitoring data into the Digital Twin Ocean",
+    "acronym": "DTO-BioFlow",
+    "program": "HORIZON.2.6",
+    "url": "https://cordis.europa.eu/projects/101112823",
+    "doi": "10.3030/101112823"
+   },
+   {
+    "code": "731036",
+    "internal_id": "10.13039/501100000780::731036",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Implementation of the Strategy to Ensure the EMSO ERIC’s Long-term Sustainability",
+    "acronym": "EMSO-Link",
+    "program": "H2020-EU.1.4.",
+    "url": "https://cordis.europa.eu/projects/731036"
+   },
+   {
+    "code": "676555",
+    "internal_id": "10.13039/501100000780::676555",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "EMSO implementation and operation: DEVelopment of instrument module",
+    "acronym": "EMSODEV",
+    "program": "H2020-EU.1.4.",
+    "url": "https://cordis.europa.eu/projects/676555"
+   },
+   {
+    "code": "824068",
+    "internal_id": "10.13039/501100000780::824068",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "ENVironmental Research Infrastructures building Fair services Accessible for society, Innovation and Research",
+    "acronym": "ENVRI-FAIR",
+    "program": "H2020-EU.1.4.",
+    "url": "https://cordis.europa.eu/projects/824068"
+   },
+   {
+    "code": "312463",
+    "internal_id": "10.13039/501100000780::312463",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Fixed Point Open Ocean Observatories Network",
+    "acronym": "FIXO3",
+    "program": "FP7-INFRASTRUCTURES",
+    "url": "https://cordis.europa.eu/projects/312463"
+   },
+   {
+    "code": "101094716",
+    "internal_id": "10.13039/501100000780::101094716",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Next generation multiplatform Ocean observing technologies for research infrastructures",
+    "acronym": "GEORGE",
+    "program": "HORIZON.1.3",
+    "url": "https://cordis.europa.eu/projects/101094716",
+    "doi": "10.3030/101094716"
+   },
+   {
+    "code": "101058518",
+    "internal_id": "10.13039/501100000780::101058518",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Geosphere INfrastructures for QUestions into Integrated REsearch",
+    "acronym": "Geo-INQUIRE",
+    "program": "HORIZON.1.3",
+    "url": "https://cordis.europa.eu/projects/101058518",
+    "doi": "10.3030/101058518"
+   },
+   {
+    "code": "CGL2013-42557-R",
+    "internal_id": "003x0zc53::CGL2013-42557-R",
+    "funder": {
+     "name": "Agencia Estatal de Investigación"
+    },
+    "title": "Interoperabilidad e instrumentacion de plataformas autonomas marinas para la monitorizacion sismica"
+   },
+   {
+    "code": "101058625",
+    "internal_id": "10.13039/501100000780::101058625",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Imaging data and services for aquatic science",
+    "acronym": "iMagine",
+    "program": "HORIZON.1.3",
+    "url": "https://cordis.europa.eu/projects/101058625",
+    "doi": "10.3030/101058625"
+   },
+   {
+    "code": "654410",
+    "internal_id": "10.13039/501100000780::654410",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Joint European Research Infrastructure network for Coastal Observatory – Novel European eXpertise for coastal observaTories",
+    "acronym": "JERICO-NEXT",
+    "program": "H2020-EU.1.4.",
+    "url": "https://cordis.europa.eu/projects/654410"
+   },
+   {
+    "code": "871153",
+    "internal_id": "10.13039/501100000780::871153",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Joint European Research Infrastructure of Coastal Observatories: Science, Service, Sustainability - JERICO-S3",
+    "acronym": "JERICO-S3",
+    "program": "H2020-EU.1.4.",
+    "url": "https://cordis.europa.eu/projects/871153"
+   },
+   {
+    "code": "776825",
+    "internal_id": "10.13039/501100000780::776825",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Multi-purpose/Multi-sensor Extra Light Oceanography Apparatus",
+    "acronym": "MELOA",
+    "program": "H2020-EU.3.5.",
+    "url": "https://cordis.europa.eu/projects/776825"
+   },
+   {
+    "code": "101189796",
+    "internal_id": "10.13039/501100000780::101189796",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Demonstration of long-endurance intelligent multi-purpose autonomous vehicles for marine applications",
+    "acronym": "MERLIN",
+    "program": "HORIZON.2.4",
+    "url": "https://cordis.europa.eu/projects/101189796",
+    "doi": "10.3030/101189796"
+   },
+   {
+    "code": "101008724",
+    "internal_id": "10.13039/501100000780::101008724",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Metrology for Integrated Marine Management and Knowledge-Transfer Network",
+    "acronym": "MINKE",
+    "program": "H2020-EU.1.4.",
+    "url": "https://cordis.europa.eu/projects/101008724"
+   },
+   {
+    "code": "614102",
+    "internal_id": "10.13039/501100000780::614102",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Next generation, Cost-effective, Compact, Multifunctional Web Enabled Ocean Sensor Systems Empowering Marine, Maritime and Fisheries Management",
+    "acronym": "NEXOS",
+    "program": "FP7-ENVIRONMENT",
+    "url": "https://cordis.europa.eu/projects/614102"
+   },
+   {
+    "code": "ARP393/24/000132",
+    "internal_id": "01bg62x04::ARP393/24/000132",
+    "funder": {
+     "name": "Government of Catalonia"
+    },
+    "title": "PECT Litoral Besòs Territori Sostenible"
+   },
+   {
+    "code": "TEC2017-87861-R",
+    "internal_id": "003x0zc53::TEC2017-87861-R",
+    "funder": {
+     "name": "Agencia Estatal de Investigación"
+    },
+    "title": "REDES DE SENSORES SUBMARINOS AUTONOMOS Y CABLEADOS APLICADOS A LA MONITORIZACION REMOTA DE INDICADORES BIOLOGICOS"
+   },
+   {
+    "code": "RTI2018-095112-B-I00",
+    "internal_id": "003x0zc53::RTI2018-095112-B-I00",
+    "funder": {
+     "name": "Agencia Estatal de Investigación"
+    },
+    "title": "SISTEMAS ACUSTICOS SUBMARINOS PARA LA MONITORIZACION DEL COMPORTAMIENTO ESPACIAL DE ESPECIES"
+   },
+   {
+    "code": "ACE053/22/000032",
+    "internal_id": "01bg62x04::ACE053/22/000032",
+    "funder": {
+     "name": "Government of Catalonia"
+    },
+    "title": "Desenvolupament de nous materials per a estructures de regeneració marina a partir de subproductes de la indústria siderúrgica i agroalimentària"
+   },
+   {
+    "code": "TED2021-129760B-I00",
+    "internal_id": "003x0zc53::TED2021-129760B-I00",
+    "funder": {
+     "name": "Agencia Estatal de Investigación"
+    },
+    "title": "3D SLAG CONCRETE MANUFACTURING SOLUTIONS FOR MARINE BIOTOPES"
+   },
+   {
+    "code": "PID2024-155344OB-C33",
+    "internal_id": "003x0zc53::PID2024-155344OB-C33",
+    "funder": {
+     "name": "Agencia Estatal de Investigación"
+    },
+    "title": "RED AVANZADA DE NODOS AUTONOMOS PARA EL MONITOREO DE ECOSISTEMAS MARINOS"
+   },
+   {
+    "code": "101157493",
+    "internal_id": "10.13039/501100000780::101157493",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "SUSTAINABLE AND NATURE INCLUSIVE OFFSHORE ENERGY WITH THE PARALLEL BIODIVERSITY FLOURISHING, PROTECTION AND MONITORING",
+    "acronym": "Sun-Bio",
+    "program": "HORIZON.2.5",
+    "url": "https://cordis.europa.eu/projects/101157493",
+    "doi": "10.3030/101157493"
+   },
+   {
+    "code": "101214557",
+    "internal_id": "10.13039/501100000780::101214557",
+    "funder": {
+     "name": "European Commission",
+     "doi": "10.13039/501100000780",
+     "acronym": "EC"
+    },
+    "title": "Digital Twin-sustained 7D for the complex interplay between the climate and biodiversity crises including social-economic factors",
+    "acronym": "TerraTwin",
+    "program": "HORIZON.2.6",
+    "url": "https://cordis.europa.eu/projects/101214557",
+    "doi": "10.3030/101214557"
+   }
+  ],
+  "communities": [
+   {
+    "id": "obsea"
+   }
+  ],
+  "relations": {
+   "version": [
+    {
+     "index": 0,
+     "is_last": true,
+     "parent": {
+      "pid_type": "recid",
+      "pid_value": "22802713"
+     }
+    }
+   ]
+  }
+ },
+ "title": "Underwater photography at OBSEA seabed station during 2013",
+ "links": {
+  "self": "https://zenodo.org/api/records/22802714",
+  "self_html": "https://zenodo.org/records/22802714",
+  "preview_html": "https://zenodo.org/records/22802714?preview=1",
+  "doi": "https://doi.org/10.5281/zenodo.22802714",
+  "self_doi": "https://doi.org/10.5281/zenodo.22802714",
+  "self_doi_html": "https://zenodo.org/doi/10.5281/zenodo.22802714",
+  "reserve_doi": "https://zenodo.org/api/records/22802714/draft/pids/doi",
+  "parent": "https://zenodo.org/api/records/22802713",
+  "parent_html": "https://zenodo.org/records/22802713",
+  "parent_doi": "https://doi.org/10.5281/zenodo.22802713",
+  "parent_doi_html": "https://zenodo.org/doi/10.5281/zenodo.22802713",
+  "self_iiif_manifest": "https://zenodo.org/api/iiif/record:22802714/manifest",
+  "self_iiif_sequence": "https://zenodo.org/api/iiif/record:22802714/sequence/default",
+  "files": "https://zenodo.org/api/records/22802714/files",
+  "media_files": "https://zenodo.org/api/records/22802714/media-files",
+  "archive": "https://zenodo.org/api/records/22802714/files-archive",
+  "archive_media": "https://zenodo.org/api/records/22802714/media-files-archive",
+  "latest": "https://zenodo.org/api/records/22802714/versions/latest",
+  "latest_html": "https://zenodo.org/records/22802714/latest",
+  "versions": "https://zenodo.org/api/records/22802714/versions",
+  "draft": "https://zenodo.org/api/records/22802714/draft",
+  "access_links": "https://zenodo.org/api/records/22802714/access/links",
+  "access_grants": "https://zenodo.org/api/records/22802714/access/grants",
+  "access_users": "https://zenodo.org/api/records/22802714/access/users",
+  "access_request": "https://zenodo.org/api/records/22802714/access/request",
+  "access": "https://zenodo.org/api/records/22802714/access",
+  "communities": "https://zenodo.org/api/records/22802714/communities",
+  "communities-suggestions": "https://zenodo.org/api/records/22802714/communities-suggestions",
+  "request_deletion": "https://zenodo.org/api/records/22802714/request-deletion",
+  "file_modification": "https://zenodo.org/api/records/22802714/file-modification",
+  "quota_increase": "https://zenodo.org/api/records/22802714/quota-increase",
+  "requests": "https://zenodo.org/api/records/22802714/requests"
+ },
+ "updated": "2026-09-22T07:00:34.952239+00:00",
+ "recid": "22802714",
+ "revision": 8,
+ "files": [
+  {
+   "id": "c75a656d-26f7-47d7-983c-7b1fba1fa82d",
+   "key": "OBSEA_seabed_station_pictures_L0a_20130101_20130201.zip",
+   "size": 138364792,
+   "checksum": "md5:a12e152aa01cb4371ff94d6ca61485d8",
+   "links": {
+    "self": "https://zenodo.org/api/records/22802714/files/OBSEA_seabed_station_pictures_L0a_20130101_20130201.zip/content"
+   }
+  }
+ ],
+ "swh": {},
+ "owners": [
+  {
+   "id": "1036923"
+  }
+ ],
+ "status": "published",
+ "stats": {
+  "downloads": 10,
+  "unique_downloads": 10,
+  "views": 30,
+  "unique_views": 27,
+  "version_downloads": 10,
+  "version_unique_downloads": 10,
+  "version_unique_views": 27,
+  "version_views": 30
+ },
+ "state": "done",
+ "submitted": true
+}

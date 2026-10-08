@@ -1,0 +1,2 @@
+site_id,site_name,lat,lon,depth_m,uncertainty_m,source
+obsea,OBSEA seabed station (Vilanova i la Geltru; EMSO site),41.18212,1.75257,20.0,,Zenodo 10.5281/zenodo.22802714 description (Coordinates: latitude 41.18212 N, longitude 1.75257 E, depth 20.0 m); same values in ERDDAP OBSEA_seabed_station_pictures_L0a geospatial_lat/lon/vertical attributes
