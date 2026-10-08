@@ -1,12 +1,12 @@
 ## HANDOFF
 - status: blocked
-- tier + licence: B at collection level (provisional). Site terms say all datasets are CC BY 4.0: https://bco-dmo.org/terms-use (read via search snippet, live page not re-read). Per-dataset licence NOT read: no dataset page loaded. Per-record rule not yet applicable.
-- geo: none verified yet (planned: station/image from per-dataset lat/lon columns; no adapter).
-- files: none (no adapter, no sites csv, no script, no fixtures, no test). Note only.
-- tests: not run (nothing to test).
-- sample: 0 files, not attempted (no data reachable).
-- doubts: (1) every dataset page returns "Unable to load this page" (e.g. /dataset/3, /dataset/560, /dataset/773); the homepage shows an alert "whoi servers down" (expiry 2026-10-15). (2) The JSON API https://www.bco-dmo.org/api/... and https://osprey.bco-dmo.org/dataset/... return HTTP 403 from proxy-osprey (Apache), and /erddap returns 403. This may be an access block or a server problem: a checker must confirm with the operator. (3) Licence: CC BY 4.0 is site-wide, so media licences may still differ (embedded third-party photos/video). (4) Media are rare in BCO-DMO (mostly tables); image/video datasets need a per-dataset check. (5) Dataset universe: sitemap https://www.bco-dmo.org/sitemap.xml?type=Dataset&page=1 and page=2 list about 7,700 dataset URLs (osprey.bco-dmo.org/dataset/<id>).
-- needs_opus: no. Access is blocked (server down or 403), not a licence contradiction; re-run this lean pass when the site is back.
+- tier + licence: B (CC BY 4.0). Confirmed per record via DataCite (rightsList = spdx cc-by-4.0) for BCO-DMO DOIs (10.26008/1912/bco-dmo.<id>.<v>); not read at file level.
+- geo: DataCite geoLocations give a point (station) or only a place name; no per-image coords.
+- files: none (no adapter/fixtures/test/script). Sample: not run (no adapter).
+- retry findings (2026-10-08): UA is not the problem. www.bco-dmo.org/dataset/<id> returns HTTP 200 but the body is the Next.js error page "Unable to load this page" (backend down); /api/ and erddap return 403 from proxy-osprey. api.datacite.org works (publisher.name:BCO-DMO, about 70 hits for photo/video/image keywords) but has no contentUrl/media formats (0 hits for jpeg/png/mp4), so no media URLs are discoverable without the dataset pages/ERDDAP.
+- doubts: media in BCO-DMO are rare (mostly tables); Zenodo links seen (ISIIS 10.5281/zenodo.7739010) are code only.
+- human check: ask BCO-DMO whether the /api and erddap 403 is a deliberate block and when the 'whoi servers down' outage ends (alert expiry 2026-10-15); then re-run, listing candidates via DataCite and file URLs via the dataset page.
+- needs_opus: no.
 
 ## Research notes (2026-10-08)
 - Entry point: https://www.bco-dmo.org/ (Next.js SPA, search at /search/dataset is client-rendered). Static pages load (terms, how-to); dataset pages do not.
