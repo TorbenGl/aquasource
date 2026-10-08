@@ -1,0 +1,2 @@
+site_id,site_name,lat,lon,depth_m,uncertainty_m,source
+bassurelle_sandbanks,Bassurelle Sandbank SCI (English Channel; JNCC benthic sampling 2013),50.607,1.038,,9900,"Centre of the dataset bounding box (bbox-south-lat 50.548, bbox-north-lat 50.666, bbox-west-long 0.934, bbox-east-long 1.142) from CKAN package seabed-videos-from-bassurelle-sandbanks-sci1 (data.gov.uk harvest); uncertainty = corner distance from the centre; no per-image or per-station position in the archive"

@@ -1,0 +1,47 @@
+{
+ "name": "seabed-videos-from-bassurelle-sandbanks-sci1",
+ "title": "Seabed videos from Bassurelle Sandbanks SCI",
+ "license_id": "uk-ogl",
+ "license_title": "UK Open Government Licence (OGL)",
+ "license_url": "http://reference.data.gov.uk/id/open-government-licence",
+ "metadata_modified": "2019-02-21T11:39:19.761009",
+ "organization": {
+  "title": "Joint Nature Conservation Committee"
+ },
+ "extras": [
+  {
+   "key": "access_constraints",
+   "value": "[\"None\"]"
+  },
+  {
+   "key": "bbox-east-long",
+   "value": "1.142"
+  },
+  {
+   "key": "bbox-north-lat",
+   "value": "50.666"
+  },
+  {
+   "key": "bbox-south-lat",
+   "value": "50.548"
+  },
+  {
+   "key": "bbox-west-long",
+   "value": "0.934"
+  },
+  {
+   "key": "guid",
+   "value": "6110050f-d796-447b-8ce7-9a708c05612e"
+  }
+ ],
+ "resources": [
+  {
+   "name": "JNCC2013-03BassSandRawBenthicSamplingvideo.zip",
+   "format": "ZIP",
+   "url": "http://s3-eu-west-1.amazonaws.com/data.defra.gov.uk/Marine/JNCC2013_03BassSandRawBenthicSamplingvideo.zip",
+   "description": "Resource locator"
+  }
+ ],
+ "notes": "Seabed videos from Bassurelle Sandbanks SCI (CEND 03/13). This survey was carried out at Bassurelle Sandbank SCI on the Cefas Endeavour research vessel to collect additional information (acoustic and ground-truthing data) from the site to increase current knowledge of the distribution and heterogeneity of benthic habitats and communities present, to assist the development of future management advice and plans.",
+ "_fetched": "GET https://ckan.publishing.service.gov.uk/api/3/action/package_show?id=seabed-videos-from-bassurelle-sandbanks-sci1 (2026-10-08)"
+}
