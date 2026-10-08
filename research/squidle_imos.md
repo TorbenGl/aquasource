@@ -2,7 +2,7 @@
 Status: researched · researched 2026-10-07
 
 ## Summary
-SQUIDLE+ (https://squidle.org) is a marine-image management and annotation platform run by the IMOS Understanding of Marine Imagery (UMI) sub-facility. It does not host images itself. It indexes 1,208 campaigns, 27,461 deployments and **11.39 M media** from 36 platforms, each served from the custodian's own storage. The core of this key is the **IMOS AUV Facility imagery**: AUV Sirius, AUV Nimbus and ACFR AUV Holt. That is 69 campaigns, 906 deployments and **7.60 M downward-looking stereo-left JPEGs** from 2007-09 to 2023-10 around Australia, all served anonymously from the public AWS bucket `imos-data`. The total is about 7.0 TB at full resolution (estimate).
+SQUIDLE+ (https://squidle.org) is a marine-image management and annotation platform run by the IMOS Understanding of Marine Imagery (UMI) sub-facility. It does not host images itself. It indexes 1,208 campaigns, 27,461 deployments and **11.39 M media** from 36 platforms, each served from the custodian's own storage. The core of this key is the **IMOS AUV Facility imagery**: AUV Sirius, AUV Nimbus and ACFR AUV Holt. That is 69 campaigns, 906 deployments and **7.60 M downward-looking stereo-left JPEGs** from 2007-09 to 2023-10 around Australia, all served anonymously from the public AWS bucket `imos-data`. The total is about 8-9 TB at full resolution for one camera per pair (estimate, corrected in verification from 7.0 TB).
 
 Licence: SQUIDLE+ stores **no licence field** at any level. The IMOS AUV imagery is **tier B (CC BY 4.0)**, read from the AODN metadata records, whose facility record covers the whole `IMOS/AUV/` prefix. Every IMOS image carries its own AUV navigation fix: `latitude`/`longitude` in the IMOS per-dive CSV, or `pose.lat`/`pose.lon` in SQUIDLE+. That is **geo_precision = image**.
 
@@ -14,7 +14,7 @@ Verdict: **ingest the IMOS AUV part (tier B, image-level geo)**. The other 3.8 M
 ## Entry points
 - SQUIDLE+ web: https://squidle.org. API schema as JSON: https://squidle.org/api/help (41 collections). Human-readable help: https://squidle.org/api/help?template=api_help_page.html.
 - SQUIDLE+ API base: `https://squidle.org/api/`. The relevant collections are `campaign`, `deployment`, `media`, `pose`, `platform`, `media_type`, `campaign_file` and `deployment_file`.
-- Anonymous per-deployment export: `https://squidle.org/api/deployment/<id>/export?template=dataframe.csv&f={"operations":[{"module":"pandas","method":"json_normalize"}]}&include_columns=[...]`. It answers 202 with a background task; poll `/task/<task_id>`, then download from `/task/<task_id>/result`.
+- Anonymous per-deployment export: `https://squidle.org/api/deployment/<id>/export?template=dataframe.csv&f={"operations":[{"module":"pandas","method":"json_normalize"}]}&include_columns=[...]`. It answers 202 with a background task; poll `/task/<task_id>` (send `Accept: application/json`, otherwise an HTML page comes back), then download from `/task/<task_id>/result`.
 - IMOS AUV data on AWS S3 (public, anonymous listing):
   - Bucket: `https://imos-data.s3-ap-southeast-2.amazonaws.com/?list-type=2&prefix=IMOS/AUV/`, also reachable as `s3://imos-data/IMOS/AUV/` with `--no-sign-request`.
   - Per-dive navigation CSV: `IMOS/AUV/auv_viewer_data/csv_outputs/<campaign>/DATA_<campaign>_<dive>.csv`.
@@ -55,15 +55,15 @@ Verdict: **ingest the IMOS AUV part (tier B, image-level geo)**. The other 3.8 M
 ## Media
 - Types, counts, formats, resolution, total size, time range:
   - **IMOS AUV, in scope.** These are still images only: downward-looking stereo pairs at about 2 m altitude, captured at about 1 Hz (the abstracts say "stereo pairs images were captured every around each 40cm at an average altitude of 2.2m").
-    - SQUIDLE+ and `auv_viewer_data` hold **one camera per pair**: `*_LC16` (left colour) on Sirius and `*_FC16` on Nimbus. The GeoTIFF folders also hold the second camera (`*_RM16`).
+    - SQUIDLE+ holds **one camera per stereo pair**: `*_LC16` in older campaigns, `*_FC16` from about 2020. **Correction (verification):** from about 2020 the S3 `auv_viewer_data` tree and the per-dive CSVs hold **both** cameras of a pair, `*_FC16` and `*_AC16`, with identical lat/lon (Apollo202309, WA202103 dive NG61, Tasmania2020-2023, Sydney202111, Wollongong202201, SEQueensland202211, Forster202006, EMR202001, DiscoveryBay202112, WA202205, WA202303, WA_SW_202103: 15 campaigns checked from the first CSV of each). CSV `number_of_images` is then twice the SQUIDLE+ `media_count` (Apollo dive NG02 d17: 20,548 against 10,279). Keep `_FC16` (the camera SQUIDLE+ indexes) and drop `_AC16` as a near-duplicate. Older campaigns have `_LC16` only. The GeoTIFF folders also hold the second camera (`*_RM16`).
     - Counts from SQUIDLE+ `deployment.media_count`, summed on 2026-10-07: Sirius 5,659,895; Nimbus 1,888,593; Holt 47,077. Total **7,595,565** images in 69 campaigns and 906 deployments.
     - Time range is 2007-09-28 (GBR200709) to 2023-10-11 (Apollo202309). Media by start year: 2007 113 k; 2008 200 k; 2009 392 k; 2010 515 k; 2011 639 k; 2012 1,092 k; 2013 622 k; 2014 322 k; 2015 509 k; 2016 311 k; 2017 366 k; 2018 191 k; 2019 71 k; 2020 502 k; 2021 1,029 k; 2022 373 k; 2023 347 k.
     - Formats and sizes:
       - full_res JPEG, 1360×1024 up to about 2019. Medians are 90-500 kB per campaign; for example, Batemans201211 is about 192 kB.
       - 4112×3008 JPEG from about 2020 on (WA202103 checked). Medians are 1.0-8.2 MB.
-      - Thumbnails are 453×341.
+      - Thumbnails are 453×341. Sizes range from about 1 kB (near-black surface frame, Batemans201211) to about 70-125 kB (2021-2023 campaigns: WA202103 69 kB, Apollo202309 125 kB), not "a few kB" throughout.
       - GeoTIFF originals are about 30-300 kB each (2012).
-    - Estimated full_res total is **about 7.0 TB**: the per-campaign median of 300 listed files times the media count.
+    - Estimated full_res total is **about 8-9 TB** for LC16/FC16 only (verification revision of the original 7.0 TB). Basis: 5.34 M images before 2020 at about 0.25 MB (GBR201509 0.24 MB, Tasmania201808 0.27 MB) is about 1.3 TB, and 2.25 M images from 2020 on at 1.7-4.7 MB (medians from the first 500 FC16 of each: WA202103 1.66, Forster202006 1.78, WA202303 2.26, Tasmania202104 2.77, Apollo202309 3.03, Tasmania202302 3.31, SEQueensland202211 3.57, Wollongong202201 3.96, Sydney202111 4.60 MB) is about 7 TB. Uncertainty +-30 %. The `_AC16` twins would add roughly the same again, so do not mirror the bucket.
     - The S3 bucket also has three campaigns that are not in SQUIDLE+ or `auv_viewer_data` (GeoTIFF products only): `Ningaloo200705`, `Whyalla200806` and `SEQueensland201010Eng`.
   - **Whole SQUIDLE+**: 11,389,627 media. The other big platforms are:
     - SOI ROV Subastian 1.26 M (Excluded)
@@ -89,6 +89,7 @@ Verdict: **ingest the IMOS AUV part (tier B, image-level geo)**. The other 3.8 M
   - There are no aerial or on-deck frames on the AUVs. Surface frames do occur at the start and end of a dive (handled by the altitude filter).
 
 ## Geolocation
+- Region and extent: Australian waters only for the IMOS part, from Tasmania (about -43.6) to the Great Barrier Reef and Scott Reef (about -12), longitude about 112 to 154 E. The AODN facility record bounding box is W 112.00, E 160.00, S -45.00, N -12.00. Depth (vehicle) about 2-100 m, mostly 10-90 m (Scott Reef 57 m, Batemans 18 m, Apollo 50-86 m).
 - Precision levels and share:
   - IMOS AUV: **100 % image**. Every image row or pose has its own navigated position (USBL-aided DVL/INS navigation, post-processed by ACFR).
   - Whole SQUIDLE+, by platform class: about 95.7 % image (AUV, ROV and towed cameras: 10.90 M) and about 4.3 % station (0.49 M):
@@ -149,8 +150,8 @@ The BOSS rows are tier U by licence and are included only to test the station br
 ## Access & download recipe
 - Enumeration, auth and rate limits:
   - **IMOS images (recommended route, no SQUIDLE+ calls needed).**
-    1. `GET https://imos-data.s3-ap-southeast-2.amazonaws.com/?list-type=2&delimiter=/&prefix=IMOS/AUV/auv_viewer_data/csv_outputs/` lists the campaigns. For each campaign, list `.../csv_outputs/<campaign>/` (ListObjectsV2, 1,000 keys per page, continue with `continuation-token`) to get one `DATA_*.csv` per dive. Each is 0.06-4 MB, about 330 B per image row; all 7.6 M rows come to about 2.5 GB.
-    2. Parse each CSV with `skiprows=2` (2-line dive header) and treat every row as one image.
+    1. `GET https://imos-data.s3-ap-southeast-2.amazonaws.com/?list-type=2&delimiter=/&prefix=IMOS/AUV/auv_viewer_data/csv_outputs/` lists the campaigns. For each campaign, list `.../csv_outputs/<campaign>/` (ListObjectsV2, 1,000 keys per page, continue with `continuation-token`) to get one `DATA_*.csv` per dive. Each is 0.06-4 MB, about 330 B per image row; the CSVs hold about 7.6 M rows for LC16/FC16 plus the `_AC16` twin rows of the 2020+ campaigns (about 2 M more, estimated from the `number_of_images` ratio), roughly 3.3 GB in all.
+    2. Parse each CSV with `skiprows=2` (2-line dive header). Strip whitespace from the dive-header names (Apollo202309 has `" geospatial_lon_min"`). Treat each row as one image **except** rows whose `image_filename` ends `_AC16`, which are the second camera of a pair (same lat/lon, drop them; keep `_FC16`).
     3. The image URL is `https://s3-ap-southeast-2.amazonaws.com/imos-data/IMOS/AUV/auv_viewer_data/images/<campaign_code>/<dive_code>/full_res/<image_filename>.jpg`. The thumbnail is the same with `thumbnails`.
     4. No auth is needed and the bucket is anonymous. Stay at 4-8 parallel GETs and back off on 503 SlowDown.
   - **SQUIDLE+ API** (useful for counts, mosaics and non-IMOS platforms). No token is needed for GET on `campaign`, `deployment`, `media` and `pose`, nor for `/api/deployment/<id>/export`. `/api/media/export` returns **401 "You are not logged in!"** without an API token (`X-Auth-Token` header).
@@ -165,7 +166,7 @@ The BOSS rows are tier U by licence and are included only to test the station br
   1. Stratify by campaign: 69 campaigns over 2007-2023 in GBR, Coral Sea, Ningaloo, Scott Reef, WA, SA, Tasmania, Victoria, NSW and Qld. Give each campaign `ceil(N/69)`, capped by availability, and let large campaigns share the remainder in proportion to the square root of their size.
   2. Within a campaign, spread over dives (round-robin).
   3. Within a dive, take frames at least 30 s apart, which is at least about 15 m along track and has no footprint overlap. Apply the altitude window `0.5-6 m` and drop dark frames.
-  4. Use `thumbnails/` (453×341, a few kB) for a cheap low-resolution pass. Use `full_res` for training: about 0.2 MB per image before 2019 and about 2-8 MB after 2020.
+  4. Use `thumbnails/` (453×341, about 1-125 kB) for a cheap low-resolution pass. Use `full_res` for training: about 0.2 MB per image before 2019 and about 2-8 MB after 2020.
   5. Write `<data_root>/squidle_imos/images/<campaign>/<dive>/<image>.jpg` and `<data_root>/squidle_imos/metadata/<campaign>/DATA_<campaign>_<dive>.csv`. Store the provenance row (campaign, dive, image_filename, S3 URL, AODN record UUID, licence) per sample.
 
 ## Manual steps (human)
@@ -179,17 +180,17 @@ The BOSS rows are tier U by licence and are included only to test the station br
 - `tests/fixtures/squidle_imos/squidle_api_pose_deployment22_page1.json`: `/api/pose` page (3 items, untrimmed) for an old-import Sirius dive. It includes the WMS-mosaic pose; `dep` = vehicle depth.
 - `tests/fixtures/squidle_imos/squidle_api_pose_deployment11646_page1.json`: `/api/pose` page (3 items, untrimmed) for a 2021-import Sirius dive. `dep` = seafloor depth and `data.dep` = vehicle depth; includes a WMS-mosaic pose.
 - `tests/fixtures/squidle_imos/squidle_deployment_export_16821_boss_dropcam.csv`: SQUIDLE+ export for a UWA BOSS drop-camera deployment (4 views, one pose). This is the station-branch test; its licence is tier U.
-- `tests/fixtures/squidle_imos/SOURCE.md`: URLs, retrieval date and trimming for each file.
+- `tests/fixtures/squidle_imos/SOURCE.md`: URLs, retrieval date and trimming for each file (**missing in the original delivery, written during verification**).
 
 ## Short download instruction
-List `s3://imos-data/IMOS/AUV/auv_viewer_data/csv_outputs/<campaign>/` anonymously over HTTPS (ListObjectsV2) and read each `DATA_<campaign>_<dive>.csv` (skip 2 header lines). Each row is one image with `latitude`, `longitude`, `depth_sensor`, `altitude_sensor`, `time`. Download `https://s3-ap-southeast-2.amazonaws.com/imos-data/IMOS/AUV/auv_viewer_data/images/<campaign>/<dive>/full_res/<image_filename>.jpg`, keeping frames ≥30 s apart with altitude 0.5-6 m. Licence CC BY 4.0 (AODN record af5d0ff9-…); store the IMOS acknowledgement. SQUIDLE+ (`/api/pose`, `/api/deployment/<id>/export`) is optional, for counts and non-IMOS platforms (licence U unless verified per custodian).
+List `s3://imos-data/IMOS/AUV/auv_viewer_data/csv_outputs/<campaign>/` anonymously over HTTPS (ListObjectsV2) and read each `DATA_<campaign>_<dive>.csv` (skip 2 header lines). Each row is one image (drop `_AC16` twin rows) with `latitude`, `longitude`, `depth_sensor`, `altitude_sensor`, `time`. Download `https://s3-ap-southeast-2.amazonaws.com/imos-data/IMOS/AUV/auv_viewer_data/images/<campaign>/<dive>/full_res/<image_filename>.jpg`, keeping frames ≥30 s apart with altitude 0.5-6 m. Licence CC BY 4.0 (AODN record af5d0ff9-…); store the IMOS acknowledgement. SQUIDLE+ (`/api/pose`, `/api/deployment/<id>/export`) is optional, for counts and non-IMOS platforms (licence U unless verified per custodian).
 
 ## Open questions / risks
 - **Non-IMOS licences.** SQUIDLE+ has no licence field and an empty User Agreement. All non-IMOS platforms stay U or Excluded until each custodian's own record is read (IMAS, UWA, NSW DPI/DCCEEW, SOTON, UoA, TNC, DBCA, DEW, Curtin and others).
 - **ACFR-only IMOS-platform campaigns** (`Hawaii201801`, `TasFracture202106`, `PortPhillipBay202301`, 0.44 M media) have no AODN record and no S3 copy, so they are U. 11 deployments of `Tasmania202302` and other recent campaigns point to ACFR in SQUIDLE+, but the same keys exist on S3: rewrite those URLs to S3.
-- **`pose.dep` semantics** differ by import date (vehicle depth in older imports, seafloor depth in newer ones). The recipe handles this with `pose.data.dep`. A verifier should spot-check one more new import (for example a Nimbus deployment from datasource 4).
+- **`pose.dep` semantics** differ by import (vehicle depth in older imports, seafloor depth in the 2021 Sirius import). The recipe handles this with `pose.data.dep`. Verification spot-check on a Nimbus deployment (id 15663, Apollo202309): `pose.dep` 50.04 is vehicle depth (CSV `depth_sensor` about 49.99, CSV `depth` about 52.2) and `pose.data` has no `dep`, so the "else `pose.dep`" branch is right for it. Prefer the S3 CSV `depth_sensor`, which is unambiguous.
 - **Navigation accuracy** is not published per image (USBL/DVL; probably a few metres). Uncertainty is left null.
-- **Size** (about 7.0 TB) is extrapolated from 300 files per campaign; the true total may differ by ±30 %.
+- **Size** (about 8-9 TB for LC16/FC16 only) is extrapolated from the first 500 files of one dive per campaign; the true total may differ by ±30 %. The bucket as a whole is larger because of the `_AC16` twins and the GeoTIFF products.
 - **Counts drift.** SQUIDLE+ is live, and `campaign.media_count` summed to 11,367,458 against the deployment sum of 11,389,627 on the same day.
 - Per-platform SQUIDLE+ media counts (2026-10-07, deployment sums):
 
@@ -208,3 +209,27 @@ List `s3://imos-data/IMOS/AUV/auv_viewer_data/csv_outputs/<campaign>/` anonymous
 | ACFR AUV Holt | 47,077 |
 | NSW ENV Towed Camera | 39,463 |
 | 24 other platforms | 107,299 |
+
+## Verification (2026-10-06)
+Checked on 2026-10-08 (the run date; the heading keeps the date requested by the workflow) with metadata-only requests (image HEADs and a few Range GETs of CSVs; no media downloaded).
+
+Checked and confirmed:
+- **Licence (record level, provider's own catalogue).** Re-fetched https://catalogue-imos.aodn.org.au/geonetwork/srv/api/records/af5d0ff9-bb9c-4b7c-a63c-854a630b6984/formatters/xml: `MD_LegalConstraints` title "Creative Commons Attribution 4.0 International License", link http://creativecommons.org/licenses/by/4.0/, with the IMOS acknowledgement and citation wording quoted above. No NC / ND / SA / research-only wording anywhere in the record. The Nimbus (`8dfa2b64-...`), campaign (`89fb5a5c-...`) and Squidle+ layer (`0c9bdfd6-...`) records carry the same CC BY 4.0 link. The campaign README at https://imos-data.s3-ap-southeast-2.amazonaws.com/IMOS/AUV/Batemans201211/README_AUV_Data_Products.txt still says "AUV data may be reused, provided that related metadata ... has been reviewed ... and the data is appropriately acknowledged": compatible, no contradiction. Tier **B** stands for the 69 campaigns in the bucket. The facility record is the most specific licence for Nimbus and Holt campaigns, so the licence level is **record** (collection-level coverage for the later campaigns).
+- **Attribution text** matches the record (the record uses a typographic apostrophe in "Australia's"; the lower-case "strategy" in the record versus "Strategy" on the platform page is cosmetic).
+- **SQUIDLE+ has no licence field.** https://squidle.org/api/platform/1 carries only `reference` = "Sirius data was sourced from Australia's Integrated Marine Observing System (IMOS) ...", an acknowledgement.
+- **Geo columns.** The live CSV https://imos-data.s3-ap-southeast-2.amazonaws.com/IMOS/AUV/auv_viewer_data/csv_outputs/ScottReef201108/DATA_ScottReef201108_r20110810_042127_04_scott_long_leg_auv8.csv (Range GET of 4 kB) has the columns `longitude`, `latitude` (in that order), `depth_sensor`, `altitude_sensor`, `depth`, `time` with the fixture values (-14.10650833, 121.89248264, 57.266194). Coordinates are not swapped and signs are right; the sample points are in water: Scott Reef -14.1065/121.8925, Batemans -35.827/150.233, WA202103 -28.847/114.047, Apollo202309 -38.915/143.514 (Bass Strait), Port Phillip Bay -38.2/145.0. `geo_precision = image`, `geo_inferred = false`, `geo_uncertainty_m = null` are right per the definitions (per-image navigation fix, no interpolation).
+- **Fixtures are real provider records.** `/api/deployment?q=` for id 22 returns pose lat -35.82695625, lon 150.2332375, dep 18.094441 (fixture item 1). `/api/pose` for deployment 11646 returns the same first and third poses as the fixture (-28.8471365 etc. and `dep` 47.473168 / `data.dep` 45.753168). The deployment-213 export, re-run live (`/api/deployment/213/export`, task then `/task/<id>/result`), reproduces the three fixture rows exactly. Deployment 16821 is "UWA BOSS Dropcam", 4 media, pose -34.16379179 / 120.9335453 / dep 77.0 (in water, off the south coast of WA). The thumbnail URL in the 11646 fixture returns 200.
+- **Counts.** Summing `/api/deployment` `media_count` for platforms 1, 5, 7 over the 69 bucket campaigns gives 5,659,895 (Sirius), 1,888,593 (Nimbus), 47,077 (Holt) = 7,595,565 in 906 deployments, and the by-year split in the note matches. The three ACFR-only campaigns are outside the bucket (Hawaii201801 159,109; TasFracture202106 115,334; PortPhillipBay202301 162,568). The S3 `csv_outputs/` listing returns exactly 69 campaign prefixes (plus a stray `seqld.csv.manifest`).
+- **Access.** The anonymous S3 ListObjectsV2 call and the anonymous `/api/deployment`, `/api/pose` and export endpoints respond as described. Image HEADs return 200 with `Content-Length` (Apollo202309 FC16 6,525,922 B).
+- **Observatories.** Not a fixed-site observatory; the full campaign history 2007-09 to 2023-10 (17 start years) is covered.
+
+Corrected:
+- **Two cameras per pair from about 2020.** The note said the CSV and S3 hold one camera per pair. For 15 of the 69 campaigns (Apollo202309, DiscoveryBay202112, EMR202001, Forster202006, SEQueensland202211, Sydney202111, Tasmania202001/202104/202208/202302, WA202103, WA202205, WA202303, WA_SW_202103, Wollongong202201) the CSV lists `_FC16` and `_AC16` rows with identical coordinates, and the `_AC16` image exists on S3 (HEAD 200, 7,034,952 B). SQUIDLE+ indexes only `_FC16`. The download recipe now drops `_AC16`. Without this, a sampler would double-count near-identical stereo twins.
+- **Size.** About 8-9 TB (LC16/FC16 only), not 7.0 TB, from measured 500-file samples in 14 campaigns (full_res medians 0.24-0.27 MB before 2020, 1.7-4.7 MB after 2020).
+- **Thumbnail size** is up to about 125 kB, not "a few kB".
+- **Status polling** of an export task needs `Accept: application/json`.
+- **`pose.dep` for Nimbus** (open question): checked on deployment 15663 (Apollo202309): `pose.dep` is vehicle depth, `pose.data.dep` absent; the recipe's fallback handles it.
+- **SOURCE.md was missing** from the fixture directory; written now from the URLs above.
+- Added the region, extent and depth range to the Geolocation section.
+
+Not changed: tier B, `geo_precision` image, the resolve_geo recipe, the non-IMOS platform tiers (U or Excluded). Not re-verified: licences of non-IMOS custodians, and the Hawaii201801, TasFracture202106 and PortPhillipBay202301 campaigns (still U).
