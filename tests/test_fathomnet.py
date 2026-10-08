@@ -373,3 +373,9 @@ def test_dry_run_discover_and_geo_never_send_a_request(tmp_path):
     for c in a.discover():
         a.resolve_licence(c)
         a.resolve_geo(c)
+
+
+def test_video_caps_do_not_apply_to_still_photos_without_frame_offset(tmp_path):
+    folder = "https://oer.hpc.msstate.edu/FathomNet/staging/FN251128095808/"
+    recs = [{**LIGHT[4], "uuid": f"posco-{i}", "url": f"{folder}FN251128095808_DSC_{i:04d}.JPG"} for i in range(8)]  # synthetic
+    assert len(list(make_adapter(tmp_path, {0: recs}).discover())) == 8

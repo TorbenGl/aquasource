@@ -278,6 +278,11 @@ class FathomNetAdapter(Adapter):
         if resp.status_code >= 400:
             raise HttpError(url, resp.status_code, resp.text[:300])
         data = resp.json()
+        rows = data if isinstance(data, list) else data.get("content")
+        if isinstance(rows, list):  # keep no personal data (institutional e-mail addresses) in the cache
+            for row in rows:
+                if isinstance(row, dict):
+                    row.pop("contributorsEmail", None)
         self.ctx.save_raw(name, json.dumps(data))
         return data
 
@@ -360,13 +365,14 @@ class FathomNetAdapter(Adapter):
                     continue
                 video = video_of(str(rec["url"]))
                 station = station_of(rec)
-                if cap_video and count_video.get(video, 0) >= cap_video and video:
+                off = frame_offset_s(str(rec["url"]))
+                # the per-video limits are for video frames (the offset is in the file name), not for still photos
+                if off is not None and cap_video and count_video.get(video, 0) >= cap_video:
                     self._skip("frames_per_video cap")
                     continue
                 if cap_station and station is not None and count_station.get(station, 0) >= cap_station:
                     self._skip("max_per_station cap")
                     continue
-                off = frame_offset_s(str(rec["url"]))
                 if off is not None and spacing > 0 and any(abs(off - o) < spacing for o in kept_video.get(video, ())):
                     self._skip("min_spacing_s")
                     continue
