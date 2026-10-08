@@ -20,3 +20,8 @@ Values are unmodified. Where a file was trimmed, only whole records (CSV lines /
 - `DATO` holds local midnight (Europe/Oslo) stored as UTC: `2007-03-30T22:00:00Z` is 2007-03-31.
 - The Marbunn `Datetime` field (`dd.mm.yyyy HH:MM:SS`) is the video-line start time. Its timezone is not documented.
 - No `publication_sites.csv`: positions come from per-image and per-station attributes, not from a publication.
+
+## imageshop_search_sample.html
+- Source: https://hi.imageshop.no/1636899/Search?Q=Svampen%20Asbestopluma%20pennatula.%20Troms%C3%B8flaket%2C%20Slam%2C%20422%20m%20dyp (retrieved 2026-10-08, anonymous).
+- Cut to the one thumbnail block of document 8759556 (asset HAV-056035, the `bilder_biologi.1` still). The `data-previewurl` is the presigned URL as served (not valid after its expiry; tests do not download it).
+- Used by tests/test_mareano.py for the Skildring / Kode / Kreditering parser and the exact title match.

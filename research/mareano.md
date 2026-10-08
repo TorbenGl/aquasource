@@ -1,5 +1,20 @@
 # MAREANO (Norway) seabed video and stills (`mareano`)
-Status: needs_human · researched 2026-10-06
+Status: ok (stills adapter written 2026-10-08; research 2026-10-06)
+
+## HANDOFF
+- status: ok (340 stills; raw video archive not implemented)
+- tier + licence: C, CC BY-SA 4.0 at collection level (https://hi.imageshop.no/1636899/StaticText/TermsOfUse). Geonorge layer record says CC BY 4.0: conflict, kept C, shard `_sharealike`.
+- geo: image 326, station 4, region 9 (QC conflicts, dropped by default), none 1; geo_source `kart.hi.no mareano_stasjoner:bilder_biologi` Latitude/Longitude + DYBDE.
+- files: adapters/mareano.py / scripts/download/mareano.sh / tests/test_mareano.py / no sites csv (coordinates are per record, not from a publication)
+- tests: pass (11/11, offline)
+- sample: 3 of 3 JPEG previews (1,024 px) downloaded OK; dry run 330 selected. Needs `--include-sharealike` (global flag, set in the script).
+- doubts:
+  - Licence: C (Imageshop terms) vs B (Geonorge CC BY 4.0). Ask mediearkiv@hi.no.
+  - Title match: Imageshop Skildring == TITTEL_N; if several assets match, the first is taken (`imageshop_matches`).
+  - `media_url` in samples.jsonl is the Imageshop search URL, not the presigned preview (expires after about 7 days).
+  - Timestamp: DATO as local date, Europe/Oslo assumed for TID.
+  - Only 1,024 px previews are downloaded; full size needs an untested session POST.
+- needs_opus: yes, because the licence sources contradict each other (C vs B) on the same images. Only IMR can settle it.
 
 ## Summary
 MAREANO is Norway's national seabed mapping programme, run by HI/IMR, NGU and Kartverket since 2006. It has filmed 3,908 seabed video lines at 3,787 reference stations, from the Skagerrak/North Sea margin to the Barents Sea, Svalbard and the Arctic Mid-Ocean Ridge (56.5–81.7°N, 3°W–37°E, 2006–2026). Video is recorded with towed video rigs (e.g. Campod) and ROVs, such as Ægir6000 on the 2025–2026 Arctic Mid-Ocean Ridge cruises. Two parts can be used today without registration:
@@ -20,9 +35,6 @@ The raw video archive (thousands of hours, with navigation) is not public. It is
 - Not usable or not relevant:
   - YouTube playlist https://www.youtube.com/playlist?list=PLpvb7g3qiPsuEvYwQ3B7uurBD1vxVpOmP: 48 edited clips, no CC licence seen.
   - NGU photo archive https://foto.ngu.no/fotoweb/archives/5001-NGUs-fotoarkiv/?q=mareano: 27 items, CC BY 4.0, but maps, fieldwork and on-deck photos only.
-  - Layer `mareano_stasjoner:bilder_terreng`: 42 bathymetry renderings, not underwater.
-  - Layer `mareano_biologi:mareanovideo_fil`: 1 ROV video record whose ownCloud link returns 404.
-  - PANGAEA: no MAREANO imagery (search "mareano" returns 2 unrelated datasets).
 
 ## Licence
 - Tier: **C** for the 340 geolocated frame grabs and other MAREANO underwater stills in the HI media archive. This is the conservative choice; see the discrepancy below. **U** for the raw video archive, because no licence is stated. **Excluded**: archive items under "Illustrasjonar og teikningar" and "Kart" (CC BY-NC-ND 4.0), and the YouTube clips.
@@ -117,9 +129,7 @@ Input: one `bilder_biologi` record (GeoJSON feature `properties`, or CSV row), p
   5. Save to `<data_root>/mareano/images/<HAV-id>.jpg`, with the layer row, Imageshop fields, licence and credit in `<data_root>/mareano/metadata/<HAV-id>.json`. Planned script: `scripts/download/mareano.sh`.
   6. Note: the legacy `BILDEURL` links (mediebank.hi.no/fotoweb/…) return 404. Keep them only as origin ids.
 - Raw video, after access is granted: S3 folders `\\ces.hi.no\cruise_data\<year>\S<cruise>_P<vessel>_<id>` via https://s3browser.hi.no. File naming per the cruise reports: video and ROV position files carry the `R<ref>VL<line>` portion names. Enumerate per cruise with an S3 list call; check whether ranged GET works on the HI S3 endpoint.
-- Sampling for a budget of N:
-  - Stills: take all 340 (the QC-conflict rows only if they keep coordinates). Prefer ≤ 2 per video line. 52 lines have more than one still, and stills on the same line are near-duplicates seconds apart.
-  - Video: stratify across the 3,908 lines by year (2006–2026), region (Barents/Norwegian Sea/North Sea/Svalbard/AMOR) and depth bin. Take `k = ceil(N / n_lines)` frames per line, evenly spaced over the on-bottom part (altitude ~1–3 m from the navigation/altimeter log) and at least 10 s apart.
+- Budget order (implemented): one still per video line first, then the rest, seeded; video sampling only once S3 access exists (stratify by year, region, depth; ~1 frame/10 s on bottom).
 
 ## Manual steps (human)
 1. Email datahjelp@hi.no with subject "S3 aksess til toktdata" / "S3 access to cruise data" (CC kjell.bakkeplass@hi.no or paal.buhl.mortensen@hi.no, as named in cruise report 2026007006).
@@ -128,19 +138,13 @@ Input: one `bilder_biologi` record (GeoJSON feature `properties`, or CSV row), p
    - Ask about total volume and preferred transfer rate.
 2. Optional: email mediearkiv@hi.no to confirm whether the MAREANO frame grabs are CC BY 4.0 (as on Geonorge) or CC BY-SA 4.0 (Imageshop default). CC BY 4.0 would move them to tier B. Also ask for an Imageshop API token or a bulk export of the "MAREANO" assets.
 
-## Fixtures
-- `tests/fixtures/mareano/bilder_biologi_wfs_sample.json`: WFS 2.0 GeoJSON response with 3 frame-grab features (`bilder_biologi.1`, `.10`, `.164`), untrimmed.
-- `tests/fixtures/mareano/bilder_biologi_ogcapi_sample.csv`: OGC API CSV for the same 3 rows (header plus 3 of 340 rows). Shows the WKT full-precision vs rounded-column behaviour.
-- `tests/fixtures/mareano/videostasjoner_sample.csv`: reference stations 5, 73, 449 and 734 (CQL-filtered server response, untrimmed). Covers the depth fallback and the station-point check.
-- `tests/fixtures/mareano/marbunn_video_lines_2007105_R73.json`: Marbunn GeoJSON with the 4 video lines of reference station 73 (cruise 2007105), trimmed to whole features.
-- `tests/fixtures/mareano/licence.txt`: verbatim licence and access quotes with URLs.
-- `tests/fixtures/mareano/SOURCE.md`: exact URLs, retrieval date and trimming for each file.
+## Fixtures and implementation
+- `tests/fixtures/mareano/`: real answers cut to 3 features / 4 stations / 1 Imageshop hit; exact URLs and trims in `SOURCE.md`, verbatim licence quotes in `licence.txt`.
+- Code: `src/aquasource/adapters/mareano.py` (stills only; the `resolve_geo` recipe above), `scripts/download/mareano.sh` (passes `--include-sharealike`), `tests/test_mareano.py` (11 offline tests).
 
-## Short download instruction
-1. GET kart.hi.no OGC API `mareano_stasjoner:bilder_biologi` (GeoJSON, 340 rows), which gives per-image lat/lon/depth (`Latitude`, `Longitude`, `DYBDE`), plus `videostasjoner_aarlig` for station QC.
-2. For each row, search `hi.imageshop.no/1636899/Search?Q=<HI-id|TITTEL_N>`, keep the exact match, and download its presigned 1,024 px preview JPG to `images/<HAV-id>.jpg` (≤1 req/s).
-3. Licence: CC BY-SA 4.0 (HI media archive), so these go to the C shard. Credit: "MAREANO / Havforskningsinstituttet".
-4. The full video archive (3,908 lines, 2006–2026, with navigation) is only via IMR S3 on request (datahjelp@hi.no), and its licence still has to be confirmed.
+## Implementation status (2026-10-08)
+- Adapter implements steps 1-3 of the recipe (layer, Imageshop title match, preview download). Not implemented: full-size images, raw video, UTM inverse fallback (every layer row has lat/lon).
+- Sample run: 3 of 3 JPEGs downloaded, all matched on Imageshop by exact title. Dry run selects 330 (326 image, 4 station); 9 region and 1 none are dropped by the default precision gate.
 
 ## Open questions / risks
 - The licence for the image files differs between sources: CC BY 4.0 in the Geonorge record vs CC BY-SA 4.0 in the Imageshop terms. Treated as C; ask IMR to confirm.
@@ -148,5 +152,3 @@ Input: one `bilder_biologi` record (GeoJSON feature `properties`, or CSV row), p
 - The Imageshop full-resolution download needs a session/POST flow (untested). Presigned preview URLs expire in about 7 days, so download right after parsing.
 - About 3% of `bilder_biologi` rows have metadata conflicts: coordinates 4–45 km from their REFSTASJ station, one 1,600 km off, and title place names or depths that disagree (e.g. `bilder_biologi.45` "Spitsbergenbanken" at 68.47°N 14.71°E). `TOKT` sometimes differs from the station cruise (2006112 vs 2006612; one `3013112` typo).
 - The Marbunn `Datetime` timezone and the meaning of `Station number` for some recent cruises (value 1) are undocumented.
-- How many of the 646 Imageshop "mareano" assets are underwater frame grabs with `R…VL…` codes beyond the 340 layer images was not counted. Imageshop pagination is session-based.
-- IMR is experimenting with video links in map layers (`mareanovideo_fil`, `mareanovideo_test`). A public video layer may appear later.
