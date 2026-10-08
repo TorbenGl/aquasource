@@ -1,17 +1,14 @@
 ## HANDOFF
 - status: blocked
-- tier + licence: U (not upgraded). Licence not read: the IMR node metadata records (data.arcticobserving.org/metsis/metadata/IMR_LOVE_NODE4, _NODE7) return HTTP 401, metadata.nmdc.no and geonorge.no return 404. Search snippets show "Access constraint: Open" and an empty Use constraint.
-- geo: none usable. Only "west of Hovden, Vesteralen" (gceocean.no project page) and approximate node positions in a 2020 IMR slide. No published node coordinates read. Would be fixed_site if confirmed.
-- files: adapter none / script scripts/download/love_observatory.sh (exits 1, prints why) / test none / sites csv none / fixtures tests/fixtures/love_observatory/SOURCE.md (no record saved)
-- tests: n/a (no adapter; nothing to test offline)
-- sample: 0 files, not run (no readable record, no media endpoint)
+- tier + licence: U (not upgraded). Licence still unread (records 401/404).
+- geo: none usable; would be fixed_site if node positions are published (not read).
+- files: adapter none / script scripts/download/love_observatory.sh (exits 1, prints why) / test none / sites csv none / fixtures tests/fixtures/love_observatory/SOURCE.md
+- tests: n/a; sample: not run (no endpoint)
 - doubts:
-  - Licence: no NLOD or other licence text read anywhere; check the Use constraint field of the IMR_LOVE_NODE* records on NMDC/data.norge.no
-  - Camera imagery: whether still images or video are public at all (sources say "images, sound" but no file route)
-  - Access: records need login (401); check whether NMDC offers anonymous ftp (ftp.nmdc.no/nmdc/IMR/) for image folders
-  - Coordinates: only approximate; do not add to sites/ without a published position
-  - Observatory was down for over a year; check current data availability and the new loveocean.no portal
-- needs_opus: yes, access not solvable from here (401/404 on every record endpoint, loveocean.no unreachable). A human or IMR/NMDC contact is needed first; Opus will not fix a 401.
+  - NEW (Sonnet retry 2026-10-08): raw data route found. IMR docs https://ftp.nmdc.no/nmdc/IMR/Doc/S3-Node4.pdf and S3-Node7.pdf (open) say raw LoVe data (incl. Develogic underwater camera: sensor 164 node 4, 107 node 7) is on S3 https://s3.hi.no, layout /lovedata/<YEAR>/<Node>/<SensorID>/, but "user credentials are needed", obtained by request to the IMR data help desk (datahjelp at hi.no). Anonymous probe: s3.hi.no/lovedata/ -> 403, bucket list empty. Not open; ftp.nmdc.no/nmdc/IMR/ has no LoVe folder.
+  - Licence unknown; a human must ask IMR for credentials plus the licence (NLOD?) for camera images; only then build an S3 adapter (year/node/sensor 164/107, from/to/per_day).
+  - Coordinates: not in the PDFs; take node positions from LoVe papers.
+- needs_opus: no, a human contact with IMR is needed (credentials + licence); no code can fix it.
 
 ## Summary
 LoVe (Lofoten-Vesteralen Ocean Observatory, Norway, operated by the Institute of Marine Research with Equinor; cabled seabed node network off Hovden, Vesteralen). It carries cameras, hydrophones and echosounders. The discovery metadata sit at the Norwegian Marine Data Centre (NMDC); data are said to be reached by ftp and OPeNDAP per data type.
