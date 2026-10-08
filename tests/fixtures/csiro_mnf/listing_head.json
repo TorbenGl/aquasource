@@ -1,0 +1,101 @@
+{
+ "id": "data:74006",
+ "file": [
+  {
+   "id": 99348534,
+   "filename": "IN2023_V05/data/DTC/IN2023_V05_005/data/DTC_IN2023_V05_005.CSV",
+   "lastUpdated": "2026-04-07T09:47:57.241+10:00",
+   "fileSize": 378089,
+   "link": {
+    "relationship": "self",
+    "mediaType": "text/csv",
+    "href": "https://data.csiro.au/dap/ws/v2/collections/74006/data/99348534",
+    "fileUpload": false,
+    "fileId": 0
+   },
+   "presignedLink": {
+    "relationship": "self",
+    "mediaType": "text/csv",
+    "href": "https://s3.data.csiro.au/dapprd/000074006v001/data/IN2023_V05/data/DTC/IN2023_V05_005/data/DTC_IN2023_V05_005.CSV?response-content-disposition=attachment%3B%20filename%3D%22DTC_IN2023_V05_005.CSV%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261008T161321Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=7EGDXVKXKUHBG65KOXR6%2F20261008%2FCDC%2Fs3%2Faws4_request&X-Amz-Signature=dec11e21e41c9286c191735d2077a024408015165dd3150329dcf78a7267b89b",
+    "fileUpload": false,
+    "fileId": 0
+   },
+   "parameters": [],
+   "smallThumbnail": null,
+   "mediumThumbnail": null,
+   "largeThumbnail": null,
+   "fullThumbnail": null,
+   "zipDownloadable": true
+  },
+  {
+   "id": 99348533,
+   "filename": "IN2023_V05/data/DTC/IN2023_V05_005/data/DTC_IN2023_V05_005_STILLS.CSV",
+   "lastUpdated": "2026-04-07T09:47:57.272+10:00",
+   "fileSize": 387539,
+   "link": {
+    "relationship": "self",
+    "mediaType": "text/csv",
+    "href": "https://data.csiro.au/dap/ws/v2/collections/74006/data/99348533",
+    "fileUpload": false,
+    "fileId": 0
+   },
+   "presignedLink": {
+    "relationship": "self",
+    "mediaType": "text/csv",
+    "href": "https://s3.data.csiro.au/dapprd/000074006v001/data/IN2023_V05/data/DTC/IN2023_V05_005/data/DTC_IN2023_V05_005_STILLS.CSV?response-content-disposition=attachment%3B%20filename%3D%22DTC_IN2023_V05_005_STILLS.CSV%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261008T161321Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=7EGDXVKXKUHBG65KOXR6%2F20261008%2FCDC%2Fs3%2Faws4_request&X-Amz-Signature=290dcc80df1e13a6e7506e0ded6244d3f028304bb59044c946aaa47c53dc3f79",
+    "fileUpload": false,
+    "fileId": 0
+   },
+   "parameters": [],
+   "smallThumbnail": null,
+   "mediumThumbnail": null,
+   "largeThumbnail": null,
+   "fullThumbnail": null,
+   "zipDownloadable": true
+  },
+  {
+   "id": 99348535,
+   "filename": "IN2023_V05/data/DTC/IN2023_V05_005/DTC_DSP_IN2023_V05_005_OVERVIEW.JPG",
+   "lastUpdated": "2026-06-12T09:57:09.431+10:00",
+   "fileSize": 5538914,
+   "link": {
+    "relationship": "self",
+    "mediaType": "image/jpeg",
+    "href": "https://data.csiro.au/dap/ws/v2/collections/74006/data/99348535",
+    "fileUpload": false,
+    "fileId": 0
+   },
+   "presignedLink": {
+    "relationship": "self",
+    "mediaType": "image/jpeg",
+    "href": "https://s3.data.csiro.au/dapprd/000074006v001/data/IN2023_V05/data/DTC/IN2023_V05_005/DTC_DSP_IN2023_V05_005_OVERVIEW.JPG?response-content-disposition=attachment%3B%20filename%3D%22DTC_DSP_IN2023_V05_005_OVERVIEW.JPG%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261008T161321Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=7EGDXVKXKUHBG65KOXR6%2F20261008%2FCDC%2Fs3%2Faws4_request&X-Amz-Signature=b19e77b7fe8a792b1f16a774db44a6b1e9e78f1a4e2ce6c86c7ec9574f1b3f35",
+    "fileUpload": false,
+    "fileId": 0
+   },
+   "parameters": [
+    {
+     "name": "Title",
+     "value": "DTC_DSP_IN2023_V05_005_OVERVIEW.JPG",
+     "units": null,
+     "dateValue": null,
+     "stringValue": "DTC_DSP_IN2023_V05_005_OVERVIEW.JPG",
+     "numericValue": null
+    },
+    {
+     "name": "Creator",
+     "value": "Andres Roubicek",
+     "units": null,
+     "dateValue": null,
+     "stringValue": "Andres Roubicek",
+     "numericValue": null
+    }
+   ],
+   "smallThumbnail": "https://s3.data.csiro.au/dapprd-thumbnails/74006v001/IN2023_V05/data/DTC/IN2023_V05_005/DTC_DSP_IN2023_V05_005_OVERVIEW.JPG.thumb_sml.jpg?response-cache-control=max-age%3D604800&response-content-type=image%2Fjpeg&response-expires=Thu%2C%2015%20Oct%202026%2016%3A13%3A21%20GMT&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261008T161321Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=7EGDXVKXKUHBG65KOXR6%2F20261008%2FCDC%2Fs3%2Faws4_request&X-Amz-Signature=53e47be9f845d28047a0a16c8c1b7fbacde44b7288d70a6107ec4392757e0589",
+   "mediumThumbnail": "https://s3.data.csiro.au/dapprd-thumbnails/74006v001/IN2023_V05/data/DTC/IN2023_V05_005/DTC_DSP_IN2023_V05_005_OVERVIEW.JPG.thumb_mdm.jpg?response-cache-control=max-age%3D604800&response-content-type=image%2Fjpeg&response-expires=Thu%2C%2015%20Oct%202026%2016%3A13%3A21%20GMT&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261008T161321Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=7EGDXVKXKUHBG65KOXR6%2F20261008%2FCDC%2Fs3%2Faws4_request&X-Amz-Signature=3e84ab0ac9b08f4f3344822dfbe0081e851454a501176dc74e228581bbfb7011",
+   "largeThumbnail": "https://s3.data.csiro.au/dapprd-thumbnails/74006v001/IN2023_V05/data/DTC/IN2023_V05_005/DTC_DSP_IN2023_V05_005_OVERVIEW.JPG.thumb_lrg.jpg?response-cache-control=max-age%3D604800&response-content-type=image%2Fjpeg&response-expires=Thu%2C%2015%20Oct%202026%2016%3A13%3A21%20GMT&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261008T161321Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=7EGDXVKXKUHBG65KOXR6%2F20261008%2FCDC%2Fs3%2Faws4_request&X-Amz-Signature=ad6df85c5d6e8268465319ddd6997775dceca32be659da72e68681ef7197b395",
+   "fullThumbnail": "https://s3.data.csiro.au/dapprd-thumbnails/74006v001/IN2023_V05/data/DTC/IN2023_V05_005/DTC_DSP_IN2023_V05_005_OVERVIEW.JPG.thumb_full.jpg?response-cache-control=max-age%3D604800&response-content-type=image%2Fjpeg&response-expires=Thu%2C%2015%20Oct%202026%2016%3A13%3A21%20GMT&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20261008T161321Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=7EGDXVKXKUHBG65KOXR6%2F20261008%2FCDC%2Fs3%2Faws4_request&X-Amz-Signature=d0dab0917e9d7e330e7e4a4a6512eff4bf6addd6d6971ab24482cdd9377eb67e",
+   "zipDownloadable": true
+  }
+ ],
+ "_note": "First 3 records of the real DAP listing GET /dap/ws/v2/collections/74006/data (fetched 2026-10-08). presignedLink values expire after 2 days and are not used by the adapter."
+}

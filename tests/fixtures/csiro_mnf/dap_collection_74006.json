@@ -1,0 +1,49 @@
+{
+ "id": {
+  "identifierType": "Fedora PID",
+  "identifier": "csiro:74006"
+ },
+ "title": "Image Collection - RV Investigator Voyage IN2023_V05 - SEA-MES: Untangling the causes of change over 25 years in the southeast marine ecosystem - Voyage 1",
+ "doi": "10.25919/gddy-hn24",
+ "licence": "Creative Commons Attribution 4.0 International Licence",
+ "licenceLink": {
+  "relationship": "licence",
+  "mediaType": "text/html",
+  "href": "https://data.csiro.au/dap/ws/v2/licences/1121",
+  "fileUpload": false,
+  "fileId": 0
+ },
+ "attributionStatement": "CSIRO; Marine National Facility; Little, Rich; Webb, David; Atkinson, Richard; Tyndall, Aaron; Forcey, Karl; Jackett, Chris; Untiedt, Candice; Althaus, Franzis; & Scoulding, Ben (2026): Image Collection - RV Investigator Voyage IN2023_V05 - SEA-MES: Untangling the causes of change over 25 years in the southeast marine ecosystem - Voyage 1. v1. CSIRO. Data Collection. https://doi.org/10.25919/gddy-hn24",
+ "rights": "All Rights (including copyright) CSIRO 2026.",
+ "access": "The metadata and files (if any) are available to the public.",
+ "accessLevel": "Public",
+ "dataRestricted": "FALSE",
+ "dataStartDate": "2023-06-28",
+ "dataEndDate": "2023-07-30",
+ "fileCount": 346977,
+ "imageCount": 346715,
+ "collectionSize": 3779204083283,
+ "published": "2026-06-15T14:13:29.343+10:00",
+ "spatialParameters": {
+  "projection": "WGS84",
+  "northLatitude": "36°18′9″ S",
+  "southLatitude": "43°27′6.84″ S",
+  "westLongitude": "147°19′50.52″ E",
+  "eastLongitude": "150°22′40.44″ E"
+ },
+ "landingPage": {
+  "relationship": "alternate",
+  "mediaType": "text/html",
+  "href": "https://data.csiro.au/collection/csiro:74006",
+  "fileUpload": false,
+  "fileId": 0
+ },
+ "lineage": "The imagery was collected using the MNF Deep Towed camera (DTC) system that simultaneously collects oblique forward-facing video (camera: SVY) and stereo still images (cameras SCP (port) and SCS (starboard)). Calibration of the stereo cameras was done in SEAGIS software and can be made available upon request.\n\nThe imagery was processed with Marimba v1.1.0.  [https://github.com/csiro-fair/marimba]\n\nFile naming convention: CameraPlatform_Camera_Survey_Deployment_YYYYMMDDTHHMMSSZ_image#\nGIS location of the camera system, and depth (as positive 'altitude') was added to the EXIF data of still images. In addition, camera location data at 1-second intervals for video and by image-pair for stills are provided in .csv format.",
+ "credit": "The MNF must be acknowledged in all outputs derived from Data and/or Samples collected by, or with support from, the MNF. Acknowledge the MNF in outputs with the statement:\n\n“We acknowledge the use of the CSIRO Marine National Facility (https://ror.org/01mae9353 ) in undertaking this research.”\n\nAcknowledgment and citations should be in all forms of publication including presentations (where the acknowledgement should be on the closing slide), journals, books, reports and related research outputs.; This work was part of the CSIRO South-East Australian Marine Ecosystem Survey (SEA-MES); supported by a grant of sea time on RV Investigator from the CSIRO Marine National Facility (https://ror.org/01mae9353; https://doi.org/10.13039/501100014536).",
+ "leadResearcher": "CSIRO",
+ "dataVersionNumber": 1,
+ "withdrawn": false,
+ "blocked": false,
+ "accessViewable": false,
+ "_note": "Real DAP v2 response for collection csiro:74006 (fetched 2026-10-08); keys trimmed, description and relatedLinks omitted."
+}
