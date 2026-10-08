@@ -11,7 +11,8 @@
   - Only stills are harvested. Videos (oblique forward view) and the 1 s video navigation CSV are not used. Stills without Latitude/Longitude in STILLS.CSV are dropped.
   - Depth is the STILLS.CSV Depth column (positive m); Alt is altitude above the seabed and is not stored.
   - DAP JSON reports accessViewable=false for the collection. Downloads worked anonymously in the sample, so this flag was not used as a gate.
-- needs_opus: yes, because the `rights` field ("All Rights (including copyright)") contradicts the explicit CC BY 4.0 licence. The explicit licence was applied (tier B), but a licence-owner check is needed before a full harvest.
+- checked by Sonnet 2026-10-08: licence URL re-read (DAP licence 1121 = CC BY 4.0); `rights` is CSIRO's copyright-holder statement, compatible with CC BY; tier B confirmed. Tests 9/9, sample 3 stills + samples.jsonl OK. resolve_geo/licence reviewed, no errors.
+- needs_opus: no (was yes), because the `rights` field ("All Rights (including copyright)") contradicts the explicit CC BY 4.0 licence. The explicit licence was applied (tier B), but a licence-owner check is needed before a full harvest.
 
 ---
 
