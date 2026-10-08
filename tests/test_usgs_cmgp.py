@@ -69,7 +69,7 @@ def make_adapter(tmp_path, layers=None, *, dry_run=True, http=None, **options):
         d.mkdir(parents=True, exist_ok=True)
         (d / "count.json").write_text(json.dumps({"features": [], "totalFeatures": total, "numberMatched": total}))
         for w, data in windows.items():
-            (d / f"ps{size}_w{w:06d}.json").write_text(json.dumps(data))
+            (d / f"ps{size}_sid_w{w:06d}.json").write_text(json.dumps(data))
     options.setdefault("layers", ",".join(layers))
     ctx = Context(cfg, http or NoNet(dry_run=dry_run), layout, options, dry_run, JsonlLog(layout.failures_jsonl))
     return get_adapter_class("usgs_cmgp")(ctx)
@@ -138,7 +138,7 @@ def test_hawaii_row_timestamp_and_negative_row_id(tmp_path):
     a = make_adapter(tmp_path, {"hawaii_pacific": (1, {0: collection([HAWAII_ROW])})}, order="table")
     (cand,) = list(a.discover())
     assert cand.item_id == "6256893359406483025/6256897544911358706"
-    assert cand.timestamp == "2013-02-09T20:05:40Z" and cand.extra["photo_name"] == "234.jpg" and cand.extra["cruise"] == "A-1-13-HW/Kahoolawe"
+    assert cand.timestamp == "2013-02-09T20:05:40" and cand.extra["photo_name"] == "234.jpg" and cand.extra["cruise"] == "A-1-13-HW/Kahoolawe"
     g = a.resolve_geo(cand)
     assert (g.lat, g.lon) == (20.501675, -156.678098) and g.geo_source.endswith("(row id -1)")
 
@@ -300,3 +300,65 @@ def test_fetch_media_checks_jpeg_magic(tmp_path):
     with pytest.raises(HttpError):
         bad.fetch_media(cand, ref, dest2)
     assert not dest2.exists()
+
+
+# --------------------------------------------------------------------------------------------- review fixes
+def test_wfs_url_sorts_on_a_unique_key_and_quotes_ids():
+    a = make_adapter_url_only()
+    url = a._wfs_url("hawaii_pacific", start=3200, count=200)
+    assert "sortBy=id%2Cpicasa_id" in url and "startIndex=3200" in url and "maxFeatures=200" in url
+    assert "cql_filter=picasa_id%20IS%20NOT%20NULL%20AND%20picasa_id%20%3C%3E%20%27%27" in url
+    assert uc.photo_url("A-2-04-HW", "311f1afb-1319-4a1a-a1f9-fccd7cf2a567") == (
+        "https://servomatic9000.axiomalaska.com/photo-server/usgs/A-2-04-HW/311f1afb-1319-4a1a-a1f9-fccd7cf2a567/photo?"
+    )
+    assert uc.photo_url("a b", "c/d") == "https://servomatic9000.axiomalaska.com/photo-server/usgs/a%20b/c%2Fd/photo?"
+
+
+def make_adapter_url_only():
+    import tempfile
+
+    return make_adapter(Path(tempfile.mkdtemp()))
+
+
+def test_timestamps_have_no_invented_time_zone():
+    assert uc.row_timestamp({"photo_date": "2009-05-09T12:29:52Z", "exif_date": "2009:05:09 12:29:52"}) == "2009-05-09T12:29:52"
+    assert uc.row_timestamp({"date": "2016-09-27Z", "time": "1970-01-01T21:09:20Z", "photo_date": None}) == "2016-09-27"
+    assert uc.row_timestamp({"dateinfo": "41900.837303"}) is None  # Excel day of the nav row: not a photo time
+    assert uc.row_timestamp({"lat": 1.0}) is None
+
+
+class OneAnswer(NoNet):
+    def __init__(self, text):
+        super().__init__(dry_run=True)
+        self.text, self.calls = text, 0
+
+    def get_text(self, url, **kw):
+        self.calls += 1
+        return self.text
+
+
+def test_geoserver_xml_error_is_logged_and_not_cached(tmp_path):
+    xml = '<?xml version="1.0"?><ows:ExceptionReport xmlns:ows="http://www.opengis.net/ows"><ows:Exception/></ows:ExceptionReport>'
+    cfg = load_config(None, data_root=tmp_path)
+    layout = DatasetLayout(tmp_path, "usgs_cmgp").ensure()
+    http = OneAnswer(xml)
+    ctx = Context(cfg, http, layout, {"layers": "california", "order": "table"}, True, JsonlLog(layout.failures_jsonl))
+    a = get_adapter_class("usgs_cmgp")(ctx)
+    assert list(a.discover()) == [] and a.layer_count("california") == 0
+    assert not list(layout.raw.rglob("*.json"))  # the XML error answer was not kept as metadata
+    assert "not a GeoJSON FeatureCollection" in layout.failures_jsonl.read_text()
+
+
+class Failing(NoNet):
+    def get_text(self, url, **kw):
+        raise HttpError(url, 503, "service unavailable")
+
+
+def test_failing_window_is_skipped_and_logged_not_fatal(tmp_path):
+    a = make_adapter(tmp_path, {"california": (400, {0: PHOTO_ROWS})}, http=Failing(dry_run=True), order="table", page_size=200)
+    assert list(by_id(a.discover())) == [CA_PHOTO_1, CA_PHOTO_2]  # window 0 from the cache, window 1 (503) skipped
+    assert "california/window1" in a.ctx.failures.path.read_text()
+
+
+def test_estimate_has_size_for_every_layer():
+    assert set(uc.MEAN_BYTES) == set(uc.LAYERS)

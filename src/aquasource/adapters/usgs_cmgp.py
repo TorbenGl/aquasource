@@ -37,7 +37,8 @@ Layers (WFS 1.0.0 ``typeName`` -> short name; photo rows = ``picasa_id`` not nul
 
 How it works
     * Enumeration: ``GET <wfs>?service=WFS&version=1.0.0&request=GetFeature&typeName=..&outputFormat=application/json
-      &sortBy=id&startIndex=k*page_size&maxFeatures=page_size&cql_filter=picasa_id IS NOT NULL AND picasa_id <> ''``.
+      &sortBy=id,picasa_id&startIndex=k*page_size&maxFeatures=page_size&cql_filter=picasa_id IS NOT NULL AND picasa_id <> ''``
+      (``id`` alone is not unique in the Hawaii/Pacific layer, so ``picasa_id`` is the second sort key).
       The row count per layer comes from ``totalFeatures`` of a one-row request. Every answer is cached under
       metadata/raw/wfs/ so re-runs do not hit the provider. Item id = ``<picasa_album_id>/<picasa_id>`` (stable, and the
       same photo found in two layers is one item).
@@ -47,8 +48,9 @@ How it works
       evenly spaced photos are taken and per album (tape / cruise folder) at most ``max_per_album``.
     * Media: ``https://servomatic9000.axiomalaska.com/photo-server/usgs/<album>/<id>/photo?`` (full JPEG, HEAD-verified).
       The server ignores HTTP Range, so a retry restarts the file. ``fetch_media`` checks the JPEG magic number.
-    * Timestamp: ``photo_date`` (EXIF time, UTC) or ``date`` of the row when present (the California layer has none).
-      The camera clock can be minutes off the navigation clock: never use it to re-derive a position.
+    * Timestamp: ``photo_date`` (EXIF time of the camera clock, written without the portal's ``Z``: the time zone is not
+      verified) or ``date`` of the row when present (the California layer has none). The camera clock can be minutes off
+      the navigation clock: never use it to re-derive a position. ``dateinfo`` is not used (inconsistent with the EXIF).
     * Politeness: 1 s between requests to data.axds.co and to the photo server (the defaults); no token, no account.
     * Not done: pixel filters (sled off the bottom, water column, deck, burned-in overlay text, laser dots), the videos,
       the other USGS layers without photos, dedup against other USGS ScienceBase releases of the same frames.
@@ -108,9 +110,15 @@ LAYERS: dict[str, dict[str, str]] = {
 TYPE_NAME_TO_KEY = {v["type_name"]: k for k, v in LAYERS.items()}
 # Photo rows per layer (research note, re-queried 2026-10-08) and mean file size in bytes where measured (HEAD).
 PHOTO_ROWS = {"california": 78341, "hawaii_pacific": 28079, "massachusetts": 8083, "rhode_island": 1793, "puget_sound": 918, "california_old": 415}
-MEAN_BYTES = {"california": 2_650_000, "hawaii_pacific": 100_000, "massachusetts": 1_330_000}
+MEAN_BYTES = {  # one HEAD per layer (2026-10-08); sizes vary per file, so the estimate is rough
+    "california": 2_650_000, "hawaii_pacific": 100_000, "massachusetts": 1_330_000,
+    "rhode_island": 3_090_000, "puget_sound": 3_050_000, "california_old": 3_750_000,
+}  # fmt: skip
 DEFAULT_MEAN_BYTES = 1_330_000
 PHOTO_FILTER = "picasa_id IS NOT NULL AND picasa_id <> ''"
+# ``id`` alone is not unique (Hawaii/Pacific: 117 distinct ids in 200 rows), so paging on it would skip or repeat rows between
+# windows. (id, picasa_id) orders every photo row; remaining ties are the same photo twice, which the item id merges.
+SORT_BY = "id,picasa_id"
 
 CITATION = (
     "U.S. Geological Survey, Coastal and Marine Geology Program. Golden, N.E., Ackerman, S.D., and Dailey, E.T., 2015, "
@@ -150,7 +158,7 @@ def is_still(props: dict[str, Any]) -> bool:
 
 
 def photo_url(album: str, picasa_id: str) -> str:
-    return f"{PHOTO_BASE}/{album}/{picasa_id}/photo?"
+    return f"{PHOTO_BASE}/{quote(album, safe='')}/{quote(picasa_id, safe='')}/photo?"
 
 
 def item_id_of(props: dict[str, Any]) -> str:
@@ -158,7 +166,13 @@ def item_id_of(props: dict[str, Any]) -> str:
 
 
 def row_timestamp(props: dict[str, Any]) -> str | None:
-    """Capture time of the photo when the layer has one (``photo_date`` ISO UTC, else ``date``); None otherwise."""
+    """Capture time of the photo when the layer has one (``photo_date``, else ``date``); None otherwise.
+
+    ``photo_date`` is the EXIF time of the camera clock; the portal appends a ``Z`` although the camera time zone and clock
+    offset are not verified (23 min off the navigation clock in the checked case), so the ``Z`` is dropped and the value
+    is only a rough capture time. ``dateinfo`` (Excel day of the navigation row) is not used: for the Hawaii row with
+    ``id`` -1 it says 2014-09-05 while the photo EXIF says 2013-02-09.
+    """
     for key in ("photo_date", "date"):
         raw = props.get(key)
         if raw in (None, ""):
@@ -167,7 +181,7 @@ def row_timestamp(props: dict[str, Any]) -> str | None:
         if re.fullmatch(r"\d{4}-\d{2}-\d{2}Z?", s):
             return s.rstrip("Z")
         if parse_time(s) is not None:
-            return s
+            return s.rstrip("Z")
     return None
 
 
@@ -332,29 +346,44 @@ class UsgsCmgpAdapter(Adapter):
         spec = LAYERS[layer]
         params = {
             "service": "WFS", "version": "1.0.0", "request": "GetFeature", "typeName": spec["type_name"],
-            "outputFormat": "application/json", "sortBy": "id", "startIndex": start, "maxFeatures": count,
+            "outputFormat": "application/json", "sortBy": SORT_BY, "startIndex": start, "maxFeatures": count,
             "cql_filter": PHOTO_FILTER,
         }  # fmt: skip
         return spec["wfs"] + "?" + urlencode(params, quote_via=quote)
 
+    def _wfs_json(self, url: str, name: str) -> dict[str, Any]:
+        """Cached WFS answer. GeoServer reports errors as XML with HTTP 200: such an answer is not kept in the cache."""
+        text = self.ctx.cached_text(url, name)
+        try:
+            data = json.loads(text)
+            if not isinstance(data, dict):
+                raise ValueError("not a JSON object")
+        except ValueError:
+            (self.ctx.layout.raw / name).unlink(missing_ok=True)
+            raise HttpError(url, None, f"answer is not a GeoJSON FeatureCollection: {text[:200]!r}") from None
+        return data
+
     def layer_count(self, layer: str) -> int:
-        """Number of photo rows of a layer (``totalFeatures`` of a one-row request, cached)."""
+        """Number of photo rows of a layer (``totalFeatures`` of a one-row request, cached; 0 and logged when it fails)."""
         if layer not in self._counts:
-            data = self.ctx.cached_json(self._wfs_url(layer, start=0, count=1), f"wfs/{layer}/count.json")
-            self._counts[layer] = int(data.get("totalFeatures") or data.get("numberMatched") or 0)
+            url = self._wfs_url(layer, start=0, count=1)
+            try:
+                data = self._wfs_json(url, f"wfs/{layer}/count.json")
+                self._counts[layer] = int(data.get("totalFeatures") or data.get("numberMatched") or 0)
+            except HttpError as exc:
+                self.ctx.fail(f"{layer}/count", "discover", f"{exc}", url=url)
+                self._counts[layer] = 0
         return self._counts[layer]
 
     def _window(self, layer: str, w: int) -> list[dict[str, Any]]:
-        """``properties`` of the photo rows of window ``w`` (cached). A 4xx answer is logged and skipped."""
+        """``properties`` of the photo rows of window ``w`` (cached). A failing window is logged and skipped."""
         size = self.page_size
         url = self._wfs_url(layer, start=w * size, count=size)
         try:
-            data = self.ctx.cached_json(url, f"wfs/{layer}/ps{size}_w{w:06d}.json")
+            data = self._wfs_json(url, f"wfs/{layer}/ps{size}_sid_w{w:06d}.json")
         except HttpError as exc:
-            if exc.status is not None and 400 <= exc.status < 500:
-                self.ctx.fail(f"{layer}/window{w}", "discover", f"{exc}", url=url)
-                return []
-            raise
+            self.ctx.fail(f"{layer}/window{w}", "discover", f"{exc}", url=url)
+            return []
         return [f.get("properties") or {} for f in data.get("features", [])]
 
     # ------------------------------------------------------------------------------------------- discover
